@@ -1,0 +1,197 @@
+/* Login page styles for Purple theme */
+
+:root {
+  --purple-primary: #8a5cf6;
+  --purple-primary-hover: #7749f2;
+  --bg-muted: #f2edf3;
+  --text-dark: #2d2d2d;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  --facebook: #3b5998;
+}
+
+html, body {
+  height: 100%;
+}
+
+body.login-body {
+  margin: 0;
+  background: var(--bg-muted);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  color: var(--text-dark);
+}
+
+/* Hide default Laravel navbar on the login page only (this CSS is loaded only here) */
+.navbar { display: none !important; }
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 40px 32px;
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.login-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #b091ff 0%, #8a5cf6 100%);
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--purple-primary);
+  margin: 0;
+}
+
+.login-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 2px 0 22px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.form-input {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.form-input:focus {
+  border-color: var(--purple-primary);
+  box-shadow: 0 0 0 3px rgba(138, 92, 246, 0.15);
+}
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+input::-webkit-password-toggle-button {
+  display: none;
+}
+
+
+/* Password toggle */
+.password-field { position: relative; width: 100%; }
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  outline: none;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.toggle-password:hover { color: var(--text-dark); }
+.toggle-password:focus { outline: none; box-shadow: none; }
+.toggle-password svg { display: block; }
+
+/* Ensure spacing so icon sits neatly inside */
+.password-field .form-input { width: 100%; padding-right: 44px; }
+
+.btn-primary {
+  width: 100%;
+  height: 46px;
+  border: none;
+  border-radius: 6px;
+  background: var(--purple-primary);
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.02s ease;
+}
+
+.btn-primary:hover { background: var(--purple-primary-hover); }
+.btn-primary:active { transform: translateY(1px); }
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0 0;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.link {
+  font-size: 13px;
+  color: var(--text-dark);
+  text-decoration: none;
+}
+
+.link:hover { text-decoration: underline; }
+
+.btn-facebook {
+  width: 100%;
+  height: 44px;
+  margin-top: 18px;
+  border-radius: 6px;
+  border: none;
+  background: var(--facebook);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.footer-text {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 20px;
+}
+
+.error-alert {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+
