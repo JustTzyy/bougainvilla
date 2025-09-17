@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LevelController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -50,7 +51,13 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::patch('/frontdeskrecords/restore/{id}', [UserController::class, 'restore'])->name('adminrecords.restore');
     Route::get('/frontdeskrecords/archive', [App\Http\Controllers\UserController::class, 'archivedFrontdesk'])->name('frontdeskrecords.archive');
 
-
+    // Level Crud
+    Route::get('/levels', [LevelController::class, 'index'])->name('adminPages.levels');
+    Route::post('/levels', [LevelController::class, 'store'])->name('adminPages.levels.post');
+    Route::post('/levels/update/{id}', [LevelController::class, 'update'])->name('levels.update');
+    Route::delete('/levels/delete/{id}', [LevelController::class, 'destroy'])->name('levels.destroy');
+    Route::patch('/levels/restore/{id}', [LevelController::class, 'restore'])->name('levels.restore');
+    Route::get('/levels/archive', [LevelController::class, 'archived'])->name('levels.archive');
 
 });
 

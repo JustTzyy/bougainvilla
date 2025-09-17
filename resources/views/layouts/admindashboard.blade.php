@@ -61,6 +61,31 @@
                             </li>
                         </ul>
                     </li>
+
+                     <li class="nav-item has-submenu {{ request()->routeIs('adminPages.levels') || request()->routeIs('levels.*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-user-lock"></i>
+                            <span>Room Management</span>
+                            <i class="fas fa-chevron-right submenu-arrow"></i>
+                        </a>
+                        <ul class="submenu" aria-label="RoomManagement submenu">
+                            <li class="{{ request()->routeIs('adminPages.levels') || request()->routeIs('levels.archive') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.levels') }}" class="submenu-link">
+                                    <span>Levels</span>
+                                </a>
+                            </li>
+                            <li class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
+                                    <span>Rooms</span>
+                                </a>
+                            </li>
+                             <li class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
+                                    <span>Rates</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <span>Widgets</span>
@@ -259,13 +284,15 @@
             }
         }
 
-        // Auto-open Data submenu when on admin or frontdesk pages
+        // Auto-open any active submenu (Data, Room Management, etc.)
         document.addEventListener('DOMContentLoaded', function() {
-            const dataSubmenu = document.querySelector('.nav-item.has-submenu');
-            if (dataSubmenu && dataSubmenu.classList.contains('active')) {
-                dataSubmenu.classList.add('open');
-                dataSubmenu.querySelector('.nav-link').setAttribute('aria-expanded', 'true');
-            }
+            document.querySelectorAll('.nav-item.has-submenu').forEach(function(item){
+                if (item.classList.contains('active')) {
+                    item.classList.add('open');
+                    const link = item.querySelector('.nav-link');
+                    if (link) link.setAttribute('aria-expanded', 'true');
+                }
+            });
         });
     </script>
 </body>
