@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     @stack('styles')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+
 <body class="dashboard-body">
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -19,10 +21,10 @@
                     <span class="logo-text">Purple</span>
                 </div>
             </div>
-            
+
             <div class="user-profile">
                 <div class="user-avatar">
-                <i class="fas fa-user-circle" style="font-size:40px; color:#8a5cf6;"></i>
+                    <i class="fas fa-user-circle" style="font-size:40px; color:#8a5cf6;"></i>
                 </div>
                 <div class="user-info">
                     <div class="user-name">{{ Auth::user()->name ?? 'User' }}</div>
@@ -41,20 +43,23 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
-    
-                    <li class="nav-item has-submenu {{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archiveadminrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
+
+                    <li
+                        class="nav-item has-submenu {{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archiveadminrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user-lock"></i>
                             <span>Data</span>
                             <i class="fas fa-chevron-right submenu-arrow"></i>
                         </a>
                         <ul class="submenu" aria-label="Data submenu">
-                            <li class="{{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.archiveadminrecords') ? 'active' : '' }}">
+                            <li
+                                class="{{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.archiveadminrecords') ? 'active' : '' }}">
                                 <a href="{{ route('adminPages.adminrecords') }}" class="submenu-link">
                                     <span>Admin</span>
                                 </a>
                             </li>
-                            <li class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
+                            <li
+                                class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
                                 <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
                                     <span>FrontDesk</span>
                                 </a>
@@ -62,78 +67,55 @@
                         </ul>
                     </li>
 
-                     <li class="nav-item has-submenu {{ request()->routeIs('adminPages.levels') || request()->routeIs('levels.*') ? 'active' : '' }}">
+                    <li
+                        class="nav-item has-submenu 
+    {{ request()->routeIs('adminPages.accommodations') || request()->routeIs('adminPages.levels') || request()->routeIs('adminPages.rates') || request()->routeIs('accommodations.*') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user-lock"></i>
                             <span>Room Management</span>
                             <i class="fas fa-chevron-right submenu-arrow"></i>
                         </a>
                         <ul class="submenu" aria-label="RoomManagement submenu">
-                            <li class="{{ request()->routeIs('adminPages.levels') || request()->routeIs('levels.archive') ? 'active' : '' }}">
+
+                            {{-- Accommodations --}}
+                            <li
+                                class="{{ request()->routeIs('adminPages.accommodations') || request()->routeIs('accommodations.archive') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.accommodations') }}" class="submenu-link">
+                                    <span>Accommodations</span>
+                                </a>
+                            </li>
+
+                            {{-- Levels --}}
+                            <li
+                                class="{{ request()->routeIs('adminPages.levels') || request()->routeIs('levels.*') ? 'active' : '' }}">
                                 <a href="{{ route('adminPages.levels') }}" class="submenu-link">
                                     <span>Levels</span>
                                 </a>
                             </li>
-                            <li class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
+
+                            {{-- Rooms --}}
+                            <li
+                                class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
                                 <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
                                     <span>Rooms</span>
                                 </a>
                             </li>
-                             <li class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
+
+                            <li
+                                class="{{ request()->routeIs('adminPages.rates') || request()->routeIs('rates.*') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.rates') }}" class="submenu-link">
                                     <span>Rates</span>
                                 </a>
                             </li>
                         </ul>
                     </li>
+
                     <li class="nav-item">
                         <a href="#" class="nav-link">
                             <span>Widgets</span>
                         </a>
                     </li>
-                    <li class="nav-item has-submenu">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-eye"></i>
-                            <span>Basic UI Elements</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item has-submenu">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-layer-group"></i>
-                            <span>Advanced UI</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item has-submenu">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Form Elements</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item has-submenu">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-th"></i>
-                            <span>Tables</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                    </li>
-                  
-                 
-                    <li class="nav-item has-submenu">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-th-large"></i>
-                            <span>Icons</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-edit"></i>
-                            <span>Text Editor</span>
-                        </a>
-                    </li>
+                   
                 </ul>
             </nav>
         </aside>
@@ -149,13 +131,13 @@
                     <div class="search-container">
                     </div>
                 </div>
-                
+
                 <div class="header-right">
                     <div class="user-dropdown" onclick="toggleUserDropdown()">
-<i class="fas fa-user-circle" style="font-size:40px; color:#8a5cf6;"></i>
+                        <i class="fas fa-user-circle" style="font-size:40px; color:#8a5cf6;"></i>
                         <span class="user-name-small">{{ Auth::user()->name ?? 'User' }}</span>
                         <i class="fas fa-chevron-down"></i>
-                        
+
                         <!-- User Dropdown Menu -->
                         <div class="user-dropdown-menu" id="userDropdownMenu">
                             <a href="{{ route('adminPages.settings') }}" class="dropdown-item">
@@ -168,17 +150,18 @@
                             </div>
                             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                                 @csrf
-                                <button type="submit" class="dropdown-item" style="background: none; border: none; width: 100%; text-align: left; cursor: pointer;">
+                                <button type="submit" class="dropdown-item"
+                                    style="background: none; border: none; width: 100%; text-align: left; cursor: pointer;">
                                     <i class="fas fa-sign-out-alt dropdown-icon signout"></i>
                                     <span>Signout</span>
                                 </button>
                             </form>
                         </div>
                     </div>
-                    
+
                     <div class="header-actions">
-                      
-                      
+
+
                     </div>
                 </div>
             </header>
@@ -192,12 +175,12 @@
 
     <script>
         // Responsive sidebar toggle functionality
-        document.querySelector('.menu-toggle').addEventListener('click', function() {
+        document.querySelector('.menu-toggle').addEventListener('click', function () {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
-            
+
             sidebar.classList.toggle('collapsed');
-            
+
             // Handle mobile overlay
             if (window.innerWidth <= 768) {
                 if (sidebar.classList.contains('collapsed')) {
@@ -217,7 +200,7 @@
         function createOverlay() {
             const overlay = document.createElement('div');
             overlay.className = 'sidebar-overlay';
-            overlay.addEventListener('click', function() {
+            overlay.addEventListener('click', function () {
                 document.querySelector('.sidebar').classList.remove('collapsed');
                 overlay.classList.remove('show');
             });
@@ -231,20 +214,20 @@
         }
 
         // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const dropdown = document.getElementById('userDropdownMenu');
             const userDropdown = document.querySelector('.user-dropdown');
-            
+
             if (!userDropdown.contains(event.target)) {
                 dropdown.classList.remove('show');
             }
         });
 
         // Handle window resize
-        window.addEventListener('resize', function() {
+        window.addEventListener('resize', function () {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
-            
+
             if (window.innerWidth > 768) {
                 // Desktop: remove overlay if exists
                 if (overlay) {
@@ -260,13 +243,13 @@
         });
 
         // Submenu toggle (accordion-like)
-        document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(function(trigger){
-            trigger.addEventListener('click', function(e){
+        document.querySelectorAll('.nav-item.has-submenu > .nav-link').forEach(function (trigger) {
+            trigger.addEventListener('click', function (e) {
                 e.preventDefault();
                 const parent = this.closest('.nav-item');
                 const isOpen = parent.classList.contains('open');
                 // close others (optional)
-                document.querySelectorAll('.nav-item.has-submenu.open').forEach(function(openItem){
+                document.querySelectorAll('.nav-item.has-submenu.open').forEach(function (openItem) {
                     if (openItem !== parent) openItem.classList.remove('open');
                     openItem.querySelector('.nav-link').setAttribute('aria-expanded', 'false');
                 });
@@ -285,8 +268,8 @@
         }
 
         // Auto-open any active submenu (Data, Room Management, etc.)
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.nav-item.has-submenu').forEach(function(item){
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.nav-item.has-submenu').forEach(function (item) {
                 if (item.classList.contains('active')) {
                     item.classList.add('open');
                     const link = item.querySelector('.nav-link');
@@ -296,4 +279,5 @@
         });
     </script>
 </body>
+
 </html>

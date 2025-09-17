@@ -1,6 +1,6 @@
 @extends('layouts.admindashboard')
 
-@section('title','Levels')
+@section('title','Accommodations')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
@@ -10,7 +10,7 @@
 @section('content')
 <div class="dashboard-page">
   <div class="page-header">
-    <h1 class="page-title">Levels</h1>
+    <h1 class="page-title">Accommodations</h1>
   </div>
 
   @if (session('success'))
@@ -46,13 +46,13 @@
   <div class="records-toolbar">
     <div class="search-container admin-search">
       <i class="fas fa-search search-icon"></i>
-      <input id="adminSearch" type="text" placeholder="Search levels" class="search-input">
+      <input id="adminSearch" type="text" placeholder="Search accommodations" class="search-input">
     </div>
     <div class="toolbar-actions">
-      <a href="{{ route('levels.archive') }}" class="archive-btn">
+      <a href="{{ route('accommodations.archive') }}" class="archive-btn">
         <i class="fas fa-archive"></i> Archive
       </a>
-      <button id="openAddAdmin"><i class="fas fa-layer-group"></i> Add Level</button>
+      <button id="openAddAdmin"><i class="fas fa-hotel"></i> Add Accommodation</button>
     </div>
   </div>
 
@@ -62,33 +62,34 @@
     </div>
 
     <div class="table-wrapper">
-      <table class="table sortable-table" id="levelsTable">
+      <table class="table sortable-table" id="accommodationsTable">
         <thead>
           <tr>
-            <th>Floor No.</th>
+            <th>Name</th>
+            <th>Capacity</th>
             <th>Description</th>
-            <th>Status</th>
             <th>Date Created</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          @if(isset($levels) && $levels->count() > 0)
-            @foreach($levels as $level)
-              <tr class="level-row"
-                  data-level-id="{{ $level->id }}"
-                  data-description="{{ $level->description }}"
-                  data-status="{{ $level->status }}"
-                  data-created="{{ $level->created_at }}">
-                <td data-label="Floor No.">{{ $level->id }}</td>
-                <td data-label="Description" class="level-description">{{ $level->description }}</td>
-                <td data-label="Status">{{ $level->status }}</td>
-                <td data-label="Date Created">{{ $level->created_at->format('M d, Y') }}</td>
+          @if(isset($accommodations) && $accommodations->count() > 0)
+            @foreach($accommodations as $accommodation)
+              <tr class="accommodation-row"
+                  data-accommodation-id="{{ $accommodation->id }}"
+                  data-name="{{ $accommodation->name }}"
+                  data-capacity="{{ $accommodation->capacity }}"
+                  data-description="{{ $accommodation->description }}"
+                  data-created="{{ $accommodation->created_at }}">
+                <td data-label="Name">{{ $accommodation->name }}</td>
+                <td data-label="Capacity">{{ $accommodation->capacity }}</td>
+                <td data-label="Description" class="accommodation-description">{{ $accommodation->description }}</td>
+                <td data-label="Date Created">{{ $accommodation->created_at->format('M d, Y') }}</td>
                 <td data-label="Actions">
-                  <button class="action-btn small" data-update data-level-id="{{ $level->id }}">
+                  <button class="action-btn small" data-update data-accommodation-id="{{ $accommodation->id }}">
                     <i class="fas fa-pen"></i>
                   </button>
-                  <button class="action-btn small" data-archive data-level-id="{{ $level->id }}">
+                  <button class="action-btn small" data-archive data-accommodation-id="{{ $accommodation->id }}">
                     <i class="fas fa-archive"></i>
                   </button>
                 </td>
@@ -96,60 +97,60 @@
             @endforeach
           @else
             <tr>
-              <td colspan="5" class="text-center">No levels found</td>
+              <td colspan="5" class="text-center">No accommodations found</td>
             </tr>
           @endif
         </tbody>
       </table>
     </div>
-    @if(isset($levels) && $levels->hasPages())
+    @if(isset($accommodations) && $accommodations->hasPages())
       <nav class="pagination" aria-label="Table pagination">
-        {{ $levels->links() }}
+        {{ $accommodations->links() }}
       </nav>
     @endif
   </div>
 </div>
 
-<!-- Add Level Modal -->
-<div id="levelModal" class="modal level-modal">
+<!-- Add Accommodation Modal -->
+<div id="accommodationModal" class="modal accommodation-modal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3 class="chart-title">Add Level</h3>
-      <button id="closeLevelModal" class="action-btn ml-auto">
+      <h3 class="chart-title">Add Accommodation</h3>
+      <button id="closeAccommodationModal" class="action-btn ml-auto">
         <i class="fas fa-times"></i>
       </button>
     </div>
 
-    <form id="levelForm" action="{{ route('adminPages.levels.post') }}" class="modal-form" method="POST">
+    <form id="accommodationForm" action="{{ route('adminPages.accommodations.post') }}" class="modal-form" method="POST">
       @csrf
       <div class="form-grid">
-        <div class="form-group span-2">
-          <label>Description</label>
-          <input type="text" name="description" class="form-input" placeholder="e.g., Ground Floor" required>
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" name="name" class="form-input" placeholder="e.g., Deluxe Room" required>
         </div>
         <div class="form-group">
-          <label>Status</label>
-          <select name="status" class="form-input" required>
-            <option value="">Select Status</option>
-            <option value="Active" selected>Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+          <label>Capacity</label>
+          <input type="number" name="capacity" class="form-input" min="1" required>
+        </div>
+        <div class="form-group span-2">
+          <label>Description</label>
+          <textarea name="description" class="form-input" placeholder="Accommodation description"></textarea>
         </div>
       </div>
 
       <div class="modal-actions">
-        <button type="button" id="cancelLevel" class="action-btn btn-outline">Cancel</button>
-        <button type="submit" class="btn-primary inline">Save Level</button>
+        <button type="button" id="cancelAccommodation" class="action-btn btn-outline">Cancel</button>
+        <button type="submit" class="btn-primary inline">Save Accommodation</button>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Update Level Modal (fixed) -->
-<div id="updateModal" class="modal level-modal">
+<!-- Update Accommodation Modal -->
+<div id="updateModal" class="modal accommodation-modal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3 class="chart-title">Update Level</h3>
+      <h3 class="chart-title">Update Accommodation</h3>
       <button id="closeUpdateModal" class="action-btn ml-auto">
         <i class="fas fa-times"></i>
       </button>
@@ -159,23 +160,23 @@
       @csrf
       @method('POST')
       <div class="form-grid">
-        <div class="form-group span-2">
-          <label>Description</label>
-          <input name="description" id="u_description" class="form-input" placeholder="e.g., Ground Floor" required>
+        <div class="form-group">
+          <label>Name</label>
+          <input name="name" id="u_name" class="form-input" required>
         </div>
         <div class="form-group">
-          <label>Status</label>
-          <select name="status" id="u_status" class="form-input" required>
-            <option value="">Select Status</option>
-            <option value="Active">Active</option>
-            <option value="Inactive">Inactive</option>
-          </select>
+          <label>Capacity</label>
+          <input type="number" name="capacity" id="u_capacity" class="form-input" min="1" required>
+        </div>
+        <div class="form-group span-2">
+          <label>Description</label>
+          <textarea name="description" id="u_description" class="form-input"></textarea>
         </div>
       </div>
 
       <div class="modal-actions">
         <button type="button" id="cancelUpdate" class="action-btn btn-outline">Cancel</button>
-        <button type="submit" class="btn-primary inline">Update Level</button>
+        <button type="submit" class="btn-primary inline">Update Accommodation</button>
       </div>
     </form>
   </div>
@@ -183,26 +184,24 @@
 
 <script>
   (function(){
-    var modal = document.getElementById('levelModal');
+    var modal = document.getElementById('accommodationModal');
     var openBtn = document.getElementById('openAddAdmin');
-    var closeBtn = document.getElementById('closeLevelModal');
-    var cancelBtn = document.getElementById('cancelLevel');
+    var closeBtn = document.getElementById('closeAccommodationModal');
+    var cancelBtn = document.getElementById('cancelAccommodation');
     var search = document.getElementById('adminSearch');
-    var table = document.getElementById('levelsTable').getElementsByTagName('tbody')[0];
+    var table = document.getElementById('accommodationsTable').getElementsByTagName('tbody')[0];
 
     // Open Add Modal
-    function openModal(){ 
-      modal.style.display = 'flex'; 
-    }
+    function openModal(){ modal.style.display = 'flex'; }
     
-    // Add confirmation for Add Level form
-    var levelForm = document.getElementById('levelForm');
-    if (levelForm) {
-      levelForm.addEventListener('submit', function(e) {
+    // Add confirmation
+    var form = document.getElementById('accommodationForm');
+    if (form) {
+      form.addEventListener('submit', function(e) {
         e.preventDefault();
-        var description = document.querySelector('input[name="description"]').value;
-        var status = document.querySelector('select[name="status"]').value;
-        if (confirm('Are you sure you want to add Level "' + description + '" (status: ' + status + ')?')) {
+        var name = document.querySelector('input[name="name"]').value;
+        var capacity = document.querySelector('input[name="capacity"]').value;
+        if (confirm('Are you sure you want to add "' + name + '" with capacity ' + capacity + '?')) {
           this.submit();
         }
       });
@@ -214,7 +213,7 @@
     if (closeBtn) closeBtn.addEventListener('click', closeModal);
     if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
-    // Client-side search
+    // Search
     if (search) search.addEventListener('input', function(){
       var q = this.value.toLowerCase();
       Array.prototype.forEach.call(table.rows, function(row){
@@ -228,18 +227,16 @@
     var closeUpdateModalBtn = document.getElementById('closeUpdateModal');
     var cancelUpdateBtn = document.getElementById('cancelUpdate');
 
-    function openUpdateModal(){ 
-      updateModal.style.display = 'flex'; 
-    }
+    function openUpdateModal(){ updateModal.style.display = 'flex'; }
 
-    // Confirmation for Update Level form
+    // Confirmation for Update form
     var updateForm = document.getElementById('updateForm');
     if (updateForm) {
       updateForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        var description = document.getElementById('u_description').value;
-        var status = document.getElementById('u_status').value;
-        if (confirm('Update level to "' + description + '" with status ' + status + '?')) {
+        var name = document.getElementById('u_name').value;
+        var capacity = document.getElementById('u_capacity').value;
+        if (confirm('Update accommodation "' + name + '" with capacity ' + capacity + '?')) {
           this.submit();
         }
       });
@@ -258,13 +255,14 @@
         var d = row ? row.dataset : {};
 
         // Pre-fill fields
+        document.getElementById('u_name').value = d.name || '';
+        document.getElementById('u_capacity').value = d.capacity || '';
         document.getElementById('u_description').value = d.description || '';
-        document.getElementById('u_status').value = d.status || '';
 
-        // Point form action to update route
+        // Point form action
         var updateForm = document.getElementById('updateForm');
-        var levelId = this.getAttribute('data-level-id');
-        updateForm.setAttribute('action', '/adminPages/levels/update/' + levelId);
+        var accId = this.getAttribute('data-accommodation-id');
+        updateForm.setAttribute('action', '/adminPages/accommodations/update/' + accId);
 
         openUpdateModal();
       });
@@ -274,22 +272,20 @@
     document.querySelectorAll('[data-archive]').forEach(function(btn){
       btn.addEventListener('click', function(e){
         e.stopPropagation();
-        var levelId = this.getAttribute('data-level-id');
-        var levelName = this.closest('tr').querySelector('.level-description').textContent;
+        var accId = this.getAttribute('data-accommodation-id');
+        var accName = this.closest('tr').querySelector('.accommodation-description').textContent;
         
-        if (confirm('Are you sure you want to archive "' + levelName + '"?')) {
+        if (confirm('Are you sure you want to archive "' + accName + '"?')) {
           var form = document.createElement('form');
           form.method = 'POST';
-          form.action = '/adminPages/levels/delete/' + levelId;
+          form.action = '/adminPages/accommodations/delete/' + accId;
           
-          // CSRF
           var csrfToken = document.createElement('input');
           csrfToken.type = 'hidden';
           csrfToken.name = '_token';
           csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                             document.querySelector('input[name="_token"]')?.value;
           
-          // Method override
           var methodField = document.createElement('input');
           methodField.type = 'hidden';
           methodField.name = '_method';
@@ -306,5 +302,3 @@
 </script>
 
 @endsection
-
-
