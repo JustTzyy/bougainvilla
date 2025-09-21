@@ -16,4 +16,16 @@ class Accommodation extends Model
     {
         return $this->hasMany(Rate::class, 'accommodation_id');
     }
+
+    public function rooms()
+    {
+        return $this->belongsToMany(Room::class, 'room_accommodations')
+                    ->withTimestamps()
+                    ->withPivot('id');
+    }
+
+    public function roomAccommodations()
+    {
+        return $this->hasMany(RoomAccommodation::class);
+    }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\RateController;
+use App\Http\Controllers\RoomController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
@@ -78,6 +79,16 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::delete('/rates/delete/{id}', [RateController::class, 'destroy'])->name('rates.destroy');
     Route::patch('/rates/restore/{id}', [RateController::class, 'restore'])->name('rates.restore');
     Route::get('/rates/archive', [RateController::class, 'archived'])->name('rates.archive');
+
+    // Room Crud
+    Route::get('/rooms', [RoomController::class, 'index'])->name('adminPages.rooms');
+    Route::post('/rooms', [RoomController::class, 'store'])->name('adminPages.rooms.post');
+    Route::post('/rooms/update/{id}', [RoomController::class, 'update'])->name('rooms.update');
+    Route::post('/rooms/archive/{id}', [RoomController::class, 'archive'])->name('rooms.archive');
+    Route::delete('/rooms/delete/{id}', [RoomController::class, 'destroy'])->name('rooms.destroy');
+    Route::patch('/rooms/restore/{id}', [RoomController::class, 'restore'])->name('rooms.restore');
+    Route::get('/rooms/archive', [RoomController::class, 'archived'])->name('rooms.archive');
+    Route::get('/rooms/details/{id}', [RoomController::class, 'getRoomDetails'])->name('rooms.details');
 
 
 

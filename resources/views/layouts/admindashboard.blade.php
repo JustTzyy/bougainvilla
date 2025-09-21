@@ -95,8 +95,8 @@
 
                             {{-- Rooms --}}
                             <li
-                                class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
+                                class="{{ request()->routeIs('adminPages.rooms') || request()->routeIs('rooms.*') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.rooms') }}" class="submenu-link">
                                     <span>Rooms</span>
                                 </a>
                             </li>

@@ -1,0 +1,282 @@
+/* Room Management Specific Styles */
+
+/* Status and Type Badges */
+.status-badge, .type-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  display: inline-block;
+}
+
+/* Status Badge Colors - Default styling for any status */
+.status-badge {
+  background-color: #e9ecef; 
+  color: #495057; 
+}
+
+/* Specific status colors */
+.status-active { 
+  background-color: #d4edda; 
+  color: #155724; 
+}
+
+.status-under-maintenance { 
+  background-color: #fff3cd; 
+  color: #856404; 
+}
+
+/* Type Badge Colors - All types are green */
+.type-badge {
+  background-color: #d4edda; 
+  color: #155724; 
+}
+
+/* Specific type colors - all green */
+.type-available { 
+  background-color: #d4edda; 
+  color: #155724; 
+}
+
+.type-occupied { 
+  background-color: #d4edda; 
+  color: #155724; 
+}
+
+.type-reserved { 
+  background-color: #d4edda; 
+  color: #155724; 
+}
+
+.type-booked { 
+  background-color: #d4edda; 
+  color: #155724; 
+}
+
+/* Accommodation Tags */
+.accommodation-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 200px;
+}
+
+.accommodation-tag {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Accommodation Selection */
+.accommodation-selection {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 10px;
+  background-color: #f8f9fa;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 3px;
+  transition: background-color 0.2s;
+}
+
+.checkbox-label:hover {
+  background-color: #e9ecef;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.accommodation-text {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.accommodation-text small {
+  color: #6c757d;
+  font-size: 12px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Back Button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #6c757d;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  margin-left: auto;
+}
+
+.back-btn:hover {
+  background-color: #5a6268;
+  color: white;
+  text-decoration: none;
+}
+
+/* Room Modal Specific Styles */
+.room-modal .modal-card {
+  max-width: 800px;
+}
+
+.room-modal .form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.room-modal .form-group.span-2 {
+  grid-column: span 2;
+}
+
+/* Table Responsive Enhancements */
+@media (max-width: 768px) {
+  .accommodation-tags {
+    max-width: 150px;
+  }
+  
+  .accommodation-tag {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  
+  .status-badge, .type-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+/* Archive Page Specific */
+.archiverooms .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.archiverooms .page-title {
+  margin: 0;
+}
+
+/* Action Buttons */
+.action-btn[data-restore] {
+  background-color: #28a745;
+  color: white;
+}
+
+.action-btn[data-restore]:hover {
+  background-color: #218838;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+  border: 1px solid #ffc107;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+  color: #212529;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  color: white;
+}
+
+/* Loading States */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Form Validation */
+.form-input:invalid {
+  border-color: #dc3545;
+}
+
+.form-input:valid {
+  border-color: #28a745;
+}
+
+/* Custom Checkbox Styling */
+.checkbox-label input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ddd;
+  border-radius: 3px;
+  background-color: white;
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.checkbox-label input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Room Status Indicators - Match level blade styling */
+.room-row {
+  background-color: white;
+}
+
+.room-row:hover {
+  background: rgba(138,92,246,.06);
+}
+
+/* Ensure all table rows have consistent styling */
+#roomsTable tbody tr {
+  background-color: white;
+}
+
+#roomsTable tbody tr:hover {
+  background: rgba(138,92,246,.06);
+}
+
+/* Animation for Status Changes */
+.status-badge, .type-badge {
+  transition: all 0.3s ease;
+}
+
+.room-row {
+  transition: background-color 0.3s ease;
+}

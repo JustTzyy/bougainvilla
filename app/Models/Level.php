@@ -13,4 +13,9 @@ class Level extends Model
         'description',
         'status',
     ];
+
+    public function rooms()
+    {
+        return $this->hasMany(Room::class);
+    }
 }
