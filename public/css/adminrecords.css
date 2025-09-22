@@ -13,6 +13,53 @@
 .modal-card .form-input { width:100%; }
 .table-wrapper { width:100%; overflow-x:auto; }
 
+.pagination-wrapper {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.pagination {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.pagination .page-item {
+    margin: 0;
+}
+
+.pagination .page-item a,
+.pagination .page-item span {
+    display: block;
+    padding: 8px 14px;
+    background: #6b7280;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.pagination .page-item a:hover {
+    background: #8a5cf6;
+    color: #fff;
+}
+
+.pagination .page-item.active span {
+    background: #8a5cf6;
+    color: #fff;
+    font-weight: bold;
+}
+
+.pagination .page-item.disabled span {
+    background: #6b7280;
+    color: #fff;
+    cursor: not-allowed;
+}
+
+
 /* Alerts (success/error) */
 .alert {
   display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:10px;
@@ -148,12 +195,13 @@
 /* =============================
    Aesthetic modal styles (scoped)
    ============================= */
-/* Card shells - Added #accommodationModal, #rateModal */
+/* Card shells - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-card,
 #updateModal .modal-card,
 #levelModal .modal-card,
 #accommodationModal .modal-card,
 #rateModal .modal-card,
+#roomModal .modal-card,
 #userDetailsModal .modal-card {
   max-width: 720px;
   border-radius: 14px;
@@ -161,25 +209,28 @@
   background: #fff;
 }
 
-/* Headers - Added #accommodationModal, #rateModal */
+/* Headers - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-header,
 #updateModal .modal-header,
 #levelModal .modal-header,
 #accommodationModal .modal-header,
 #rateModal .modal-header,
+#roomModal .modal-header,
 #userDetailsModal .modal-header { background:#fff; }
 
-/* Tabs (Add + Update) - Added #accommodationModal, #rateModal */
+/* Tabs (Add + Update) - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-tabs,
 #updateModal .modal-tabs,
 #levelModal .modal-tabs,
 #accommodationModal .modal-tabs,
-#rateModal .modal-tabs { display:flex; background:#f8f9fa; border-bottom:1px solid var(--border-color); margin:0; }
+#rateModal .modal-tabs,
+#roomModal .modal-tabs { display:flex; background:#f8f9fa; border-bottom:1px solid var(--border-color); margin:0; }
 #adminModal .tab-btn,
 #updateModal .tab-btn,
 #levelModal .tab-btn,
 #accommodationModal .tab-btn,
-#rateModal .tab-btn {
+#rateModal .tab-btn,
+#roomModal .tab-btn {
   flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
   padding:14px 18px; background:transparent; border:none; color:#6c757d;
   font-weight:500; font-size:14px; cursor:pointer; transition:all .2s ease;
@@ -189,83 +240,98 @@
 #updateModal .tab-btn:hover,
 #levelModal .tab-btn:hover,
 #accommodationModal .tab-btn:hover,
-#rateModal .tab-btn:hover { background:#e9ecef; color:var(--purple-primary); }
+#rateModal .tab-btn:hover,
+#roomModal .tab-btn:hover { background:#e9ecef; color:var(--purple-primary); }
 #adminModal .tab-btn.active,
 #updateModal .tab-btn.active,
 #levelModal .tab-btn.active,
 #accommodationModal .tab-btn.active,
-#rateModal .tab-btn.active { background:#fff; color:var(--purple-primary); border-bottom-color:var(--purple-primary); }
+#rateModal .tab-btn.active,
+#roomModal .tab-btn.active { background:#fff; color:var(--purple-primary); border-bottom-color:var(--purple-primary); }
 #adminModal .tab-content,
 #updateModal .tab-content,
 #levelModal .tab-content,
 #accommodationModal .tab-content,
-#rateModal .tab-content { display:none; padding:20px; }
+#rateModal .tab-content,
+#roomModal .tab-content { display:none; padding:20px; }
 #adminModal .tab-content.active,
 #updateModal .tab-content.active,
 #levelModal .tab-content.active,
 #accommodationModal .tab-content.active,
-#rateModal .tab-content.active { display:block; }
+#rateModal .tab-content.active,
+#roomModal .tab-content.active { display:block; }
 
-/* Forms (Add + Update) - Added #accommodationModal, #rateModal */
+/* Forms (Add + Update) - Added #accommodationModal, #rateModal, #roomModal */ 
 #adminModal .form-grid,
 #updateModal .form-grid,
 #levelModal .form-grid,
 #accommodationModal .form-grid,
-#rateModal .form-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; }
+#rateModal .form-grid,
+#roomModal .form-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; }
 #adminModal .form-group,
 #updateModal .form-group,
 #levelModal .form-group,
 #accommodationModal .form-group,
-#rateModal .form-group { display:flex; flex-direction:column; align-items:flex-start; min-width:0; }
+#rateModal .form-group,
+#roomModal .form-group { display:flex; flex-direction:column; align-items:flex-start; min-width:0; }
 #adminModal .form-group.span-2,
 #updateModal .form-group.span-2,
 #levelModal .form-group.span-2,
 #accommodationModal .form-group.span-2,
-#rateModal .form-group.span-2 { grid-column:span 2; }
+#rateModal .form-group.span-2,
+#roomModal .form-group.span-2 { grid-column:span 2; }
 #adminModal .form-group label,
 #updateModal .form-group label,
 #levelModal .form-group label,
 #accommodationModal .form-group label,
-#rateModal .form-group label { font-weight:600; color:var(--text-primary); margin-bottom:6px; font-size:14px; }
+#rateModal .form-group label,
+#roomModal .form-group label { font-weight:600; color:var(--text-primary); margin-bottom:6px; font-size:14px; }
 
-/* Textfields - Added #accommodationModal, #rateModal */
+/* Textfields - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .form-input,
 #updateModal .form-input,
 #levelModal .form-input,
 #accommodationModal .form-input,
-#rateModal .form-input { padding:12px 14px; height:44px; line-height:20px; border:1px solid var(--border-color); border-radius:10px; background:#fff; font-size:14px; transition:border-color .15s ease, box-shadow .15s ease, transform .08s ease; width:100%; box-sizing:border-box; }
+#rateModal .form-input,
+#roomModal .form-input { padding:12px 14px; height:44px; line-height:20px; border:1px solid var(--border-color); border-radius:10px; background:#fff; font-size:14px; transition:border-color .15s ease, box-shadow .15s ease, transform .08s ease; width:100%; box-sizing:border-box; }
 #adminModal select.form-input,
 #updateModal select.form-input,
 #levelModal select.form-input,
 #accommodationModal select.form-input,
-#rateModal select.form-input { appearance:none; -webkit-appearance:none; -moz-appearance:none; background-image: none; }
+#rateModal select.form-input,
+#roomModal select.form-input { appearance:none; -webkit-appearance:none; -moz-appearance:none; background-image: none; }
 #adminModal .form-group + .form-group,
 #updateModal .form-group + .form-group,
 #levelModal .form-group + .form-group,
 #accommodationModal .form-group + .form-group,
-#rateModal .form-group + .form-group { margin-top:0; }
+#rateModal .form-group + .form-group,
+#roomModal .form-group + .form-group { margin-top:0; }
 #adminModal .form-input:hover,
 #updateModal .form-input:hover,
 #levelModal .form-input:hover,
 #accommodationModal .form-input:hover,
-#rateModal .form-input:hover { border-color: rgba(138,92,246,.35); }
+#rateModal .form-input:hover,
+#roomModal .form-input:hover { border-color: rgba(138,92,246,.35); }
 #adminModal .form-input:focus,
 #updateModal .form-input:focus,
 #levelModal .form-input:focus,
 #accommodationModal .form-input:focus,
-#rateModal .form-input:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 4px rgba(138,92,246,.12); transform:translateY(-1px); }
+#rateModal .form-input:focus,
+#roomModal .form-input:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 4px rgba(138,92,246,.12); transform:translateY(-1px); }
 #adminModal .form-input[readonly],
 #updateModal .form-input[readonly],
 #levelModal .form-input[readonly],
 #accommodationModal .form-input[readonly],
-#rateModal .form-input[readonly] { background:#f8f9fa; color:#6c757d; cursor:not-allowed; }
+#rateModal .form-input[readonly],
+#roomModal .form-input[readonly] { background:#f8f9fa; color:#6c757d; cursor:not-allowed; }
 
-/* Primary actions - Added #accommodationModal, #rateModal */
+/* Primary actions - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .btn-primary.inline,
 #updateModal .btn-primary.inline,
 #levelModal .btn-primary.inline,
 #accommodationModal .btn-primary.inline,
-#rateModal .btn-primary.inline {
+#rateModal .btn-primary.inline,
+#roomModal .btn-primary.inline {
   display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px;
   background:linear-gradient(135deg, var(--purple-primary), #a29bfe); color:#fff; border:none;
   font-weight:700; letter-spacing:.2px; box-shadow:0 6px 16px rgba(138,92,246,.32);
@@ -275,24 +341,28 @@
 #updateModal .btn-primary.inline:hover,
 #levelModal .btn-primary.inline:hover,
 #accommodationModal .btn-primary.inline:hover,
-#rateModal .btn-primary.inline:hover { background:linear-gradient(135deg, var(--purple-hover), #9775fa); transform:translateY(-2px); box-shadow:0 10px 20px rgba(138,92,246,.38); }
+#rateModal .btn-primary.inline:hover,
+#roomModal .btn-primary.inline:hover { background:linear-gradient(135deg, var(--purple-hover), #9775fa); transform:translateY(-2px); box-shadow:0 10px 20px rgba(138,92,246,.38); }
 #adminModal .btn-primary.inline:active,
 #updateModal .btn-primary.inline:active,
 #levelModal .btn-primary.inline:active,
 #accommodationModal .btn-primary.inline:active,
-#rateModal .btn-primary.inline:active { transform:translateY(0); box-shadow:0 4px 12px rgba(138,92,246,.28); }
+#rateModal .btn-primary.inline:active,
+#roomModal .btn-primary.inline:active { transform:translateY(0); box-shadow:0 4px 12px rgba(138,92,246,.28); }
 #adminModal .btn-primary.inline::before { content:"\1F4BE"; }
 #updateModal .btn-primary.inline::before { content:"\270E"; }
 #levelModal .btn-primary.inline::before { content:"\1F4BE"; }
 #accommodationModal .btn-primary.inline::before { content:"\1F4BE"; }
 #rateModal .btn-primary.inline::before { content:"\1F4BE"; }
+#roomModal .btn-primary.inline::before { content:"\1F4BE"; }
 
-/* Match Cancel buttons in Add and Update modals - Added #accommodationModal, #rateModal */
+/* Match Cancel buttons in Add and Update modals - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-actions .action-btn.btn-outline,
 #updateModal .modal-actions .action-btn.btn-outline,
 #levelModal .modal-actions .action-btn.btn-outline,
 #accommodationModal .modal-actions .action-btn.btn-outline,
-#rateModal .modal-actions .action-btn.btn-outline {
+#rateModal .modal-actions .action-btn.btn-outline,
+#roomModal .modal-actions .action-btn.btn-outline {
   display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:999px;
   background:#fff; color:var(--purple-primary); border:1px solid var(--purple-primary);
   font-weight:700; letter-spacing:.2px; box-shadow:0 6px 16px rgba(138,92,246,.20);
@@ -302,7 +372,8 @@
 #updateModal .modal-actions .action-btn.btn-outline:hover,
 #levelModal .modal-actions .action-btn.btn-outline:hover,
 #accommodationModal .modal-actions .action-btn.btn-outline:hover,
-#rateModal .modal-actions .action-btn.btn-outline:hover {
+#rateModal .modal-actions .action-btn.btn-outline:hover,
+#roomModal .modal-actions .action-btn.btn-outline:hover {
   background:linear-gradient(135deg, var(--purple-primary), #a29bfe); color:#fff; border-color:var(--purple-primary);
   transform:translateY(-1px); box-shadow:0 10px 20px rgba(138,92,246,.28);
 }
@@ -310,50 +381,373 @@
 #updateModal .modal-actions .action-btn.btn-outline:active,
 #levelModal .modal-actions .action-btn.btn-outline:active,
 #accommodationModal .modal-actions .action-btn.btn-outline:active,
-#rateModal .modal-actions .action-btn.btn-outline:active { transform:translateY(0); box-shadow:0 4px 12px rgba(138,92,246,.22); }
+#rateModal .modal-actions .action-btn.btn-outline:active,
+#roomModal .modal-actions .action-btn.btn-outline:active { transform:translateY(0); box-shadow:0 4px 12px rgba(138,92,246,.22); }
 
-/* Responsive tweaks for modals - Added #accommodationModal, #rateModal */
+/* Responsive tweaks for modals - Added #accommodationModal, #rateModal, #roomModal */
 @media (max-width: 900px) {
   #adminModal .modal-card,
   #updateModal .modal-card,
   #levelModal .modal-card,
   #accommodationModal .modal-card,
   #rateModal .modal-card,
+  #roomModal .modal-card,
   #userDetailsModal .modal-card { max-width:95vw; }
   #adminModal .tab-content,
   #updateModal .tab-content,
   #levelModal .tab-content,
   #accommodationModal .tab-content,
-  #rateModal .tab-content { padding:16px; }
+  #rateModal .tab-content,
+  #roomModal .tab-content { padding:16px; }
 }
-/* Keep two columns down to tablet widths; stack on phones - Added #accommodationModal, #rateModal */
+/* Keep two columns down to tablet widths; stack on phones - Added #accommodationModal, #rateModal, #roomModal */
 @media (max-width: 700px) {
   #adminModal .form-grid,
   #updateModal .form-grid,
   #levelModal .form-grid,
   #accommodationModal .form-grid,
-  #rateModal .form-grid { grid-template-columns:1fr; gap:12px; }
+  #rateModal .form-grid,
+  #roomModal .form-grid { grid-template-columns:1fr; gap:12px; }
   #adminModal .form-group.span-2,
   #updateModal .form-group.span-2,
   #levelModal .form-group.span-2,
   #accommodationModal .form-group.span-2,
-  #rateModal .form-group.span-2 { grid-column:span 1; }
+  #rateModal .form-group.span-2,
+  #roomModal .form-group.span-2 { grid-column:span 1; }
 }
 @media (max-width: 600px) {
   #adminModal .modal-tabs,
   #updateModal .modal-tabs,
   #levelModal .modal-tabs,
   #accommodationModal .modal-tabs,
-  #rateModal .modal-tabs { flex-direction:column; }
+  #rateModal .modal-tabs,
+  #roomModal .modal-tabs { flex-direction:column; }
   #adminModal .tab-btn,
   #updateModal .tab-btn,
   #levelModal .tab-btn,
   #accommodationModal .tab-btn,
-  #rateModal .tab-btn { border-bottom:1px solid var(--border-color); border-right:none; }
+  #rateModal .tab-btn,
+  #roomModal .tab-btn { border-bottom:1px solid var(--border-color); border-right:none; }
   #userDetailsModal .details-grid { grid-template-columns:1fr; }
 }
 
 /* Stack details sections on phones */
 @media (max-width: 700px) {
   #userDetailsModal .user-details-content { grid-template-columns:1fr; }
+}
+
+/* =============================
+   User Details Modal Design
+   ============================= */
+
+/* User Details Modal Card */
+#userDetailsModal .modal-card {
+  max-width: 720px;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(0,0,0,.22);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+#userDetailsModal .modal-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--purple-primary), #a29bfe, #6c5ce7);
+}
+
+/* User Details Modal Header */
+#userDetailsModal .modal-header {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  border-bottom: 1px solid rgba(138,92,246,.15);
+  padding: 12px 16px;
+  position: relative;
+}
+
+#userDetailsModal .modal-header h3 {
+  color: var(--purple-primary);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#userDetailsModal .modal-header h3::before {
+  content: '\1F464';
+  font-size: 18px;
+  background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* User Details Content */
+#userDetailsModal .user-details-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+/* Info Sections */
+#userDetailsModal .user-info-section,
+#userDetailsModal .address-info-section {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  border-radius: 10px;
+  padding: 12px;
+  border: 1px solid rgba(138,92,246,.1);
+  box-shadow: 0 4px 12px rgba(138,92,246,.08);
+  position: relative;
+  overflow: hidden;
+}
+
+#userDetailsModal .user-info-section::before,
+#userDetailsModal .address-info-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--purple-primary), #a29bfe);
+}
+
+/* Section Headers */
+#userDetailsModal .user-info-section h4,
+#userDetailsModal .address-info-section h4 {
+  color: var(--purple-primary);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(138,92,246,.15);
+}
+
+#userDetailsModal .user-info-section h4 i {
+  background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 14px;
+}
+
+#userDetailsModal .address-info-section h4 i {
+  background: linear-gradient(135deg, #e17055, #fd79a8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 14px;
+}
+
+/* Info Grid */
+#userDetailsModal .info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+#userDetailsModal .info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px;
+  background: rgba(255,255,255,.7);
+  border-radius: 8px;
+  border: 1px solid rgba(138,92,246,.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+#userDetailsModal .info-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--purple-primary), #a29bfe);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+#userDetailsModal .info-item:hover {
+  background: rgba(255,255,255,.9);
+  border-color: rgba(138,92,246,.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(138,92,246,.12);
+}
+
+#userDetailsModal .info-item:hover::before {
+  opacity: 1;
+}
+
+#userDetailsModal .info-item.span-2 {
+  grid-column: span 2;
+}
+
+/* Info Labels */
+#userDetailsModal .info-item label {
+  font-weight: 600;
+  color: #6c757d;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#userDetailsModal .info-item label::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--purple-primary);
+  opacity: 0.6;
+}
+
+/* Info Values */
+#userDetailsModal .info-item span {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
+/* Status Badge */
+#userDetailsModal .status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 16px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  max-width: fit-content;
+}
+
+#userDetailsModal .status-badge:not([class*="status-"]) {
+  background: linear-gradient(135deg, #00b894, #00cec9);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0,184,148,.3);
+}
+
+#userDetailsModal .status-badge::before {
+  content: '●';
+  font-size: 6px;
+}
+
+/* Modal Actions */
+#userDetailsModal .modal-actions {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+  border-top: 1px solid rgba(138,92,246,.15);
+  display: flex;
+  justify-content: flex-end;
+}
+
+#userDetailsModal .modal-actions .action-btn.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #ffffff, #f8f9ff);
+  color: var(--purple-primary);
+  border: 2px solid var(--purple-primary);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 12px rgba(138,92,246,.2);
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+#userDetailsModal .modal-actions .action-btn.btn-outline:hover {
+  background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+  color: #fff;
+  border-color: var(--purple-primary);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(138,92,246,.35);
+}
+
+#userDetailsModal .modal-actions .action-btn.btn-outline:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(138,92,246,.3);
+}
+
+#userDetailsModal .modal-actions .action-btn.btn-outline::before {
+  content: '✕';
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Responsive Design for User Details Modal */
+@media (max-width: 900px) {
+  #userDetailsModal .modal-card {
+    max-width: 95vw;
+    margin: 20px;
+  }
+  
+  #userDetailsModal .user-details-content {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+  
+  #userDetailsModal .modal-header {
+    padding: 12px 16px;
+  }
+  
+  #userDetailsModal .modal-header h3 {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  #userDetailsModal .user-details-content {
+    padding: 8px;
+    gap: 12px;
+  }
+  
+  #userDetailsModal .user-info-section,
+  #userDetailsModal .address-info-section {
+    padding: 12px;
+  }
+  
+  #userDetailsModal .info-item {
+    padding: 6px;
+  }
+  
+  #userDetailsModal .modal-header {
+    padding: 10px 12px;
+  }
+  
+  #userDetailsModal .modal-header h3 {
+    font-size: 14px;
+  }
+  
+  #userDetailsModal .modal-actions {
+    padding: 10px 12px;
+  }
+  
+  #userDetailsModal .modal-actions .action-btn.btn-outline {
+    padding: 8px 16px;
+    font-size: 11px;
+  }
 }

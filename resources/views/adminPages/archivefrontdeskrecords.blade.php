@@ -4,6 +4,318 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/archiveadminrecords.css') }}">
+<style>
+  /* Enhanced Archive User Details Modal Styles */
+  #userDetailsModal .modal-card {
+    max-width: 720px;
+    border-radius: 14px;
+    box-shadow: 0 16px 36px rgba(0,0,0,.22);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    overflow: hidden;
+    position: relative;
+  }
+
+  #userDetailsModal .modal-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--purple-primary), #a29bfe, #6c5ce7);
+  }
+
+  /* User Details Modal Header */
+  #userDetailsModal .modal-header {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border-bottom: 1px solid rgba(138,92,246,.15);
+    padding: 12px 16px;
+    position: relative;
+  }
+
+  #userDetailsModal .modal-header h3 {
+    color: var(--purple-primary);
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #userDetailsModal .modal-header h3::before {
+    content: '\1F464';
+    font-size: 18px;
+    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* User Details Content */
+  #userDetailsModal .user-details-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 16px;
+    background: #ffffff;
+  }
+
+  /* Info Sections */
+  #userDetailsModal .user-info-section,
+  #userDetailsModal .address-info-section {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid rgba(138,92,246,.1);
+    box-shadow: 0 4px 12px rgba(138,92,246,.08);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #userDetailsModal .user-info-section::before,
+  #userDetailsModal .address-info-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--purple-primary), #a29bfe);
+  }
+
+  /* Section Headers */
+  #userDetailsModal .user-info-section h4,
+  #userDetailsModal .address-info-section h4 {
+    color: var(--purple-primary);
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(138,92,246,.15);
+  }
+
+  #userDetailsModal .user-info-section h4 i {
+    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 14px;
+  }
+
+  #userDetailsModal .address-info-section h4 i {
+    background: linear-gradient(135deg, #e17055, #fd79a8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 14px;
+  }
+
+  /* Info Grid */
+  #userDetailsModal .info-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #userDetailsModal .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 8px;
+    background: rgba(255,255,255,.7);
+    border-radius: 8px;
+    border: 1px solid rgba(138,92,246,.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #userDetailsModal .info-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--purple-primary), #a29bfe);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  #userDetailsModal .info-item:hover {
+    background: rgba(255,255,255,.9);
+    border-color: rgba(138,92,246,.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(138,92,246,.12);
+  }
+
+  #userDetailsModal .info-item:hover::before {
+    opacity: 1;
+  }
+
+  #userDetailsModal .info-item.span-2 {
+    grid-column: span 2;
+  }
+
+  /* Info Labels */
+  #userDetailsModal .info-item label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  #userDetailsModal .info-item label::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--purple-primary);
+    opacity: 0.6;
+  }
+
+  /* Info Values */
+  #userDetailsModal .info-item span {
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  /* Status Badge */
+  #userDetailsModal .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    max-width: fit-content;
+  }
+
+  #userDetailsModal .status-badge:not([class*="status-"]) {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0,184,148,.3);
+  }
+
+  #userDetailsModal .status-badge::before {
+    content: '●';
+    font-size: 6px;
+  }
+
+  /* Modal Actions */
+  #userDetailsModal .modal-actions {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border-top: 1px solid rgba(138,92,246,.15);
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  #userDetailsModal .modal-actions .action-btn.btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    color: var(--purple-primary);
+    border: 2px solid var(--purple-primary);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    box-shadow: 0 4px 12px rgba(138,92,246,.2);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 12px;
+  }
+
+  #userDetailsModal .modal-actions .action-btn.btn-outline:hover {
+    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    color: #fff;
+    border-color: var(--purple-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(138,92,246,.35);
+  }
+
+  #userDetailsModal .modal-actions .action-btn.btn-outline:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(138,92,246,.3);
+  }
+
+  #userDetailsModal .modal-actions .action-btn.btn-outline::before {
+    content: '✕';
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  /* Responsive Design for User Details Modal */
+  @media (max-width: 900px) {
+    #userDetailsModal .modal-card {
+      max-width: 95vw;
+      margin: 20px;
+    }
+    
+    #userDetailsModal .user-details-content {
+      grid-template-columns: 1fr;
+      gap: 12px;
+      padding: 12px;
+    }
+    
+    #userDetailsModal .modal-header {
+      padding: 12px 16px;
+    }
+    
+    #userDetailsModal .modal-header h3 {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    #userDetailsModal .user-details-content {
+      padding: 8px;
+      gap: 12px;
+    }
+    
+    #userDetailsModal .user-info-section,
+    #userDetailsModal .address-info-section {
+      padding: 12px;
+    }
+    
+    #userDetailsModal .info-item {
+      padding: 6px;
+    }
+    
+    #userDetailsModal .modal-header {
+      padding: 10px 12px;
+    }
+    
+    #userDetailsModal .modal-header h3 {
+      font-size: 14px;
+    }
+    
+    #userDetailsModal .info-item label {
+      font-size: 10px;
+    }
+    
+    #userDetailsModal .info-item span {
+      font-size: 12px;
+    }
+  }
+</style>
 @endpush
 
 @section('content')
@@ -109,11 +421,34 @@
       </table>
     </div>
     
-    @if(isset($users) && $users->hasPages())
-      <nav class="pagination" aria-label="Table pagination">
-        {{ $users->links() }}
-      </nav>
-    @endif
+     @if(isset($accommodations) && $accommodations->hasPages())
+    <nav class="pagination-wrapper" aria-label="Table pagination">
+        <ul class="pagination">
+            {{-- Previous Page Link --}}
+            @if ($accommodations->onFirstPage())
+                <li class="page-item disabled"><span>&laquo;</span></li>
+            @else
+                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+            @endif
+
+            {{-- Pagination Elements --}}
+            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
+                @if ($page == $accommodations->currentPage())
+                    <li class="page-item active"><span>{{ $page }}</span></li>
+                @else
+                    <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
+                @endif
+            @endforeach
+
+            {{-- Next Page Link --}}
+            @if ($accommodations->hasMorePages())
+                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @else
+                <li class="page-item disabled"><span>&raquo;</span></li>
+            @endif
+        </ul>
+    </nav>
+@endif
   </div>
 </div>
 

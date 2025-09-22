@@ -5,6 +5,68 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
 <script src="{{ asset('js/ph-complete-address.js') }}"></script>
+<style>
+  /* Enhanced Accommodation Details Modal Styles */
+  #accommodationDetailsModal .modal-card {
+    max-width: 600px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(138,92,246,.15);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+    border: 1px solid rgba(138,92,246,.1);
+    overflow: hidden;
+  }
+
+  #accommodationDetailsModal .info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(138,92,246,.15);
+    background: rgba(138,92,246,.08);
+  }
+
+  #accommodationDetailsModal .user-info-section:hover,
+  #accommodationDetailsModal .address-info-section:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(138,92,246,.12);
+  }
+
+  #accommodationDetailsModal .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(138,92,246,.25);
+    background: linear-gradient(135deg, var(--purple-primary), #a29bfe) !important;
+    color: white !important;
+  }
+
+  /* Room and Rate cards enhanced hover effects */
+  #detail-rooms-list .room-card:hover,
+  #detail-rates-list .rate-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(138,92,246,.2);
+    background: linear-gradient(135deg, rgba(138,92,246,.08), rgba(138,92,246,.04)) !important;
+  }
+
+  /* Loading animation enhancement */
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
+  #detail-rooms-list .loading,
+  #detail-rates-list .loading {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    #accommodationDetailsModal .modal-card {
+      max-width: 95%;
+      margin: 20px;
+    }
+    
+    #accommodationDetailsModal .info-grid {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
 @endpush
 
 @section('content')
@@ -104,10 +166,33 @@
       </table>
     </div>
     @if(isset($accommodations) && $accommodations->hasPages())
-      <nav class="pagination" aria-label="Table pagination">
-        {{ $accommodations->links() }}
-      </nav>
-    @endif
+    <nav class="pagination-wrapper" aria-label="Table pagination">
+        <ul class="pagination">
+            {{-- Previous Page Link --}}
+            @if ($accommodations->onFirstPage())
+                <li class="page-item disabled"><span>&laquo;</span></li>
+            @else
+                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+            @endif
+
+            {{-- Pagination Elements --}}
+            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
+                @if ($page == $accommodations->currentPage())
+                    <li class="page-item active"><span>{{ $page }}</span></li>
+                @else
+                    <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
+                @endif
+            @endforeach
+
+            {{-- Next Page Link --}}
+            @if ($accommodations->hasMorePages())
+                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @else
+                <li class="page-item disabled"><span>&raquo;</span></li>
+            @endif
+        </ul>
+    </nav>
+@endif
   </div>
 </div>
 
@@ -179,6 +264,97 @@
         <button type="submit" class="btn-primary inline">Update Accommodation</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- Accommodation Details Modal -->
+<div id="accommodationDetailsModal" class="modal">
+  <div class="modal-card user-details-card">
+    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(138,92,246,.15);">
+      <h3 class="chart-title" style="color: var(--purple-primary); font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
+        Accommodation Details
+      </h3>
+      <button id="closeAccommodationDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="user-details-content" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
+      <!-- Accommodation Information Section -->
+      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
+          Accommodation Information
+        </h4>
+        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
+              <i class="fas fa-tag" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Name
+            </label> 
+            <span id="detail-name" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
+              <i class="fas fa-users" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Capacity
+            </label>
+            <span id="detail-capacity" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
+              <i class="fas fa-calendar-plus" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Date Created
+            </label>
+            <span id="detail-created" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+        </div>
+        <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease; margin-top: 8px;">
+          <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
+            <i class="fas fa-align-left" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Description
+          </label>
+          <span id="detail-description" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+        </div>
+      </div>
+      
+      <!-- Rooms Information Section -->
+      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-door-open" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
+          Rooms
+        </h4>
+        <div class="info-grid">
+          <div class="info-item span-2" style="grid-column: span 2;">
+            <div id="detail-rooms-list" style="background: rgba(138,92,246,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(138,92,246,.2);">
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d; font-style: italic; font-size: 10px;">
+                <i class="fas fa-spinner fa-spin" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>
+                Loading...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rates Information Section -->
+      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-dollar-sign" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
+          Rates
+        </h4>
+        <div class="info-grid">
+          <div class="info-item span-2" style="grid-column: span 2;">
+            <div id="detail-rates-list" style="background: rgba(138,92,246,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(138,92,246,.2);">
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d; font-style: italic; font-size: 10px;">
+                <i class="fas fa-spinner fa-spin" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>
+                Loading...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(138,92,246,.15); border-radius: 0 0 16px 16px;">
+      <button type="button" id="closeAccommodationDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(138,92,246,.1);">
+        <i class="fas fa-times" style="margin-right: 8px;"></i>Close
+      </button>
+    </div>
   </div>
 </div>
 
@@ -267,6 +443,164 @@
         openUpdateModal();
       });
     });
+
+    // Accommodation details modal functionality
+    var accommodationDetailsModal = document.getElementById('accommodationDetailsModal');
+    var closeAccommodationDetailsBtn = document.getElementById('closeAccommodationDetails');
+    var closeAccommodationDetailsModalBtn = document.getElementById('closeAccommodationDetailsModal');
+    
+    function openAccommodationDetailsModal() { accommodationDetailsModal.style.display = 'flex'; }
+    function closeAccommodationDetailsModal() { accommodationDetailsModal.style.display = 'none'; }
+    
+    if (closeAccommodationDetailsBtn) closeAccommodationDetailsBtn.addEventListener('click', closeAccommodationDetailsModal);
+    if (closeAccommodationDetailsModalBtn) closeAccommodationDetailsModalBtn.addEventListener('click', closeAccommodationDetailsModal);
+
+    // Accommodation row click handler
+    var accommodationRows = document.querySelectorAll('.accommodation-row');
+    accommodationRows.forEach(function(row) {
+      row.addEventListener('click', function(e) {
+        // Don't trigger if clicking on action buttons
+        if (e.target.closest('button')) return;
+        var a = this.dataset;
+        populateAccommodationDetails({
+          id: a.accommodationId,
+          name: a.name,
+          capacity: a.capacity,
+          description: a.description,
+          created_at: a.created
+        });
+        openAccommodationDetailsModal();
+      });
+    });
+
+    // Populate accommodation details in modal
+    function populateAccommodationDetails(accommodation) {
+      document.getElementById('detail-name').textContent = accommodation.name || '-';
+      document.getElementById('detail-capacity').textContent = accommodation.capacity || '-';
+      document.getElementById('detail-description').textContent = accommodation.description || '-';
+      document.getElementById('detail-created').textContent = accommodation.created_at ? new Date(accommodation.created_at).toLocaleDateString() : '-';
+      
+      // Load rooms and rates for this accommodation
+      loadAccommodationRooms(accommodation.id);
+      loadAccommodationRates(accommodation.id);
+    }
+
+    // Load rooms for a specific accommodation
+    function loadAccommodationRooms(accommodationId) {
+      var roomsListElement = document.getElementById('detail-rooms-list');
+      roomsListElement.innerHTML = '<div class="loading" style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #6c757d; font-style: italic; padding: 20px; font-size: 12px;"><i class="fas fa-spinner fa-spin" style="color: var(--purple-primary); font-size: 12px;"></i><span>Loading...</span></div>';
+      
+      // Fetch rooms for this accommodation
+      fetch('/adminPages/accommodations/' + accommodationId + '/rooms')
+        .then(response => response.json())
+        .then(data => {
+          if (data.rooms && data.rooms.length > 0) {
+            var roomsHtml = '<div style="display: grid; gap: 6px; max-height: 150px; overflow-y: auto; padding-right: 4px;">';
+            data.rooms.forEach(function(room) {
+              // Status color mapping
+              var statusColor = '#6c757d';
+              var statusBg = 'rgba(108,117,125,.1)';
+              var statusIcon = 'fas fa-circle';
+              if (room.status === 'Available') {
+                statusColor = '#28a745';
+                statusBg = 'rgba(40,167,69,.15)';
+                statusIcon = 'fas fa-check-circle';
+              } else if (room.status === 'Occupied') {
+                statusColor = '#dc3545';
+                statusBg = 'rgba(220,53,69,.15)';
+                statusIcon = 'fas fa-user';
+              } else if (room.status === 'Under Maintenance') {
+                statusColor = '#ffc107';
+                statusBg = 'rgba(255,193,7,.15)';
+                statusIcon = 'fas fa-tools';
+              }
+              
+              roomsHtml += '<div class="room-card" style="padding: 8px; background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(138,92,246,.08); transition: all 0.3s ease; position: relative;">';
+              roomsHtml += '<div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">';
+              roomsHtml += '<div style="display: flex; align-items: center; gap: 6px;">';
+              roomsHtml += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(138,92,246,.3);">';
+              roomsHtml += '<i class="fas fa-door-open" style="color: white; font-size: 10px;"></i>';
+              roomsHtml += '</div>';
+              roomsHtml += '<div>';
+              roomsHtml += '<strong style="color: var(--text-primary); font-size: 12px; font-weight: 700; display: block;">' + room.room + '</strong>';
+              roomsHtml += '<small style="color: #6c757d; font-size: 10px;">Level: ' + room.level + '</small>';
+              roomsHtml += '</div>';
+              roomsHtml += '</div>';
+              roomsHtml += '<span style="padding: 3px 6px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; background: ' + statusBg + '; color: ' + statusColor + '; display: flex; align-items: center; gap: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.1);"><i class="' + statusIcon + '" style="font-size: 8px;"></i>' + room.status + '</span>';
+              roomsHtml += '</div>';
+              
+              if (room.type) {
+                roomsHtml += '<div style="margin-top: 4px; position: relative; z-index: 1;">';
+                roomsHtml += '<span style="display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; background: rgba(138,92,246,.05); border-radius: 6px; border-left: 2px solid var(--purple-primary); font-size: 9px; color: #6c757d; font-weight: 600;"><i class="fas fa-tag" style="color: var(--purple-primary); font-size: 8px;"></i>' + room.type + '</span>';
+                roomsHtml += '</div>';
+              }
+              
+              roomsHtml += '</div>';
+            });
+            roomsHtml += '</div>';
+            roomsListElement.innerHTML = roomsHtml;
+          } else {
+            roomsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(138,92,246,.1), rgba(138,92,246,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-door-closed" style="font-size: 16px; color: var(--purple-primary); opacity: 0.6;"></i></div><h4 style="color: #6c757d; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">No Rooms</h4><p style="font-style: italic; margin: 0; color: #6c757d; font-size: 10px;">No rooms found</p></div>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading rooms:', error);
+          roomsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(220,53,69,.1), rgba(220,53,69,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;"></i></div><h4 style="color: #dc3545; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">Error</h4><p style="font-style: italic; margin: 0; color: #dc3545; font-size: 10px;">Failed to load</p></div>';
+        });
+    }
+
+    // Load rates for a specific accommodation
+    function loadAccommodationRates(accommodationId) {
+      var ratesListElement = document.getElementById('detail-rates-list');
+      ratesListElement.innerHTML = '<div class="loading" style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #6c757d; font-style: italic; padding: 20px; font-size: 12px;"><i class="fas fa-spinner fa-spin" style="color: var(--purple-primary); font-size: 12px;"></i><span>Loading...</span></div>';
+      
+      // Fetch rates for this accommodation
+      fetch('/adminPages/accommodations/' + accommodationId + '/rates')
+        .then(response => response.json())
+        .then(data => {
+          if (data.rates && data.rates.length > 0) {
+            var ratesHtml = '<div style="display: grid; gap: 6px; max-height: 150px; overflow-y: auto; padding-right: 4px;">';
+            data.rates.forEach(function(rate) {
+              // Status color mapping
+              var statusColor = '#6c757d';
+              var statusBg = 'rgba(108,117,125,.1)';
+              var statusIcon = 'fas fa-circle';
+              if (rate.status === 'Active') {
+                statusColor = '#28a745';
+                statusBg = 'rgba(40,167,69,.15)';
+                statusIcon = 'fas fa-check-circle';
+              } else {
+                statusColor = '#dc3545';
+                statusBg = 'rgba(220,53,69,.15)';
+                statusIcon = 'fas fa-times-circle';
+              }
+              
+              ratesHtml += '<div class="rate-card" style="padding: 8px; background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(138,92,246,.08); transition: all 0.3s ease; position: relative;">';
+              ratesHtml += '<div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">';
+              ratesHtml += '<div style="display: flex; align-items: center; gap: 6px;">';
+              ratesHtml += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(138,92,246,.3);">';
+              ratesHtml += '<i class="fas fa-dollar-sign" style="color: white; font-size: 10px;"></i>';
+              ratesHtml += '</div>';
+              ratesHtml += '<div>';
+              ratesHtml += '<strong style="color: var(--text-primary); font-size: 12px; font-weight: 700; display: block;">' + rate.duration + '</strong>';
+              ratesHtml += '<small style="color: #6c757d; font-size: 10px;">₱' + parseFloat(rate.price).toLocaleString() + '</small>';
+              ratesHtml += '</div>';
+              ratesHtml += '</div>';
+              ratesHtml += '<span style="padding: 3px 6px; border-radius: 12px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; background: ' + statusBg + '; color: ' + statusColor + '; display: flex; align-items: center; gap: 2px; box-shadow: 0 1px 4px rgba(0,0,0,.1);"><i class="' + statusIcon + '" style="font-size: 8px;"></i>' + rate.status + '</span>';
+              ratesHtml += '</div>';
+              ratesHtml += '</div>';
+            });
+            ratesHtml += '</div>';
+            ratesListElement.innerHTML = ratesHtml;
+          } else {
+            ratesListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(138,92,246,.1), rgba(138,92,246,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-dollar-sign" style="font-size: 16px; color: var(--purple-primary); opacity: 0.6;"></i></div><h4 style="color: #6c757d; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">No Rates</h4><p style="font-style: italic; margin: 0; color: #6c757d; font-size: 10px;">No rates found</p></div>';
+          }
+        })
+        .catch(error => {
+          console.error('Error loading rates:', error);
+          ratesListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(220,53,69,.1), rgba(220,53,69,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;"></i></div><h4 style="color: #dc3545; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">Error</h4><p style="font-style: italic; margin: 0; color: #dc3545; font-size: 10px;">Failed to load</p></div>';
+        });
+    }
 
     // Archive functionality
     document.querySelectorAll('[data-archive]').forEach(function(btn){

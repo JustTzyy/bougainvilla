@@ -14,6 +14,16 @@ class Address extends Model
 
     public function user()
     {
-        return $this->belongsTo(related: User::class);
+        return $this->belongsTo(User::class, 'userID');
+    }
+
+    public function guests()
+    {
+        return $this->hasMany(Guest::class, 'addressID');
+    }
+
+    public function guestStays()
+    {
+        return $this->hasMany(GuestStay::class, 'addressID');
     }
 }

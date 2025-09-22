@@ -34,6 +34,11 @@ class Room extends Model
         return $this->hasMany(RoomAccommodation::class);
     }
 
+    public function stays()
+    {
+        return $this->hasMany(Stay::class, 'roomID');
+    }
+
     // Scope for filtering by status
     public function scopeByStatus($query, $status)
     {

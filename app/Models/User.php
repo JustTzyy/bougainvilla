@@ -52,4 +52,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Address::class, 'userID', 'id');
     }
+
+    public function receipts()
+    {
+        return $this->hasMany(Receipt::class, 'userID');
+    }
 }

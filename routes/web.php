@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\StayController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
@@ -63,6 +64,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::delete('/levels/delete/{id}', [LevelController::class, 'destroy'])->name('levels.destroy');
     Route::patch('/levels/restore/{id}', [LevelController::class, 'restore'])->name('levels.restore');
     Route::get('/levels/archive', [LevelController::class, 'archived'])->name('levels.archive');
+    Route::get('/levels/{id}/rooms', [LevelController::class, 'getRooms'])->name('levels.rooms');
 
     // Accommodation CRUD
     Route::get('/accommodations', [AccommodationController::class, 'index'])->name('adminPages.accommodations');
@@ -71,6 +73,8 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::delete('/accommodations/delete/{id}', [AccommodationController::class, 'destroy'])->name('accommodations.destroy');
     Route::patch('/accommodations/restore/{id}', [AccommodationController::class, 'restore'])->name('accommodations.restore');
     Route::get('/accommodations/archive', [AccommodationController::class, 'archived'])->name('accommodations.archive');
+    Route::get('/accommodations/{id}/rooms', [AccommodationController::class, 'getRooms'])->name('accommodations.rooms');
+    Route::get('/accommodations/{id}/rates', [AccommodationController::class, 'getRates'])->name('accommodations.rates');
 
     // Rate Crud
     Route::get('/rates', [RateController::class, 'index'])->name('adminPages.rates');
@@ -89,9 +93,24 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::patch('/rooms/restore/{id}', [RoomController::class, 'restore'])->name('rooms.restore');
     Route::get('/rooms/archive', [RoomController::class, 'archived'])->name('rooms.archive');
     Route::get('/rooms/details/{id}', [RoomController::class, 'getRoomDetails'])->name('rooms.details');
+    Route::get('/rooms/{id}/accommodations', [RoomController::class, 'getAccommodations'])->name('rooms.accommodations');
 
+    // Room Dashboard Routes (integrated into transactions)
+    Route::get('/stays/rates/{accommodationId}', [StayController::class, 'getRatesForAccommodation'])->name('stays.rates');
+    Route::post('/stays/calculate', [StayController::class, 'calculateTotal'])->name('stays.calculate');
+    Route::post('/stays/process', [StayController::class, 'processStay'])->name('stays.process');
+    Route::post('/stays/end/{id}', [StayController::class, 'endStay'])->name('stays.end');
+    Route::get('/stays/active', [StayController::class, 'getActiveStays'])->name('stays.active');
 
-
+    // Transaction Management Routes (Stays)
+    Route::get('/transactions', [StayController::class, 'index'])->name('adminPages.transactions');
+    Route::post('/transactions', [StayController::class, 'store'])->name('adminPages.transactions.post');
+    Route::post('/transactions/update/{id}', [StayController::class, 'update'])->name('transactions.update');
+    Route::post('/transactions/archive/{id}', [StayController::class, 'archive'])->name('transactions.archive');
+    Route::patch('/transactions/restore/{id}', [StayController::class, 'restore'])->name('transactions.restore');
+    Route::get('/archivetransactions', [StayController::class, 'archived'])->name('adminPages.archivetransactions');
+    Route::get('/transactionreports', [StayController::class, 'reports'])->name('adminPages.transactionreports');
+    
 
 });
 

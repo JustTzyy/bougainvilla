@@ -141,9 +141,9 @@
                         <input type="number" name="price" class="form-input" step="0.01" placeholder="e.g., 150.00"
                             required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="display: none;">
                         <label>Status</label>
-                        <select name="status" class="form-input" required enabled>
+                        <select name="status" class="form-input" required>
                             <option value="Active" selected>Active</option>
                         </select>
                     </div>
@@ -188,11 +188,10 @@
                         <label>Price (₱)</label>
                         <input type="number" name="price" id="u_price" class="form-input" step="0.01" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="display: none;">
                         <label>Status</label>
                         <select name="status" id="u_status" class="form-input" required>
                             <option value="Active">Active</option>
-                            <option value="Inactive">Inactive</option>
                         </select>
                     </div>
                 </div>
@@ -284,7 +283,7 @@
 
                     document.getElementById('u_duration').value = d.duration || '';
                     document.getElementById('u_price').value = d.price || '';
-                    document.getElementById('u_status').value = d.status || '';
+                    document.getElementById('u_status').value = d.status || 'Active';
 
                     // Point form action
                     var updateForm = document.getElementById('updateForm');

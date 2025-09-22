@@ -48,7 +48,7 @@
                         class="nav-item has-submenu {{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archiveadminrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user-lock"></i>
-                            <span>Data</span>
+                            <span>User Management</span>
                             <i class="fas fa-chevron-right submenu-arrow"></i>
                         </a>
                         <ul class="submenu" aria-label="Data submenu">
@@ -69,7 +69,7 @@
 
                     <li
                         class="nav-item has-submenu 
-    {{ request()->routeIs('adminPages.accommodations') || request()->routeIs('adminPages.levels') || request()->routeIs('adminPages.rates') || request()->routeIs('accommodations.*') ? 'active' : '' }}">
+    {{ request()->routeIs('adminPages.accommodations') || request()->routeIs('adminPages.levels') ||   request()->routeIs('adminPages.rooms') || request()->routeIs('adminPages.rates') || request()->routeIs('accommodations.*') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user-lock"></i>
                             <span>Room Management</span>
@@ -105,6 +105,35 @@
                                 class="{{ request()->routeIs('adminPages.rates') || request()->routeIs('rates.*') ? 'active' : '' }}">
                                 <a href="{{ route('adminPages.rates') }}" class="submenu-link">
                                     <span>Rates</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li
+                        class="nav-item has-submenu {{ request()->routeIs('adminPages.transactions') || request()->routeIs('adminPages.archivetransactions') || request()->routeIs('adminPages.transactionreports') || request()->routeIs('transactions.*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Transaction Management</span>
+                            <i class="fas fa-chevron-right submenu-arrow"></i>
+                        </a>
+                        <ul class="submenu" aria-label="Transaction Management submenu">
+                            <li
+                                class="{{ request()->routeIs('adminPages.transactions') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.transactions') }}" class="submenu-link">
+                                    <span>Transactions</span>
+                                </a>
+                            </li>
+                            <li
+                                class="{{ request()->routeIs('adminPages.archivetransactions') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.archivetransactions') }}" class="submenu-link">
+                                    <span>Archive Transactions</span>
+                                </a>
+                            </li>
+                            <li
+                                class="{{ request()->routeIs('adminPages.transactionreports') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.transactionreports') }}" class="submenu-link">
+                                    <span>Transaction Reports</span>
                                 </a>
                             </li>
                         </ul>

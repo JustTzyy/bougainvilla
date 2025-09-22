@@ -112,11 +112,34 @@
         </tbody>
       </table>
     </div>
-    @if(isset($users) && $users->hasPages())
-      <nav class="pagination" aria-label="Table pagination">
-        {{ $users->links() }}
-      </nav>
-    @endif
+    @if(isset($accommodations) && $accommodations->hasPages())
+    <nav class="pagination-wrapper" aria-label="Table pagination">
+        <ul class="pagination">
+            {{-- Previous Page Link --}}
+            @if ($accommodations->onFirstPage())
+                <li class="page-item disabled"><span>&laquo;</span></li>
+            @else
+                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+            @endif
+
+            {{-- Pagination Elements --}}
+            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
+                @if ($page == $accommodations->currentPage())
+                    <li class="page-item active"><span>{{ $page }}</span></li>
+                @else
+                    <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
+                @endif
+            @endforeach
+
+            {{-- Next Page Link --}}
+            @if ($accommodations->hasMorePages())
+                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @else
+                <li class="page-item disabled"><span>&raquo;</span></li>
+            @endif
+        </ul>
+    </nav>
+@endif
   </div>
 </div>
 
@@ -241,10 +264,6 @@
           <div class="info-item">
             <label>Email:</label>
             <span id="detail-email">-</span>
-          </div>
-          <div class="info-item">
-            <label>Middle Name:</label>
-            <span id="detail-middle">-</span>
           </div>
           <div class="info-item">
             <label>Birthday:</label>
@@ -648,7 +667,6 @@
     // Populate user details in modal
     function populateUserDetails(user) {
       document.getElementById('detail-name').textContent = user.name || '-';
-      document.getElementById('detail-middle').textContent = user.middleName || '-';
       document.getElementById('detail-email').textContent = user.email || '-';
       document.getElementById('detail-birthday').textContent = user.birthday ? new Date(user.birthday).toLocaleDateString() : '-';
       document.getElementById('detail-age').textContent = user.age || '-';

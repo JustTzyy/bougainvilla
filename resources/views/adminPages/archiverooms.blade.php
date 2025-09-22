@@ -4,7 +4,6 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
-<link rel="stylesheet" href="{{ asset('css/roommanagement.css') }}">
 <script src="{{ asset('js/ph-complete-address.js') }}"></script>
 @endpush
 
@@ -12,9 +11,6 @@
 <div class="dashboard-page">
   <div class="page-header">
     <h1 class="page-title">Archived Rooms</h1>
-    <a href="{{ route('adminPages.rooms') }}" class="back-btn">
-      <i class="fas fa-arrow-left"></i> Back to Rooms
-    </a>
   </div>
 
   @if (session('success'))
@@ -52,6 +48,11 @@
       <i class="fas fa-search search-icon"></i>
       <input id="adminSearch" type="text" placeholder="Search archived rooms" class="search-input">
     </div>
+    <div class="toolbar-actions">
+      <a href="{{ route('adminPages.rooms') }}" class="archive-btn">
+        <i class="fas fa-arrow-left"></i> Back to Records
+      </a>
+    </div>
   </div>
 
   <div class="chart-card card-tight">
@@ -67,7 +68,6 @@
             <th>Level</th>
             <th>Status</th>
             <th>Type</th>
-            <th>Accommodations</th>
             <th>Date Archived</th>
             <th>Actions</th>
           </tr>
@@ -85,27 +85,8 @@
                   data-archived="{{ $room->deleted_at }}">
                 <td data-label="Room No.">{{ $room->room }}</td>
                 <td data-label="Level">{{ $room->level->description }}</td>
-                <td data-label="Status">
-                  <span class="status-badge status-{{ strtolower(str_replace(' ', '-', $room->status)) }}">
-                    {{ $room->status }}
-                  </span>
-                </td>
-                <td data-label="Type">
-                  <span class="type-badge type-{{ strtolower(str_replace(' ', '-', $room->type)) }}">
-                    {{ $room->type }}
-                  </span>
-                </td>
-                <td data-label="Accommodations">
-                  @if($room->accommodations->count() > 0)
-                    <div class="accommodation-tags">
-                      @foreach($room->accommodations as $accommodation)
-                        <span class="accommodation-tag">{{ $accommodation->name }}</span>
-                      @endforeach
-                    </div>
-                  @else
-                    <span class="text-muted">None</span>
-                  @endif
-                </td>
+                <td data-label="Status">{{ $room->status }}</td>
+                <td data-label="Type">{{ $room->type }}</td>
                 <td data-label="Date Archived">{{ $room->deleted_at->format('M d, Y H:i') }}</td>
                 <td data-label="Actions">
                   <button class="action-btn small" data-restore data-room-id="{{ $room->id }}">
@@ -116,17 +97,40 @@
             @endforeach
           @else
             <tr>
-              <td colspan="7" class="text-center">No archived rooms found</td>
+              <td colspan="6" class="text-center">No archived rooms found</td>
             </tr>
           @endif
         </tbody>
       </table>
     </div>
-    @if(isset($rooms) && $rooms->hasPages())
-      <nav class="pagination" aria-label="Table pagination">
-        {{ $rooms->links() }}
-      </nav>
-    @endif
+    @if(isset($accommodations) && $accommodations->hasPages())
+    <nav class="pagination-wrapper" aria-label="Table pagination">
+        <ul class="pagination">
+            {{-- Previous Page Link --}}
+            @if ($accommodations->onFirstPage())
+                <li class="page-item disabled"><span>&laquo;</span></li>
+            @else
+                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+            @endif
+
+            {{-- Pagination Elements --}}
+            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
+                @if ($page == $accommodations->currentPage())
+                    <li class="page-item active"><span>{{ $page }}</span></li>
+                @else
+                    <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
+                @endif
+            @endforeach
+
+            {{-- Next Page Link --}}
+            @if ($accommodations->hasMorePages())
+                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @else
+                <li class="page-item disabled"><span>&raquo;</span></li>
+            @endif
+        </ul>
+    </nav>
+@endif
   </div>
 </div>
 
@@ -170,8 +174,15 @@
           methodField.name = '_method';
           methodField.value = 'PATCH';
           
+          // Status field - set to Active
+          var statusField = document.createElement('input');
+          statusField.type = 'hidden';
+          statusField.name = 'status';
+          statusField.value = 'Active';
+          
           form.appendChild(csrfToken);
           form.appendChild(methodField);
+          form.appendChild(statusField);
           document.body.appendChild(form);
           form.submit();
         }

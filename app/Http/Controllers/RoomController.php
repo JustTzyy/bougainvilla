@@ -206,18 +206,23 @@ class RoomController extends Controller
         }
     }
 
-    public function restore($id)
+    public function restore(Request $request, $id)
     {
         try {
             $room = Room::onlyTrashed()->findOrFail($id);
             $room->restore();
 
+            // Update status to Active if provided
+            if ($request->has('status') && $request->status === 'Active') {
+                $room->update(['status' => 'Active']);
+            }
+
             History::create([
                 'userID' => Auth::user()->id,
-                'status' => 'Restored room: ' . $room->room,
+                'status' => 'Restored room: ' . $room->room . ' (Status: Active)',
             ]);
 
-            return redirect()->back()->with('success', 'Room restored successfully!');
+            return redirect()->back()->with('success', 'Room restored successfully with Active status!');
         } catch (QueryException $e) {
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
         } catch (Exception $e) {
@@ -246,6 +251,27 @@ class RoomController extends Controller
             return response()->json($room);
         } catch (Exception $e) {
             return response()->json(['error' => 'Room not found'], 404);
+        }
+    }
+
+    public function getAccommodations($id)
+    {
+        try {
+            $room = Room::findOrFail($id);
+            $accommodations = $room->accommodations;
+            
+            $accommodations = $accommodations->map(function($accommodation) {
+                return [
+                    'id' => $accommodation->id,
+                    'name' => $accommodation->name,
+                    'capacity' => $accommodation->capacity,
+                    'description' => $accommodation->description
+                ];
+            });
+            
+            return response()->json(['accommodations' => $accommodations]);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to load accommodations'], 500);
         }
     }
 }
