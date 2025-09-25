@@ -5,6 +5,134 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
 <link rel="stylesheet" href="{{ asset('css/room-dashboard.css') }}">
+<script src="{{ asset('js/ph-complete-address.js') }}"></script>
+<style>
+/* Receipt Styling */
+.receipt-container {
+  background: white;
+  padding: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #000;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.receipt-header {
+  text-align: center;
+  border-bottom: 2px dashed #000;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.receipt-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.receipt-subtitle {
+  font-size: 10px;
+  margin-bottom: 5px;
+  color: #666;
+}
+
+.receipt-address {
+  font-size: 10px;
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.receipt-details {
+  margin-bottom: 15px;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.receipt-row.total {
+  border-top: 1px dashed #000;
+  padding-top: 8px;
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.receipt-row.grand-total {
+  border-top: 2px solid #000;
+  padding-top: 8px;
+  margin-top: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  text-transform: uppercase;
+}
+
+.receipt-footer {
+  text-align: center;
+  border-top: 2px dashed #000;
+  padding-top: 15px;
+  margin-top: 15px;
+  font-size: 10px;
+  color: #666;
+}
+
+.receipt-thank-you {
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.receipt-date-time {
+  margin-bottom: 5px;
+}
+
+.receipt-receipt-no {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.receipt-cashier {
+  margin-bottom: 5px;
+}
+
+/* Print Styles for Receipt */
+@media print {
+  .receipt-actions {
+    display: none !important;
+  }
+  
+  .modal-content {
+    box-shadow: none !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .receipt-container {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 15px !important;
+  }
+  
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .modal {
+    position: static !important;
+    display: block !important;
+  }
+}
+</style>
 @endpush
 
 @section('content')
@@ -28,7 +156,6 @@
       <button class="status-btn active" data-status="all">All Rooms</button>
       <button class="status-btn" data-status="Available">Available</button>
       <button class="status-btn" data-status="In Use">In Use</button>
-      <button class="status-btn" data-status="Under Maintenance">Maintenance</button>
     </div>
 
     <!-- Rooms Grid -->
@@ -41,10 +168,10 @@
                data-status="{{ $room->status }}"
                data-capacity="{{ $room->accommodations->sum('capacity') }}">
             <div class="room-number">{{ $room->room }}</div>
-            <div class="room-level">{{ $room->level->description }}</div>
+            <div class="room-level">{{ optional($room->level)->description ?? '-' }}</div>
             <div class="room-status">{{ $room->status }}</div>
-            <div class="room-capacity">Capacity: {{ $room->accommodations->sum('capacity') }}</div>
-            @if($room->status === 'In Use')
+            @php($__status = strtolower(trim($room->status ?? '')))
+            @if(strpos($__status, 'use') !== false)
               <div class="room-timer" id="timer-{{ $room->id }}">--:--:--</div>
             @endif
           </div>
@@ -115,24 +242,80 @@
             <div style="text-align: center; margin-top: 20px;">
                 <button type="button" class="btn btn-primary hidden" id="proceedBtn">Proceed with Accommodation</button>
                 <button type="button" class="btn btn-success hidden" id="processPaymentBtn">Process Payment</button>
+                <button type="button" class="btn btn-danger hidden" id="deleteStayBtn">Delete Stay</button>
                 <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
           </div>
         </div>
       </div>
     </div>
     
+  <!-- Extend/Timeout Modal -->
+  <div id="extendTimeoutModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Time's Up</h2>
+        <span class="close" id="closeExtendTimeout">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p id="extendTimeoutMessage">The time for this room has ended. Would you like to extend the stay or mark it as timed out?</p>
+        <div style="display:flex; gap: 8px; justify-content: flex-end; margin-top: 12px;">
+          <button type="button" class="btn btn-secondary" id="timeoutBtn">Time Out</button>
+          <button type="button" class="btn btn-primary" id="extendBtn">Extend</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div id="receiptModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 400px; padding: 0;">
+      <div class="receipt-container" id="receiptContent">
+        <!-- Receipt content will be generated here -->
+      </div>
+      <div class="receipt-actions" style="padding: 20px; text-align: center; background: #f8f9fa;">
+        <button type="button" class="btn btn-primary" id="printReceiptBtn" style="margin-right: 10px;">
+          <i class="fas fa-print"></i> Print Receipt
+        </button>
+        <button type="button" class="btn btn-secondary" id="closeReceiptBtn">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
 <script>
 // Room Dashboard Functionality
 let currentRoom = null;
 let selectedRate = null;
 let guestCount = 0;
 let maxCapacity = 0;
+let selectedAccommodation = null;
+let roomIdToCheckout = {};
+let roomIdToStayId = {};
+let roomIdToAccommodationId = {};
+let roomIdToGuestCount = {};
+let extensionMode = false; // false => new stay (Standard/Extending-Standard), true => extend (Extending/Extending-Standard)
+let pendingExtend = null; // { roomId, stayId }
+function enableProcessPaymentButton() {
+    var btn = document.getElementById('processPaymentBtn');
+    if (!btn) return;
+    btn.classList.remove('hidden');
+    btn.removeAttribute('disabled');
+    btn.disabled = false;
+    btn.style.pointerEvents = 'auto';
+    btn.style.opacity = '1';
+    btn.setAttribute('aria-disabled', 'false');
+    btn.tabIndex = 0;
+}
 
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
-    updateRoomTimers();
-    setInterval(updateRoomTimers, 1000);
+    // Load active stays for timers then start ticking
+    fetchActiveStays().then(() => {
+        updateRoomTimers();
+        setInterval(updateRoomTimers, 1000);
+    });
 });
 
 function initializeEventListeners() {
@@ -157,7 +340,12 @@ function initializeEventListeners() {
     // Room box clicks
     document.querySelectorAll('.room-box').forEach(box => {
         box.addEventListener('click', function() {
-            if (this.dataset.status === 'Available') {
+            const status = (this.dataset.status || '').toLowerCase();
+            if (status === 'available' || status === 'active') {
+                extensionMode = false;
+                openAccommodationModal(this.dataset.roomId);
+            } else if (status === 'in use') {
+                extensionMode = true;
                 openAccommodationModal(this.dataset.roomId);
             }
         });
@@ -166,6 +354,32 @@ function initializeEventListeners() {
     // Modal close
     document.querySelector('.close').addEventListener('click', closeModal);
     document.getElementById('cancelBtn').addEventListener('click', closeModal);
+
+  // Extend/Timeout modal handlers
+  var extendTimeoutModal = document.getElementById('extendTimeoutModal');
+  var closeExtendTimeout = document.getElementById('closeExtendTimeout');
+  var extendBtn = document.getElementById('extendBtn');
+  var timeoutBtn = document.getElementById('timeoutBtn');
+  if (closeExtendTimeout) closeExtendTimeout.addEventListener('click', function(){ extendTimeoutModal.style.display = 'none'; pendingExtend = null; });
+  if (extendBtn) extendBtn.addEventListener('click', function(){
+    if (!pendingExtend) return;
+    if (!confirm('Are you sure you want to extend this stay?')) return;
+    extendTimeoutModal.style.display = 'none';
+    // Directly extend using the last selected accommodation's extending statuses
+    // We will prompt to choose duration only, no guests again
+    extensionMode = true;
+    openAccommodationModal(String(pendingExtend.roomId));
+  });
+  if (timeoutBtn) timeoutBtn.addEventListener('click', function(){
+    if (!pendingExtend) return;
+    const stayId = String(pendingExtend.stayId);
+    extendTimeoutModal.style.display = 'none';
+    fetch(`/adminPages/stays/end/${stayId}`, {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
+    }).then(() => setTimeout(() => location.reload(), 400)).catch(()=>{});
+    pendingExtend = null;
+  });
     
     // Proceed button
     document.getElementById('proceedBtn').addEventListener('click', showGuestForm);
@@ -173,11 +387,33 @@ function initializeEventListeners() {
     // Add guest button
     document.getElementById('addGuestBtn').addEventListener('click', addGuestForm);
     
-    // Process payment button
-    document.getElementById('processPaymentBtn').addEventListener('click', processPayment);
+    // Process payment button (branch based on mode)
+    (function(){
+        var wired = false;
+        var btn = document.getElementById('processPaymentBtn');
+        btn.addEventListener('click', function handler(){
+            // Guard against duplicate submissions
+            if (btn.dataset.submitting === '1') return;
+            btn.dataset.submitting = '1';
+            if (extensionMode) {
+                processExtension();
+            } else {
+                processPayment();
+            }
+            // release flag after a short delay (request will reload on success)
+            setTimeout(function(){ btn.dataset.submitting = '0'; }, 1500);
+        });
+    })();
     
     // Amount paid input
     document.getElementById('amountPaid').addEventListener('input', calculateChange);
+    
+    // Delete stay button
+    document.getElementById('deleteStayBtn').addEventListener('click', deleteStay);
+    
+    // Receipt modal buttons
+    document.getElementById('printReceiptBtn').addEventListener('click', printReceipt);
+    document.getElementById('closeReceiptBtn').addEventListener('click', closeReceiptModal);
 }
 
 function filterRooms() {
@@ -186,7 +422,11 @@ function filterRooms() {
     
     document.querySelectorAll('.room-box').forEach(box => {
         const roomFloor = box.dataset.level;
-        const roomStatus = box.dataset.status;
+        let roomStatus = box.dataset.status || '';
+        // Normalize 'Active' to 'Available' so filters and clicks behave consistently
+        if (roomStatus.toLowerCase() === 'active') {
+            roomStatus = 'Available';
+        }
         
         let showRoom = true;
         
@@ -203,16 +443,45 @@ function filterRooms() {
 }
 
 function openAccommodationModal(roomId) {
-    fetch(`/admin/rooms/details/${roomId}`)
+    fetch(`/adminPages/rooms/details/${roomId}`)
         .then(response => response.json())
         .then(data => {
-            if (data.success) {
-                currentRoom = data.room;
-                maxCapacity = data.room.accommodations.reduce((sum, acc) => sum + acc.capacity, 0);
-                displayAccommodationInfo(data.room);
+            // Support both payloads: { success: true, room: {...} } and direct room object
+            const isWrapped = typeof data === 'object' && data !== null && Object.prototype.hasOwnProperty.call(data, 'success');
+            const success = isWrapped ? data.success : !!data && !!data.id;
+            const roomPayload = isWrapped ? data.room : data;
+
+            if (success && roomPayload) {
+                currentRoom = roomPayload;
+                // Wait for user to select an accommodation before setting capacity
+                maxCapacity = 0;
+                displayAccommodationInfo(roomPayload);
                 document.getElementById('accommodationModal').style.display = 'block';
+                // Auto-select accommodation for extension mode
+                if (extensionMode) {
+                    try {
+                        const accId = roomIdToAccommodationId[String(roomId)];
+                        if (accId) {
+                            // Find matching accommodation object from currentRoom
+                            const accObj = (currentRoom.accommodations || []).find(a => String(a.id) === String(accId));
+                            if (accObj) {
+                                selectedAccommodation = accObj;
+                            }
+                        }
+                        if (!selectedAccommodation && currentRoom.accommodations && currentRoom.accommodations.length > 0) {
+                            selectedAccommodation = currentRoom.accommodations[0];
+                        }
+                        if (selectedAccommodation) {
+                            document.getElementById('proceedBtn').classList.add('hidden');
+                            loadRateOptions();
+                            document.getElementById('rateSelection').classList.remove('hidden');
+                            // For extension flow we still require payment input; show summary after duration selection
+                        }
+                    } catch (e) {}
+                }
             } else {
-                alert('Failed to load room details: ' + data.message);
+                const message = isWrapped ? (data.message || 'Unknown error') : 'Unexpected response format';
+                alert('Failed to load room details: ' + message);
             }
         })
         .catch(error => {
@@ -225,39 +494,82 @@ function displayAccommodationInfo(room) {
     const infoDiv = document.getElementById('accommodationInfo');
     const title = document.getElementById('modalTitle');
     
-    title.textContent = `Room ${room.room} - ${room.level.description}`;
+    const modeSuffix = extensionMode ? ' (Extend Stay)' : '';
+    const levelDesc = room.level && room.level.description ? room.level.description : '-';
+    title.textContent = `Room ${room.room} - ${levelDesc}${modeSuffix}`;
     
+    if (extensionMode) {
+        // Hide accommodation chooser when extending (auto-selected)
+        infoDiv.innerHTML = '';
+        infoDiv.style.display = 'none';
+        const proceedBtn = document.getElementById('proceedBtn');
+        proceedBtn.classList.add('hidden');
+        
+        // Show delete button for "In Use" rooms
+        const deleteBtn = document.getElementById('deleteStayBtn');
+        deleteBtn.classList.remove('hidden');
+        return;
+    }
+
+    infoDiv.style.display = 'block';
     let html = `
-        <div class="accommodation-name">Available Accommodations</div>
-        <div class="accommodation-details">
+        <div class="accommodation-name">Choose an Accommodation</div>
+        <div class="accommodation-options" id="accommodationOptions"></div>
+        <div class="helper-text">Select one to proceed.</div>
     `;
-    
-    room.accommodations.forEach(acc => {
-        html += `
-            <div class="detail-item">
-                <div class="detail-label">Accommodation</div>
-                <div class="detail-value">${acc.name}</div>
-                <div class="detail-label">Capacity</div>
-                <div class="detail-value">${acc.capacity} guests</div>
-                <div class="detail-label">Description</div>
-                <div class="detail-value">${acc.description || 'N/A'}</div>
-    </div>
-        `;
-    });
-    
-    html += '</div>';
     infoDiv.innerHTML = html;
-    
-    // Show proceed button
-    document.getElementById('proceedBtn').classList.remove('hidden');
+
+    const optionsContainer = document.getElementById('accommodationOptions');
+    optionsContainer.innerHTML = '';
+
+    room.accommodations.forEach(acc => {
+        const option = document.createElement('div');
+        option.className = 'accommodation-option';
+        option.dataset.accommodationId = acc.id;
+        option.innerHTML = `
+            <div class="acc-name">${acc.name}</div>
+            <div class="acc-meta">
+                <span class="acc-capacity">Capacity: ${acc.capacity}</span>
+            </div>
+            <div class="acc-desc">${acc.description || 'No description provided.'}</div>
+        `;
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.accommodation-option').forEach(o => o.classList.remove('selected'));
+            this.classList.add('selected');
+            selectedAccommodation = acc;
+            maxCapacity = acc.capacity;
+            // Enable proceed button after selection
+            const proceedBtn = document.getElementById('proceedBtn');
+            proceedBtn.disabled = false;
+            proceedBtn.classList.remove('hidden');
+        });
+        optionsContainer.appendChild(option);
+    });
+
+    // Show proceed button but keep disabled until a selection is made
+    const proceedBtn = document.getElementById('proceedBtn');
+    proceedBtn.classList.remove('hidden');
+    proceedBtn.disabled = true;
+    proceedBtn.textContent = 'Proceed with Accommodation';
 }
 
 function showGuestForm() {
-    document.getElementById('guestFormSection').classList.remove('hidden');
+    if (!selectedAccommodation) {
+        alert('Please select an accommodation first.');
+        return;
+    }
     document.getElementById('proceedBtn').classList.add('hidden');
-    
-    // Generate initial guest form
-    addGuestForm();
+    if (extensionMode) {
+        // In extension mode, skip guest forms and directly load rate options
+        guestCount = 1; // charge baseline of 1 unless you want to persist last guest count
+        document.getElementById('guestFormSection').classList.add('hidden');
+        loadRateOptions();
+        document.getElementById('rateSelection').classList.remove('hidden');
+    } else {
+        document.getElementById('guestFormSection').classList.remove('hidden');
+        // Generate initial guest form
+        addGuestForm();
+    }
 }
 
 function addGuestForm() {
@@ -300,25 +612,34 @@ function addGuestForm() {
                     <label class="form-label">Street *</label>
                     <input type="text" class="form-input" name="guests[${guestCount-1}][address][street]" required>
         </div>
-        <div class="form-group">
-                    <label class="form-label">City *</label>
-                    <input type="text" class="form-input" name="guests[${guestCount-1}][address][city]" required>
-        </div>
       </div>
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">Province *</label>
-                    <input type="text" class="form-input" name="guests[${guestCount-1}][address][province]" required>
+                    <select name="guests[${guestCount-1}][address][province]" class="form-input" required>
+                        <option value="">Select Province</option>
+                    </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">City *</label>
+                    <select name="guests[${guestCount-1}][address][city]" class="form-input" required>
+                        <option value="">Select City</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
                     <label class="form-label">ZIP Code *</label>
-                    <input type="text" class="form-input" name="guests[${guestCount-1}][address][zipcode]" required>
+                    <input type="text" class="form-input" name="guests[${guestCount-1}][address][zipcode]" readonly>
       </div>
   </div>
 </div>
     `;
     
     formsDiv.appendChild(guestForm);
+    
+    // Initialize address dropdowns for this guest form
+    initializeGuestAddressDropdowns(guestCount - 1);
     
     // Show rate selection after first guest
     if (guestCount === 1) {
@@ -327,14 +648,20 @@ function addGuestForm() {
 }
 
 function loadRateOptions() {
-    // Get rates for the first accommodation (assuming all accommodations have same rates)
-    const accommodationId = currentRoom.accommodations[0].id;
+    // Get rates for the selected accommodation
+    const accommodationId = selectedAccommodation ? selectedAccommodation.id : null;
+    if (!accommodationId) return;
     
-    fetch(`/admin/stays/rates/${accommodationId}`)
+    fetch(`/adminPages/stays/rates/${accommodationId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                displayRateOptions(data.rates);
+                // Filter by status depending on mode
+                const allowed = extensionMode
+                    ? ['Extending', 'Extending/Standard']
+                    : ['Standard', 'Extending/Standard'];
+                const filtered = (data.rates || []).filter(r => allowed.includes(r.status));
+                displayRateOptions(filtered);
                 document.getElementById('rateSelection').classList.remove('hidden');
             } else {
                 alert('Failed to load rates: ' + data.message);
@@ -363,7 +690,31 @@ function displayRateOptions(rates) {
             document.querySelectorAll('.rate-option').forEach(opt => opt.classList.remove('selected'));
             this.classList.add('selected');
             selectedRate = rate;
-            calculateTotal();
+            // If extension, compute totals based on previous guest count and show payment UI
+            if (extensionMode) {
+                const gc = roomIdToGuestCount[String(currentRoom.id)] || 1;
+                const subtotal = rate.price * gc;
+                const tax = subtotal * 0.12;
+                const total = subtotal + tax;
+                document.getElementById('subtotalAmount').textContent = `₱${subtotal.toFixed(2)}`;
+                document.getElementById('taxAmount').textContent = `₱${tax.toFixed(2)}`;
+                document.getElementById('totalAmount').textContent = `₱${total.toFixed(2)}`;
+                document.getElementById('paymentSummary').classList.remove('hidden');
+                var payBtn = document.getElementById('processPaymentBtn');
+                payBtn.classList.remove('hidden');
+                payBtn.disabled = false;
+                payBtn.style.pointerEvents = 'auto';
+                // Pre-fill payment to total to allow immediate proceed
+                var amountPaidEl = document.getElementById('amountPaid');
+                var changeEl = document.getElementById('changeAmount');
+                if (amountPaidEl) amountPaidEl.value = total.toFixed(2);
+                if (changeEl) changeEl.value = '0.00';
+            } else {
+                calculateTotal();
+            }
+            if (extensionMode) {
+                // Wait for user to confirm and input payment, then process
+            }
         });
         
         optionsDiv.appendChild(option);
@@ -381,6 +732,12 @@ function calculateTotal() {
     document.getElementById('taxAmount').textContent = `₱${tax.toFixed(2)}`;
     document.getElementById('totalAmount').textContent = `₱${total.toFixed(2)}`;
     
+    if (extensionMode) {
+        // For extension, don't show payment summary UI; server computes and records payment
+        document.getElementById('paymentSummary').classList.add('hidden');
+        document.getElementById('processPaymentBtn').classList.add('hidden');
+        return;
+    }
     document.getElementById('paymentSummary').classList.remove('hidden');
     document.getElementById('processPaymentBtn').classList.remove('hidden');
 }
@@ -396,6 +753,7 @@ function calculateChange() {
 function processPayment() {
     const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
     const total = parseFloat(document.getElementById('totalAmount').textContent.replace('₱', '').replace(',', ''));
+    const computedChange = Math.max(amountPaid - total, 0);
     
     if (amountPaid < total) {
         alert('Amount paid must be at least the total amount');
@@ -427,13 +785,13 @@ function processPayment() {
         rate_id: selectedRate.id,
         guests: guests,
         payment_amount: amountPaid,
-        payment_change: parseFloat(document.getElementById('changeAmount').value)
+        payment_change: Number.isFinite(computedChange) ? parseFloat(computedChange.toFixed(2)) : 0
     };
     
     // Show loading
     document.getElementById('loading').style.display = 'block';
     
-    fetch('/admin/stays/process', {
+    fetch('/adminPages/stays/process', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -446,9 +804,23 @@ function processPayment() {
         document.getElementById('loading').style.display = 'none';
         
         if (data.success) {
-            alert('Payment processed successfully! Receipt #' + data.receipt_id);
+            // Show receipt instead of alert
+            showReceipt(data.receipt_data || {
+                receipt_id: data.receipt_id,
+                room: currentRoom.room,
+                level: currentRoom.level ? currentRoom.level.description : '-',
+                accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
+                duration: selectedRate ? selectedRate.duration : '-',
+                guest_count: guestCount,
+                subtotal: selectedRate ? selectedRate.price * guestCount : 0,
+                tax: selectedRate ? (selectedRate.price * guestCount) * 0.12 : 0,
+                total: amountPaid,
+                change: computedChange,
+                cashier: '{{ Auth::user()->name ?? "Staff" }}',
+                date_time: new Date().toLocaleString()
+            });
             closeModal();
-            location.reload(); // Refresh to update room statuses
+            // Don't reload immediately, let user print receipt first
         } else {
             alert('Failed to process payment: ' + data.message);
         }
@@ -460,9 +832,112 @@ function processPayment() {
     });
 }
 
+function processExtension() {
+    if (!selectedRate) return;
+    // Resolve stay id whether triggered by timer modal or by clicking an in-use room card
+    var resolvedStayId = null;
+    if (pendingExtend && pendingExtend.stayId) {
+        resolvedStayId = String(pendingExtend.stayId);
+    } else if (currentRoom && roomIdToStayId[String(currentRoom.id)]) {
+        resolvedStayId = String(roomIdToStayId[String(currentRoom.id)]);
+    }
+    if (!resolvedStayId) {
+        alert('Cannot determine active stay for this room. Please refresh and try again.');
+        return;
+    }
+    const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
+    const total = parseFloat(document.getElementById('totalAmount').textContent.replace('₱', '').replace(',', ''));
+    const change = Math.max(amountPaid - total, 0);
+    if (amountPaid < total) {
+        alert('Amount paid must be at least the total amount');
+        return;
+    }
+    const payload = { rate_id: selectedRate.id };
+    document.getElementById('loading').style.display = 'block';
+    fetch(`/adminPages/stays/extend/${resolvedStayId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        if (data.success) {
+            // Show receipt for extension
+            showReceipt(data.receipt_data || {
+                receipt_id: data.receipt_id,
+                room: currentRoom.room,
+                level: currentRoom.level ? currentRoom.level.description : '-',
+                accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
+                duration: selectedRate ? selectedRate.duration : '-',
+                guest_count: roomIdToGuestCount[String(currentRoom.id)] || 1,
+                subtotal: selectedRate ? selectedRate.price * (roomIdToGuestCount[String(currentRoom.id)] || 1) : 0,
+                tax: selectedRate ? (selectedRate.price * (roomIdToGuestCount[String(currentRoom.id)] || 1)) * 0.12 : 0,
+                total: amountPaid,
+                change: change,
+                cashier: '{{ Auth::user()->name ?? "Staff" }}',
+                date_time: new Date().toLocaleString(),
+                type: 'Extension'
+            });
+            closeModal();
+        } else {
+            alert('Failed to extend: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(() => {
+        document.getElementById('loading').style.display = 'none';
+        alert('Failed to extend');
+    });
+}
+
 function closeModal() {
     document.getElementById('accommodationModal').style.display = 'none';
     resetModal();
+}
+
+function deleteStay() {
+    if (!currentRoom) return;
+    
+    // Get the stay ID for this room
+    const stayId = roomIdToStayId[String(currentRoom.id)];
+    if (!stayId) {
+        alert('Cannot find active stay for this room.');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to delete this stay? This will make the room available again.')) {
+        return;
+    }
+    
+    // Show loading
+    document.getElementById('loading').style.display = 'block';
+    
+    fetch(`/adminPages/stays/delete/${stayId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        
+        if (data.success) {
+            alert('Stay deleted successfully. Room is now available.');
+            closeModal();
+            location.reload(); // Refresh to update room statuses
+        } else {
+            alert('Failed to delete stay: ' + data.message);
+        }
+    })
+    .catch(error => {
+        document.getElementById('loading').style.display = 'none';
+        console.error('Error:', error);
+        alert('Failed to delete stay');
+    });
 }
 
 function resetModal() {
@@ -470,6 +945,7 @@ function resetModal() {
     selectedRate = null;
     guestCount = 0;
     maxCapacity = 0;
+    selectedAccommodation = null;
     
     document.getElementById('accommodationInfo').innerHTML = '';
     document.getElementById('guestForms').innerHTML = '';
@@ -480,6 +956,7 @@ function resetModal() {
     document.getElementById('paymentSummary').classList.add('hidden');
     document.getElementById('proceedBtn').classList.add('hidden');
     document.getElementById('processPaymentBtn').classList.add('hidden');
+    document.getElementById('deleteStayBtn').classList.add('hidden');
     document.getElementById('loading').style.display = 'none';
     
     // Reset form inputs
@@ -488,11 +965,260 @@ function resetModal() {
 }
 
 function updateRoomTimers() {
+    const now = new Date().getTime();
     document.querySelectorAll('.room-timer').forEach(timer => {
         const roomId = timer.id.replace('timer-', '');
-        // This would typically fetch the actual checkout time from the server
-        // For now, we'll use a placeholder
-        timer.textContent = '--:--:--';
+        const checkoutIso = roomIdToCheckout[roomId];
+        if (!checkoutIso) {
+            timer.textContent = '--:--:--';
+            return;
+        }
+        const diffMs = new Date(checkoutIso).getTime() - now;
+        if (diffMs <= 0) {
+            timer.textContent = '00:00:00';
+      // Show extend/timeout modal once
+      const stayId = roomIdToStayId[roomId];
+      if (stayId && !timer.dataset.prompted) {
+        timer.dataset.prompted = '1';
+        pendingExtend = { roomId, stayId };
+        var msg = document.getElementById('extendTimeoutMessage');
+        if (msg) msg.textContent = `Room ${roomId} time ended. Extend the stay or time out?`;
+        document.getElementById('extendTimeoutModal').style.display = 'block';
+      }
+            return;
+        }
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        timer.textContent = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+    });
+}
+
+async function fetchActiveStays() {
+    try {
+        const res = await fetch('/adminPages/stays/active');
+        const data = await res.json();
+        if (!data.success) return;
+        // Map checkout time by room id
+        roomIdToCheckout = {};
+        roomIdToStayId = {};
+        roomIdToAccommodationId = {};
+        (data.stays || []).forEach(stay => {
+            if (stay.room && stay.checkOut) {
+                roomIdToCheckout[String(stay.room.id)] = stay.checkOut;
+                if (stay.id) roomIdToStayId[String(stay.room.id)] = stay.id;
+                if (stay.accommodation_id) roomIdToAccommodationId[String(stay.room.id)] = stay.accommodation_id;
+                if (typeof stay.guest_count === 'number') roomIdToGuestCount[String(stay.room.id)] = stay.guest_count;
+            } else if (stay.room && stay.rate && stay.rate.duration && stay.checkIn) {
+                // Fallback: derive checkout by parsing duration
+                const hours = parseDurationToHours(stay.rate.duration);
+                const checkIn = new Date(stay.checkIn);
+                const checkout = new Date(checkIn.getTime() + hours * 60 * 60 * 1000);
+                roomIdToCheckout[String(stay.room.id)] = checkout.toISOString();
+                if (stay.id) roomIdToStayId[String(stay.room.id)] = stay.id;
+                if (stay.accommodation_id) roomIdToAccommodationId[String(stay.room.id)] = stay.accommodation_id;
+                if (typeof stay.guest_count === 'number') roomIdToGuestCount[String(stay.room.id)] = stay.guest_count;
+            }
+        });
+    } catch (e) {
+        console.error('Failed to fetch active stays', e);
+    }
+}
+
+function parseDurationToHours(durationStr) {
+    if (!durationStr) return 1;
+    const s = String(durationStr).trim().toLowerCase();
+    const match = s.match(/(\d+(?:\.\d+)?)\s*(hour|hours|hr|hrs|minute|minutes|min|day|days)/);
+    if (!match) return 1;
+    const value = parseFloat(match[1]);
+    const unit = match[2];
+    if (unit.startsWith('day')) return value * 24;
+    if (unit.startsWith('min')) return value / 60;
+    if (unit.startsWith('hour') || unit.startsWith('hr')) return value;
+    return 1;
+}
+
+function showReceipt(receiptData) {
+    const receiptContent = document.getElementById('receiptContent');
+    const now = new Date();
+    const receiptId = receiptData.receipt_id || 'RCP-' + now.getTime();
+    
+    receiptContent.innerHTML = `
+        <div class="receipt-header">
+            <div class="receipt-title">Bougainvilla Hotel</div>
+            <div class="receipt-subtitle">Accommodation Services</div>
+            <div class="receipt-address">
+                123 Hotel Street<br>
+                City, Province 1234<br>
+                Tel: (02) 123-4567
+            </div>
+        </div>
+        
+        <div class="receipt-details">
+            <div class="receipt-row">
+                <span>Receipt No:</span>
+                <span>${receiptId}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Date & Time:</span>
+                <span>${receiptData.date_time || now.toLocaleString()}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Cashier:</span>
+                <span>${receiptData.cashier || 'Staff'}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Room:</span>
+                <span>${receiptData.room} - ${receiptData.level}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Accommodation:</span>
+                <span>${receiptData.accommodation}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Duration:</span>
+                <span>${receiptData.duration}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Guests:</span>
+                <span>${receiptData.guest_count} person(s)</span>
+            </div>
+            <div class="receipt-row">
+                <span>Type:</span>
+                <span>${receiptData.type || 'New Stay'}</span>
+            </div>
+        </div>
+        
+        <div class="receipt-details">
+            <div class="receipt-row">
+                <span>Subtotal:</span>
+                <span>₱${parseFloat(receiptData.subtotal || 0).toFixed(2)}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Tax (12%):</span>
+                <span>₱${parseFloat(receiptData.tax || 0).toFixed(2)}</span>
+            </div>
+            <div class="receipt-row total">
+                <span>Total Amount:</span>
+                <span>₱${parseFloat(receiptData.total || 0).toFixed(2)}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Amount Paid:</span>
+                <span>₱${parseFloat(receiptData.total || 0).toFixed(2)}</span>
+            </div>
+            <div class="receipt-row">
+                <span>Change:</span>
+                <span>₱${parseFloat(receiptData.change || 0).toFixed(2)}</span>
+            </div>
+        </div>
+        
+        <div class="receipt-footer">
+            <div class="receipt-thank-you">Thank You!</div>
+            <div>Please keep this receipt for your records</div>
+            <div>Visit us again soon!</div>
+        </div>
+    `;
+    
+    document.getElementById('receiptModal').style.display = 'block';
+}
+
+function printReceipt() {
+    // Get the receipt content
+    const receiptContent = document.getElementById('receiptContent');
+    const originalContent = document.body.innerHTML;
+    
+    // Replace body content with only the receipt
+    document.body.innerHTML = `
+        <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; color: #000; max-width: 300px; margin: 0 auto; padding: 20px;">
+            ${receiptContent.innerHTML}
+        </div>
+    `;
+    
+    // Print the receipt
+    window.print();
+    
+    // Restore original content
+    document.body.innerHTML = originalContent;
+    
+    // Re-initialize event listeners
+    initializeEventListeners();
+    
+    // Close modal and reload after printing
+    setTimeout(() => {
+        closeReceiptModal();
+        location.reload();
+    }, 1000);
+}
+
+function closeReceiptModal() {
+    document.getElementById('receiptModal').style.display = 'none';
+    // Reload the page to update room statuses
+    location.reload();
+}
+
+// Philippine Address Data - Use complete data from external file
+var phAddressData = {};
+
+// Initialize with basic data, then merge with complete data from external file
+function initializeAddressData() {
+    // Start with empty object
+    phAddressData = {};
+    
+    // Merge with additional data from external file if available
+    if (typeof window.additionalPhAddressData !== 'undefined') {
+        Object.assign(phAddressData, window.additionalPhAddressData);
+    }
+}
+
+// Initialize address dropdowns for a specific guest form
+function initializeGuestAddressDropdowns(guestIndex) {
+    // Ensure address data is initialized
+    initializeAddressData();
+    
+    const provinceSelect = document.querySelector(`select[name="guests[${guestIndex}][address][province]"]`);
+    const citySelect = document.querySelector(`select[name="guests[${guestIndex}][address][city]"]`);
+    const zipInput = document.querySelector(`input[name="guests[${guestIndex}][address][zipcode]"]`);
+    
+    if (!provinceSelect || !citySelect || !zipInput) return;
+    
+    // Populate province dropdown
+    provinceSelect.innerHTML = '<option value="">Select Province</option>';
+    Object.keys(phAddressData).forEach(function(province) {
+        const option = document.createElement('option');
+        option.value = province;
+        option.textContent = province;
+        provinceSelect.appendChild(option);
+    });
+    
+    // Province change handler
+    provinceSelect.addEventListener('change', function() {
+        const selectedProvince = this.value;
+        
+        // Clear city options
+        citySelect.innerHTML = '<option value="">Select City</option>';
+        zipInput.value = '';
+        
+        if (selectedProvince && phAddressData[selectedProvince]) {
+            // Add cities for selected province
+            Object.keys(phAddressData[selectedProvince]).forEach(function(city) {
+                const option = document.createElement('option');
+                option.value = city;
+                option.textContent = city;
+                citySelect.appendChild(option);
+            });
+        }
+    });
+    
+    // City change handler
+    citySelect.addEventListener('change', function() {
+        const selectedCity = this.value;
+        const selectedProvince = provinceSelect.value;
+        
+        if (selectedCity && selectedProvince && phAddressData[selectedProvince]) {
+            zipInput.value = phAddressData[selectedProvince][selectedCity] || '';
+        } else {
+            zipInput.value = '';
+        }
     });
 }
 

@@ -114,7 +114,7 @@
                         class="nav-item has-submenu {{ request()->routeIs('adminPages.transactions') || request()->routeIs('adminPages.archivetransactions') || request()->routeIs('adminPages.transactionreports') || request()->routeIs('transactions.*') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-credit-card"></i>
-                            <span>Transaction Management</span>
+                            <span>Transact Management</span>
                             <i class="fas fa-chevron-right submenu-arrow"></i>
                         </a>
                         <ul class="submenu" aria-label="Transaction Management submenu">
@@ -138,6 +138,31 @@
                             </li>
                         </ul>
                     </li>
+
+                    {{-- Reports quick links (Dashboard KPIs) --}}
+                    <li class="nav-item has-submenu {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-chart-pie"></i>
+                            <span>Reports</span>
+                            <i class="fas fa-chevron-right submenu-arrow"></i>
+                        </a>
+                        <ul class="submenu" aria-label="Reports submenu">
+                            <li class="{{ request()->routeIs('reports.payments') ? 'active' : '' }}">
+                                <a href="{{ route('reports.payments') }}" class="submenu-link"><span>Payments</span></a>
+                            </li>
+                            <li class="{{ request()->routeIs('reports.guests') ? 'active' : '' }}">
+                                <a href="{{ route('reports.guests') }}" class="submenu-link"><span>Guests</span></a>
+                            </li>
+                            <li class="{{ request()->routeIs('reports.all-transactions') ? 'active' : '' }}">
+                                <a href="{{ route('reports.all-transactions') }}" class="submenu-link"><span>All Transactions</span></a>
+                            </li>
+                            <li class="{{ request()->routeIs('reports.logs') ? 'active' : '' }}">
+                                <a href="{{ route('reports.logs') }}" class="submenu-link"><span>Logs Report</span></a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    
 
                     <li class="nav-item">
                         <a href="#" class="nav-link">
@@ -173,10 +198,10 @@
                                 <i class="fas fa-cog dropdown-icon"></i>
                                 <span>Settings</span>
                             </a>
-                            <div class="dropdown-item">
+                            <a href="{{ route('adminPages.auditlogs') }}" class="dropdown-item">
                                 <i class="fas fa-history dropdown-icon activity"></i>
-                                <span>Activity Log</span>
-                            </div>
+                                <span>My Activity Log</span>
+                            </a>
                             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                                 @csrf
                                 <button type="submit" class="dropdown-item"

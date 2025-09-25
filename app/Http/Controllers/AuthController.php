@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\History;
+use App\Models\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
@@ -27,6 +29,19 @@ class AuthController extends Controller
         if ($user && Hash::check($credentials['password'], $user->password)) {
             Auth::login($user);
 
+            // Log login activity to History table
+            History::create([
+                'userID' => $user->id,
+                'status' => 'User logged in: ' . $user->name . ' (Role: ' . ($user->roleID == 1 ? 'Admin' : 'Front Desk') . ')',
+            ]);
+
+            // Log login activity to Logs table
+            Log::create([
+                'userID' => $user->id,
+                'timeIn' => now(),
+                'status' => 'User logged in: ' . $user->name . ' (Role: ' . ($user->roleID == 1 ? 'Admin' : 'Front Desk') . ')',
+            ]);
+
             if ($user->roleID == 1) {
                 Cookie::queue('username', $user->name, 60);
 
@@ -47,6 +62,24 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+        // Log logout activity before logging out
+        if (Auth::check()) {
+            $user = Auth::user();
+            
+            // Log to History table
+            History::create([
+                'userID' => $user->id,
+                'status' => 'User logged out: ' . $user->name . ' (Role: ' . ($user->roleID == 1 ? 'Admin' : 'Front Desk') . ')',
+            ]);
+
+            // Log to Logs table
+            Log::create([
+                'userID' => $user->id,
+                'timeOut' => now(),
+                'status' => 'User logged out: ' . $user->name . ' (Role: ' . ($user->roleID == 1 ? 'Admin' : 'Front Desk') . ')',
+            ]);
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

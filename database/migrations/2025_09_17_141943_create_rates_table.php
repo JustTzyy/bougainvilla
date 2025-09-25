@@ -10,7 +10,7 @@ return new class extends Migration {
             $table->id();
             $table->string('duration');
             $table->decimal('price', 10, 2);
-            $table->string('status');
+            $table->enum('status', ['Standard', 'Extending', 'Extending/Standard'])->default('Standard');            ;
             $table->foreignId('accommodation_id')->constrained('accommodations')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();

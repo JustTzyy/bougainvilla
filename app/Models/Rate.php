@@ -10,10 +10,13 @@ class Rate extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = ['duration','price','status','accommodation_id',];
+    protected $fillable = ['duration','price','status'];
 
-    public function accommodation()
+    public function accommodations()
     {
-        return $this->belongsTo(Accommodation::class);
+        return $this->belongsToMany(Accommodation::class, 'rate_accommodations')
+                    ->withTimestamps()
+                    ->withPivot('id')
+                    ->using(\App\Models\RateAccommodation::class);
     }
 }

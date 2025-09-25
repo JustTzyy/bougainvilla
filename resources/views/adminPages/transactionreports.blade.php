@@ -4,202 +4,22 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
-<style>
-  .report-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 24px;
-    box-shadow: 0 4px 20px rgba(138,92,246,.1);
-    border: 1px solid rgba(138,92,246,.1);
-  }
-
-  .report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid rgba(138,92,246,.1);
-  }
-
-  .report-title {
-    color: var(--purple-primary);
-    font-size: 20px;
-    font-weight: 700;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .report-title i {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .report-filters {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .filter-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .filter-input {
-    padding: 8px 12px;
-    border: 2px solid rgba(138,92,246,.1);
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    background: #fff;
-  }
-
-  .filter-input:focus {
-    outline: none;
-    border-color: var(--purple-primary);
-    box-shadow: 0 0 0 3px rgba(138,92,246,.1);
-  }
-
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .stat-card {
-    background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02));
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    border: 1px solid rgba(138,92,246,.1);
-    transition: all 0.3s ease;
-  }
-
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(138,92,246,.15);
-  }
-
-  .stat-icon {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 12px;
-    color: white;
-    font-size: 20px;
-  }
-
-  .stat-value {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--purple-primary);
-    margin-bottom: 4px;
-  }
-
-  .stat-label {
-    font-size: 12px;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-  }
-
-  .chart-container {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    border: 1px solid rgba(138,92,246,.1);
-    margin-bottom: 24px;
-  }
-
-  .chart-title {
-    color: var(--purple-primary);
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .chart-placeholder {
-    height: 300px;
-    background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02));
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6c757d;
-    font-style: italic;
-    border: 2px dashed rgba(138,92,246,.2);
-  }
-
-  .export-buttons {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-    margin-bottom: 24px;
-  }
-
-  .export-btn {
-    padding: 10px 20px;
-    border: 2px solid var(--purple-primary);
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-    color: var(--purple-primary);
-    border-radius: 8px;
-    font-weight: 600;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s ease;
-  }
-
-  .export-btn:hover {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(138,92,246,.3);
-  }
-
-  @media (max-width: 768px) {
-    .report-filters {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .stats-grid {
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-    
-    .export-buttons {
-      justify-content: center;
-    }
-  }
-</style>
 @endpush
 
 @section('content')
+<style>
+  /* Transaction Reports Styling */
+  
+  .transaction-row:hover {
+    background: #f8f9fa;
+  }
+  
+  .text-muted {
+    color: #6c757d;
+    font-style: italic;
+  }
+</style>
+
 <div class="dashboard-page">
   <div class="page-header">
     <h1 class="page-title">Transaction Reports</h1>
@@ -210,6 +30,15 @@
   @endif
   @if (session('error'))
     <div class="alert alert-danger">{{ session('error') }}</div>
+  @endif
+  @if ($errors->any())
+    <div class="alert alert-danger">
+      <ul style="margin:0; padding-left:18px;">
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
   @endif
 
   <script>
@@ -226,231 +55,290 @@
     })();
   </script>
 
-  <!-- Summary Statistics -->
-  <div class="report-card">
-    <div class="report-header">
-      <h3 class="report-title">
-        <i class="fas fa-chart-bar"></i>
-        Summary Statistics
-      </h3>
-      <div class="report-filters">
-        <div class="filter-group">
-          <label>From Date</label>
-          <input type="date" id="fromDate" class="filter-input" value="{{ date('Y-m-01') }}">
-        </div>
-        <div class="filter-group">
-          <label>To Date</label>
-          <input type="date" id="toDate" class="filter-input" value="{{ date('Y-m-d') }}">
-        </div>
-        <div class="filter-group">
-          <label>Status</label>
-          <select id="statusFilter" class="filter-input">
-            <option value="">All Status</option>
-            <option value="Pending">Pending</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-        </div>
-        <button id="applyFilters" class="btn-primary inline" style="margin-top: 20px;">
-          <i class="fas fa-filter"></i> Apply Filters
-        </button>
-      </div>
+  <div class="records-toolbar">
+    <div class="search-container admin-search">
+      <i class="fas fa-search search-icon"></i>
+      <input id="transactionSearch" type="text" placeholder="Search transactions" class="search-input">
     </div>
-
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-credit-card"></i>
-        </div>
-        <div class="stat-value" id="totalTransactions">0</div>
-        <div class="stat-label">Total Transactions</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-dollar-sign"></i>
-        </div>
-        <div class="stat-value" id="totalRevenue">₱0.00</div>
-        <div class="stat-label">Total Revenue</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="stat-value" id="completedTransactions">0</div>
-        <div class="stat-label">Completed</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-clock"></i>
-        </div>
-        <div class="stat-value" id="pendingTransactions">0</div>
-        <div class="stat-label">Pending</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-times-circle"></i>
-        </div>
-        <div class="stat-value" id="cancelledTransactions">0</div>
-        <div class="stat-label">Cancelled</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">
-          <i class="fas fa-calculator"></i>
-        </div>
-        <div class="stat-value" id="averageAmount">₱0.00</div>
-        <div class="stat-label">Average Amount</div>
-      </div>
+    <div class="toolbar-actions">
+      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(138,92,246,.25); transition: all .2s ease;">
+        <i class="fas fa-print" style="margin-right: 6px;"></i>Print Report
+      </button>
     </div>
   </div>
 
-  <!-- Revenue Chart -->
-  <div class="report-card">
-    <div class="chart-container">
-      <h3 class="chart-title">
-        <i class="fas fa-chart-line"></i>
-        Revenue Trend
-      </h3>
-      <div class="chart-placeholder">
-        <div style="text-align: center;">
-          <i class="fas fa-chart-line" style="font-size: 48px; color: var(--purple-primary); margin-bottom: 16px;"></i>
-          <p>Revenue trend chart will be displayed here</p>
-          <small>Integration with charting library required</small>
-        </div>
+  <div class="chart-card card-tight no-print">
+    <div class="section-header-pad" style="display:flex; align-items:center; gap:8px;">
+      <i class="fas fa-filter" style="color:var(--purple-primary);"></i>
+      <h3 class="chart-title" style="margin:0;">Filters</h3>
+    </div>
+    <form class="filters-wrap" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(138,92,246,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(138,92,246,.06);">
+      <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+        <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">From</span>
+        <input type="date" id="from" class="date-input form-input" value="{{ request('from', now()->subDays(29)->toDateString()) }}" style="min-height:36px;">
       </div>
-    </div>
-  </div>
-
-  <!-- Transaction Status Chart -->
-  <div class="report-card">
-    <div class="chart-container">
-      <h3 class="chart-title">
-        <i class="fas fa-chart-pie"></i>
-        Transaction Status Distribution
-      </h3>
-      <div class="chart-placeholder">
-        <div style="text-align: center;">
-          <i class="fas fa-chart-pie" style="font-size: 48px; color: var(--purple-primary); margin-bottom: 16px;"></i>
-          <p>Status distribution pie chart will be displayed here</p>
-          <small>Integration with charting library required</small>
-        </div>
+      <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+        <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">To</span>
+        <input type="date" id="to" class="date-input form-input" value="{{ request('to', now()->toDateString()) }}" style="min-height:36px;">
       </div>
-    </div>
+    </form>
   </div>
 
-  <!-- Export Options -->
-  <div class="export-buttons">
-    <a href="#" class="export-btn" id="exportPDF">
-      <i class="fas fa-file-pdf"></i>
-      Export PDF
-    </a>
-    <a href="#" class="export-btn" id="exportExcel">
-      <i class="fas fa-file-excel"></i>
-      Export Excel
-    </a>
-    <a href="#" class="export-btn" id="exportCSV">
-      <i class="fas fa-file-csv"></i>
-      Export CSV
-    </a>
-  </div>
+  <style>
+    /* Filter styling for transaction reports */
+    #filterForm .btn-primary {
+      background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+      border: 0;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-weight: 700;
+      box-shadow: 0 6px 18px rgba(138,92,246,.25);
+      transition: all .2s ease;
+    }
+    #filterForm .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(138,92,246,.35);
+    }
+    #filterForm .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 14px rgba(138,92,246,.25);
+    }
 
-  <!-- Recent Transactions Table -->
-  <div class="chart-card card-tight">
-    <div class="section-header-pad">
-      <h3 class="chart-title">Recent Transactions</h3>
-    </div>
+    /* Pagination styling for transaction reports */
+    #pagination { display: flex; justify-content: center; margin-top: 12px; }
+    #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+    #pagination .page-link {
+      background: linear-gradient(135deg, #ffffff, #f8f9ff);
+      border: 1px solid rgba(138,92,246,.2);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(138,92,246,.08);
+      transition: all .2s ease;
+    }
+    #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(138,92,246,.15); border-color: rgba(138,92,246,.35); }
+    #pagination li.active .page-link {
+      background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 22px rgba(138,92,246,.35);
+    }
+    #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Print Styles */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .printable-content, .printable-content * {
+        visibility: visible;
+      }
+      .printable-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 12px;
+      }
+      .table th, .table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+      .table th {
+        background-color: #f5f5f5;
+        font-weight: bold;
+      }
+    }
+  </style>
+
+  <div class="printable-content">
+    <div class="chart-card card-tight">
+      <div class="section-header-pad" style="display:flex; align-items:center; gap:8px;">
+        <h3 class="chart-title" style="margin:0;">List</h3>
+      </div>
 
     <div class="table-wrapper">
-      <table class="table sortable-table" id="recentTransactionsTable">
+      <table class="table sortable-table" id="transactionReportsTable">
         <thead>
           <tr>
-            <th>Transaction ID</th>
-            <th>Guest Name</th>
             <th>Room</th>
+            <th>Accommodation</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
             <th>Amount</th>
-            <th>Status</th>
             <th>Date</th>
           </tr>
         </thead>
         <tbody>
-          @if(isset($recentTransactions) && $recentTransactions->count() > 0)
-            @foreach($recentTransactions as $transaction)
-              <tr>
-                <td data-label="Transaction ID">#{{ $transaction->id }}</td>
-                <td data-label="Guest Name">{{ $transaction->guest_name }}</td>
-                <td data-label="Room">{{ $transaction->room }}</td>
-                <td data-label="Amount">₱{{ number_format($transaction->amount, 2) }}</td>
-                <td data-label="Status">{{ $transaction->status }}</td>
-                <td data-label="Date">{{ $transaction->created_at->format('M d, Y') }}</td>
+          @if(isset($transactions) && $transactions->count() > 0)
+            @foreach($transactions as $transaction)
+              <tr class="transaction-row"
+                  data-transaction-id="{{ $transaction->id }}"
+                  data-user-name="{{ $transaction->user_name }}"
+                  data-room="{{ $transaction->room_number }}"
+                  data-accommodation="{{ $transaction->accommodation_name }}"
+                  data-checkin="{{ $transaction->check_in }}"
+                  data-checkout="{{ $transaction->check_out }}"
+                  data-amount="{{ $transaction->amount }}"
+                  data-date="{{ $transaction->created_at }}">
+                <td data-label="Room">{{ $transaction->room_number }}</td>
+                <td data-label="Accommodation">{{ $transaction->accommodation_name }}</td>
+                <td data-label="Check-in">
+                  @if($transaction->check_in && $transaction->check_in !== 'N/A')
+                    {{ $transaction->check_in->format('M d, Y H:i') }}
+                  @else
+                    <span class="text-muted">-</span>
+                  @endif
+                </td>
+                <td data-label="Check-out">
+                  @if($transaction->check_out && $transaction->check_out !== 'N/A')
+                    {{ $transaction->check_out->format('M d, Y H:i') }}
+                  @else
+                    <span class="text-muted">-</span>
+                  @endif
+                </td>
+                <td data-label="Amount">
+                  ₱{{ number_format($transaction->amount, 2) }}
+                </td>
+                <td data-label="Date">{{ $transaction->created_at->format('M d, Y H:i') }}</td>
               </tr>
             @endforeach
           @else
             <tr>
-              <td colspan="6" class="text-center">No recent transactions found</td>
+              <td colspan="6" class="text-center" style="padding:40px; color:#6c757d;">
+                <i class="fas fa-receipt" style="font-size:48px; margin-bottom:16px; display:block;"></i>
+                <p style="margin:0; font-size:16px;">No transactions found</p>
+                <p style="margin:8px 0 0 0; font-size:14px; color:#adb5bd;">Your transaction history will appear here</p>
+              </td>
             </tr>
           @endif
         </tbody>
       </table>
     </div>
+    <nav class="pagination no-print" aria-label="Table pagination" id="pagination" style="display:none;"></nav>
+    </div>
+  </div>
   </div>
 </div>
 
 <script>
   (function(){
-    // Sample data for demonstration
-    var sampleData = {
-      totalTransactions: 156,
-      totalRevenue: 245678.50,
-      completedTransactions: 89,
-      pendingTransactions: 45,
-      cancelledTransactions: 22,
-      averageAmount: 1574.86
-    };
+    // State
+    var allRows = [];
+    var filteredRows = [];
+    var currentPage = 1;
+    var pageSize = 10;
 
-    // Update statistics
-    function updateStats(data) {
-      document.getElementById('totalTransactions').textContent = data.totalTransactions;
-      document.getElementById('totalRevenue').textContent = '₱' + data.totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2});
-      document.getElementById('completedTransactions').textContent = data.completedTransactions;
-      document.getElementById('pendingTransactions').textContent = data.pendingTransactions;
-      document.getElementById('cancelledTransactions').textContent = data.cancelledTransactions;
-      document.getElementById('averageAmount').textContent = '₱' + data.averageAmount.toLocaleString('en-US', {minimumFractionDigits: 2});
+    // Get all rows from the table
+    var table = document.getElementById('transactionReportsTable').getElementsByTagName('tbody')[0];
+    var rows = Array.from(table.rows);
+    
+    // Convert table rows to data objects
+    allRows = rows.map(function(row) {
+      var cells = row.cells;
+      return {
+        room: cells[0] ? cells[0].textContent.trim() : '',
+        accommodation: cells[1] ? cells[1].textContent.trim() : '',
+        check_in: cells[2] ? cells[2].textContent.trim() : '',
+        check_out: cells[3] ? cells[3].textContent.trim() : '',
+        amount: cells[4] ? cells[4].textContent.trim() : '',
+        date: cells[5] ? cells[5].textContent.trim() : '',
+        element: row
+      };
+    });
+
+    function applySearch(){
+      var search = document.getElementById('transactionSearch');
+      var q = (search ? search.value : '').toLowerCase();
+      if (!q) { 
+        filteredRows = allRows.slice(); 
+      } else {
+        filteredRows = allRows.filter(function(r){
+          var t = (''+r.room+' '+r.accommodation+' '+r.check_in+' '+r.check_out+' '+r.amount+' '+r.date).toLowerCase();
+          return t.indexOf(q) !== -1;
+        });
+      }
+      currentPage = 1;
+      renderTable();
+      renderPagination();
     }
 
-    // Apply filters
-    document.getElementById('applyFilters').addEventListener('click', function() {
-      var fromDate = document.getElementById('fromDate').value;
-      var toDate = document.getElementById('toDate').value;
-      var status = document.getElementById('statusFilter').value;
-      
-      // Here you would typically make an AJAX call to get filtered data
-      // For now, we'll just show a loading state
-      console.log('Applying filters:', { fromDate, toDate, status });
-      
-      // Simulate loading
-      setTimeout(function() {
-        updateStats(sampleData);
-      }, 500);
+    function renderTable(){
+      var tbody = document.getElementById('transactionReportsTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      var start = (currentPage - 1) * pageSize;
+      var pageItems = filteredRows.slice(start, start + pageSize);
+      pageItems.forEach(function(r){
+        tbody.appendChild(r.element);
+      });
+    }
+
+    function renderPagination(){
+      var container = document.getElementById('pagination');
+      var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+      if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
+      container.style.display = '';
+      var html = '<ul class="pagination">';
+      function pageItem(p, label, disabled, active){
+        var liCls = active ? 'active' : '';
+        var btnCls = 'page-link' + (disabled ? ' disabled' : '');
+        return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
+      }
+      html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
+      for (var p=1; p<=totalPages; p++){
+        html += pageItem(p, p, false, p===currentPage);
+      }
+      html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
+      html += '</ul>';
+      container.innerHTML = html;
+    }
+
+    function attachPaginationHandler(){
+      var container = document.getElementById('pagination');
+      container.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-page]');
+        if (!btn || btn.classList.contains('disabled')) return;
+        currentPage = parseInt(btn.getAttribute('data-page')) || 1;
+        renderTable();
+        renderPagination();
+      });
+    }
+
+    // Automatic filter event listeners
+    document.getElementById('from').addEventListener('change', function() {
+      var from = this.value;
+      var to = document.getElementById('to').value;
+      window.location.href = '{{ route("adminPages.transactionreports") }}?from=' + from + '&to=' + to;
+    });
+    
+    document.getElementById('to').addEventListener('change', function() {
+      var from = document.getElementById('from').value;
+      var to = this.value;
+      window.location.href = '{{ route("adminPages.transactionreports") }}?from=' + from + '&to=' + to;
     });
 
-    // Export functionality
-    document.getElementById('exportPDF').addEventListener('click', function(e) {
-      e.preventDefault();
-      alert('PDF export functionality would be implemented here');
-    });
+    // Client-side search
+    var search = document.getElementById('transactionSearch');
+    if (search) search.addEventListener('input', applySearch);
 
-    document.getElementById('exportExcel').addEventListener('click', function(e) {
-      e.preventDefault();
-      alert('Excel export functionality would be implemented here');
-    });
+    attachPaginationHandler();
+    applySearch();
 
-    document.getElementById('exportCSV').addEventListener('click', function(e) {
-      e.preventDefault();
-      alert('CSV export functionality would be implemented here');
+    // Print functionality
+    document.getElementById('printBtn').addEventListener('click', function() {
+      // Trigger print dialog
+      window.print();
     });
-
-    // Initialize with sample data
-    updateStats(sampleData);
   })();
 </script>
 

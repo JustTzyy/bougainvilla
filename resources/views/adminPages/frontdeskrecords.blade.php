@@ -106,7 +106,7 @@
             @endforeach
           @else
             <tr>
-              <td colspan="5" class="text-center">No admin records found</td>
+              <td colspan="5" class="text-center">No Front Desk records found</td>
             </tr>
           @endif
         </tbody>

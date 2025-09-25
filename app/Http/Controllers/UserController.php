@@ -10,6 +10,7 @@ use Hash;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 
 class UserController extends Controller
@@ -252,39 +253,94 @@ class UserController extends Controller
     public function updatePersonal(Request $request)
     {
         try {
-            $request->validate([
-                'firstName' => 'required|string|max:255',
-                'lastName' => 'required|string|max:255',
-                'middleName' => 'nullable|string|max:255',
-                'contactNumber' => 'required|string|max:20',
-                'birthday' => 'required|date',
-                'sex' => 'required|in:Male,Female',
-            ]);
+            // Check if this is an address-only update
+            $isAddressOnly = $request->has('street') && $request->has('province') && $request->has('city') && $request->has('zipcode') && 
+                           !$request->has('firstName') && !$request->has('lastName') && !$request->has('contactNumber') && !$request->has('birthday') && !$request->has('sex');
+
+            if ($isAddressOnly) {
+                // Address-only validation
+                $request->validate([
+                    'street' => 'required|string|max:255',
+                    'province' => 'required|string|max:255',
+                    'city' => 'required|string|max:255',
+                    'zipcode' => 'required|string|max:10',
+                ]);
+            } else {
+                // Personal info validation
+                $request->validate([
+                    'firstName' => 'required|string|max:255',
+                    'lastName' => 'required|string|max:255',
+                    'middleName' => 'nullable|string|max:255',
+                    'contactNumber' => 'required|string|max:20',
+                    'birthday' => 'required|date',
+                    'sex' => 'required|in:Male,Female',
+                    // Address fields (optional for personal info update)
+                    'street' => 'nullable|string|max:255',
+                    'province' => 'nullable|string|max:255',
+                    'city' => 'nullable|string|max:255',
+                    'zipcode' => 'nullable|string|max:10',
+                ]);
+            }
 
             $user = Auth::user();
             
-            // Calculate age from birthday
-            $birthday = new \DateTime($request->birthday);
-            $today = new \DateTime();
-            $age = $today->diff($birthday)->y;
+            // Update personal information only if not address-only update
+            if (!$isAddressOnly) {
+                // Calculate age from birthday
+                $birthday = new \DateTime($request->birthday);
+                $today = new \DateTime();
+                $age = $today->diff($birthday)->y;
+                
+                $user->update([
+                    'firstName' => $request->firstName,
+                    'lastName' => $request->lastName,
+                    'middleName' => $request->middleName,
+                    'contactNumber' => $request->contactNumber,
+                    'birthday' => $request->birthday,
+                    'age' => $age,
+                    'sex' => $request->sex,
+                ]);
+
+                // Update the name field as well
+                $user->name = $request->firstName . ' ' . $request->lastName;
+                $user->save();
+            }
+
+            // Update address if address fields are provided
+            if ($request->has('street') && $request->has('province') && $request->has('city') && $request->has('zipcode')) {
+                $address = Address::where('userID', $user->id)->first();
+                if ($address) {
+                    $address->update([
+                        'street' => $request->street,
+                        'city' => $request->city,
+                        'province' => $request->province,
+                        'zipcode' => $request->zipcode,
+                    ]);
+                } else {
+                    Address::create([
+                        'userID' => $user->id,
+                        'street' => $request->street,
+                        'city' => $request->city,
+                        'province' => $request->province,
+                        'zipcode' => $request->zipcode,
+                    ]);
+                }
+            }
+
+            // Add history entry
+            $historyMessage = $isAddressOnly ? 
+                'Updated address information' : 
+                'Updated personal information' . ($request->has('street') ? ' and address' : '');
             
-            $user->update([
-                'firstName' => $request->firstName,
-                'lastName' => $request->lastName,
-                'middleName' => $request->middleName,
-                'contactNumber' => $request->contactNumber,
-                'birthday' => $request->birthday,
-                'age' => $age,
-                'sex' => $request->sex,
+            History::create([
+                'status' => $historyMessage,
+                'userID' => Auth::id(),
             ]);
 
-            // Update the name field as well
-            $user->name = $request->firstName . ' ' . $request->lastName;
-            $user->save();
-
-            return redirect()->route('adminPages.settings')->with('success', 'Personal information updated successfully!');
+            $message = $isAddressOnly ? 'Address updated successfully!' : 'Information updated successfully!';
+            return redirect()->route('adminPages.settings')->with('success', $message);
         } catch (Exception $e) {
-            return redirect()->back()->with('error', 'Failed to update personal information: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('error', 'Failed to update information: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -299,6 +355,12 @@ class UserController extends Controller
             $user = Auth::user();
             $user->update([
                 'email' => $request->email,
+            ]);
+
+            // Add history entry
+            History::create([
+                'status' => 'Updated email address to: ' . $request->email,
+                'userID' => Auth::id(),
             ]);
 
             return redirect()->route('adminPages.settings')->with('success', 'Email updated successfully!');
@@ -327,6 +389,12 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
             ]);
 
+            // Add history entry
+            History::create([
+                'status' => 'Updated password',
+                'userID' => Auth::id(),
+            ]);
+
             return redirect()->route('adminPages.settings')->with('success', 'Password updated successfully!');
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to update password: ' . $e->getMessage())->withInput();
@@ -346,6 +414,12 @@ class UserController extends Controller
             if (!Hash::check($request->password, $user->password)) {
                 return redirect()->back()->with('error', 'Incorrect password. Please try again.')->withInput();
             }
+
+            // Add history entry before deactivating
+            History::create([
+                'status' => 'Deactivated account',
+                'userID' => Auth::id(),
+            ]);
 
             // Soft delete the user account
             $user->delete();

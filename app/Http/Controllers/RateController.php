@@ -15,7 +15,7 @@ class RateController extends Controller
     public function index()
     {
         try {
-            $rates = Rate::with('accommodation')->orderBy('id')->paginate(10);
+            $rates = Rate::with('accommodations')->orderBy('id')->paginate(10);
             $accommodations = Accommodation::all();
             return view('adminPages.rate', compact('rates', 'accommodations'));
         } catch (Exception $e) {
@@ -29,10 +29,13 @@ class RateController extends Controller
             $request->validate([
                 'duration' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
-                'accommodation_id' => 'required|exists:accommodations,id',
+                'status' => 'required|in:Standard,Extending,Extending/Standard',
+                'accommodation_ids' => 'required|array|min:1',
+                'accommodation_ids.*' => 'exists:accommodations,id',
             ]);
 
-            $rate = Rate::create($request->all());
+            $rate = Rate::create($request->only(['duration','price','status']));
+            $rate->accommodations()->sync($request->accommodation_ids);
 
             // Log history
             History::create([
@@ -54,12 +57,14 @@ class RateController extends Controller
             $request->validate([
                 'duration' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
-                'status' => 'required|in:Active,Inactive',
-                'accommodation_id' => 'required|exists:accommodations,id',
+                'status' => 'required|in:Standard,Extending,Extending/Standard',
+                'accommodation_ids' => 'required|array|min:1',
+                'accommodation_ids.*' => 'exists:accommodations,id',
             ]);
 
             $rate = Rate::findOrFail($id);
-            $rate->update($request->all());
+            $rate->update($request->only(['duration','price','status']));
+            $rate->accommodations()->sync($request->accommodation_ids);
 
             // Log history
             History::create([
@@ -133,10 +138,28 @@ class RateController extends Controller
     public function archived()
     {
         try {
-            $rates = Rate::onlyTrashed()->with('accommodation')->paginate(10);
+            $rates = Rate::onlyTrashed()->with('accommodations')->paginate(10);
             return view('adminPages.archiveRates', compact('rates'));
         } catch (Exception $e) {
             return back()->with('error', 'Failed to load archived rates: ' . $e->getMessage());
+        }
+    }
+
+    public function getAccommodationsByRate($id)
+    {
+        try {
+            $rate = Rate::with('accommodations')->findOrFail($id);
+            $accommodations = $rate->accommodations->map(function($a){
+                return [
+                    'id' => $a->id,
+                    'name' => $a->name,
+                    'capacity' => $a->capacity,
+                    'description' => $a->description,
+                ];
+            })->values();
+            return response()->json(['accommodations' => $accommodations]);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Failed to load accommodations'], 500);
         }
     }
 }

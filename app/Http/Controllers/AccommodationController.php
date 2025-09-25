@@ -85,8 +85,10 @@ class AccommodationController extends Controller
         try {
             $accommodation = Accommodation::findOrFail($id);
 
-            // Soft delete related rates first and log each deletion
-            $rates = Rate::where('accommodation_id', $accommodation->id)->get();
+            // Soft delete related rates first and log each deletion (via pivot)
+            $rates = Rate::whereHas('accommodations', function($q) use ($accommodation) {
+                    $q->where('accommodations.id', $accommodation->id);
+                })->get();
             foreach ($rates as $rate) {
                 $rate->delete();
                 History::create([
@@ -118,8 +120,10 @@ class AccommodationController extends Controller
             $accommodation = Accommodation::onlyTrashed()->findOrFail($id);
             $accommodation->restore();
 
-            // Restore related rates too and log each restoration
-            $rates = Rate::onlyTrashed()->where('accommodation_id', $accommodation->id)->get();
+            // Restore related rates too and log each restoration (via pivot)
+            $rates = Rate::onlyTrashed()->whereHas('accommodations', function($q) use ($accommodation) {
+                    $q->where('accommodations.id', $accommodation->id);
+                })->get();
             foreach ($rates as $rate) {
                 $rate->restore();
                 History::create([
@@ -180,7 +184,9 @@ class AccommodationController extends Controller
     {
         try {
             $accommodation = Accommodation::findOrFail($id);
-            $rates = Rate::where('accommodation_id', $id)->get();
+            $rates = Rate::whereHas('accommodations', function($q) use ($id) {
+                        $q->where('accommodations.id', $id);
+                    })->get();
             
             $rates = $rates->map(function($rate) {
                 return [

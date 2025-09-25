@@ -418,9 +418,9 @@
         <div class="form-group">
           <label>Status</label>
           <select name="status" class="form-input" required readonly>
-            <option value="Active" selected>Active</option>
+            <option value="Available" selected>Available</option>
           </select>
-          <input type="hidden" name="status" value="Active">
+          <input type="hidden" name="status" value="Available">
         </div>
         <div class="form-group">
           <label>Type</label>
@@ -482,10 +482,10 @@
         <div class="form-group">
           <label>Status</label>
           <select name="status" id="u_status" class="form-input" required readonly disabled>
-            <option value="Active">Active</option>
+            <option value="Available">Available</option>
             <option value="Under Maintenance">Under Maintenance</option>
           </select>
-          <input type="hidden" name="status" id="u_status_hidden" value="Active">
+          <input type="hidden" name="status" id="u_status_hidden" value="Available">
         </div>
         <div class="form-group">
           <label>Type</label>
@@ -795,6 +795,7 @@
               accommodationsHtml += '<strong style="color: var(--text-primary); font-size: 12px; font-weight: 700; display: block;">' + accommodation.name + '</strong>';
               accommodationsHtml += '<small style="color: #6c757d; font-size: 10px;">Capacity: ' + accommodation.capacity + '</small>';
               accommodationsHtml += '</div>';
+
               accommodationsHtml += '</div>';
               accommodationsHtml += '</div>';
               accommodationsHtml += '</div>';
@@ -852,3 +853,4 @@
 </script>
 
 @endsection
+

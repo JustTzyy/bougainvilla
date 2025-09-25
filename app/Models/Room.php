@@ -19,7 +19,8 @@ class Room extends Model
 
     public function level()
     {
-        return $this->belongsTo(Level::class);
+        // Include soft-deleted levels when loading relationship for archived contexts
+        return $this->belongsTo(Level::class)->withTrashed();
     }
 
     public function accommodations()

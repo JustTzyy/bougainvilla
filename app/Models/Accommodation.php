@@ -14,7 +14,10 @@ class Accommodation extends Model
 
     public function rates()
     {
-        return $this->hasMany(Rate::class, 'accommodation_id');
+        return $this->belongsToMany(Rate::class, 'rate_accommodations')
+                    ->withTimestamps()
+                    ->withPivot('id')
+                    ->using(\App\Models\RateAccommodation::class);
     }
 
     public function rooms()

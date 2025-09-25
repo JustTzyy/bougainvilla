@@ -84,12 +84,13 @@
                   data-accommodations="{{ $room->accommodations->pluck('id')->implode(',') }}"
                   data-archived="{{ $room->deleted_at }}">
                 <td data-label="Room No.">{{ $room->room }}</td>
-                <td data-label="Level">{{ $room->level->description }}</td>
+                <td data-label="Level">{{ optional($room->level)->description ?? '-' }}</td>
                 <td data-label="Status">{{ $room->status }}</td>
                 <td data-label="Type">{{ $room->type }}</td>
                 <td data-label="Date Archived">{{ $room->deleted_at->format('M d, Y H:i') }}</td>
                 <td data-label="Actions">
-                  <button class="action-btn small" data-restore data-room-id="{{ $room->id }}">
+                  @php($floorArchived = $room->level && method_exists($room->level, 'trashed') ? $room->level->trashed() : false)
+                  <button class="action-btn small" data-restore data-room-id="{{ $room->id }}" {{ $floorArchived ? 'disabled' : '' }} title="{{ $floorArchived ? 'Restore floor first' : '' }}">
                     <i class="fas fa-undo"></i>
                   </button>
                 </td>
@@ -103,19 +104,19 @@
         </tbody>
       </table>
     </div>
-    @if(isset($accommodations) && $accommodations->hasPages())
+    @if(isset($rooms) && $rooms->hasPages())
     <nav class="pagination-wrapper" aria-label="Table pagination">
         <ul class="pagination">
             {{-- Previous Page Link --}}
-            @if ($accommodations->onFirstPage())
+            @if ($rooms->onFirstPage())
                 <li class="page-item disabled"><span>&laquo;</span></li>
             @else
-                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+                <li class="page-item"><a href="{{ $rooms->previousPageUrl() }}">&laquo;</a></li>
             @endif
 
             {{-- Pagination Elements --}}
-            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
-                @if ($page == $accommodations->currentPage())
+            @foreach ($rooms->getUrlRange(1, $rooms->lastPage()) as $page => $url)
+                @if ($page == $rooms->currentPage())
                     <li class="page-item active"><span>{{ $page }}</span></li>
                 @else
                     <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
@@ -123,8 +124,8 @@
             @endforeach
 
             {{-- Next Page Link --}}
-            @if ($accommodations->hasMorePages())
-                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @if ($rooms->hasMorePages())
+                <li class="page-item"><a href="{{ $rooms->nextPageUrl() }}">&raquo;</a></li>
             @else
                 <li class="page-item disabled"><span>&raquo;</span></li>
             @endif
@@ -134,6 +135,73 @@
   </div>
 </div>
 
+
+<!-- Archived Room Details Modal -->
+<div id="archivedRoomDetailsModal" class="modal">
+  <div class="modal-card user-details-card">
+    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(138,92,246,.15);">
+      <h3 class="chart-title" style="color: var(--purple-primary); font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
+        Archived Room Details
+      </h3>
+      <button id="closeArchivedRoomDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="user-details-content" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
+      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-info-circle" style="margin-right: 4px; background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
+          Room Information
+        </h4>
+        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Room Number</label>
+            <span id="arch-detail-room-number" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Level</label>
+            <span id="arch-detail-level" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Status</label>
+            <span id="arch-detail-status" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Type</label>
+            <span id="arch-detail-type" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Date Archived</label>
+            <span id="arch-detail-archived" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
+          Accommodations
+        </h4>
+        <div class="info-grid">
+          <div class="info-item span-2" style="grid-column: span 2;">
+            <div id="arch-detail-accommodations-list" style="background: rgba(138,92,246,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(138,92,246,.2);">
+              <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d; font-style: italic; font-size: 10px;">
+                <i class="fas fa-spinner fa-spin" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>
+                Loading...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(138,92,246,.15); border-radius: 0 0 16px 16px;">
+      <button type="button" id="closeArchivedRoomDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600;">
+        <i class="fas fa-times" style="margin-right: 8px;"></i>Close
+      </button>
+    </div>
+  </div>
+  </div>
 
 <script>
   (function(){
@@ -148,6 +216,79 @@
         row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
       });
     });
+
+    // Archived room details modal
+    var archivedRoomDetailsModal = document.getElementById('archivedRoomDetailsModal');
+    var closeArchivedRoomDetailsBtn = document.getElementById('closeArchivedRoomDetails');
+    var closeArchivedRoomDetailsModalBtn = document.getElementById('closeArchivedRoomDetailsModal');
+
+    function openArchivedRoomDetailsModal() { archivedRoomDetailsModal.style.display = 'flex'; }
+    function closeArchivedRoomDetailsModal() { archivedRoomDetailsModal.style.display = 'none'; }
+
+    if (closeArchivedRoomDetailsBtn) closeArchivedRoomDetailsBtn.addEventListener('click', closeArchivedRoomDetailsModal);
+    if (closeArchivedRoomDetailsModalBtn) closeArchivedRoomDetailsModalBtn.addEventListener('click', closeArchivedRoomDetailsModal);
+
+    archivedRoomDetailsModal.addEventListener('click', function(e){ if (e.target === archivedRoomDetailsModal) e.stopPropagation(); });
+
+    // Row click opens details (ignore action buttons)
+    document.querySelectorAll('.room-row').forEach(function(row){
+      row.addEventListener('click', function(e){
+        if (e.target.closest('button')) return;
+        var d = this.dataset;
+        populateArchivedRoomDetails({
+          id: d.roomId,
+          room: d.room,
+          level_id: d.levelId,
+          status: d.status,
+          type: d.type,
+          deleted_at: d.archived
+        });
+        openArchivedRoomDetailsModal();
+      });
+    });
+
+    function populateArchivedRoomDetails(room){
+      document.getElementById('arch-detail-room-number').textContent = room.room || '-';
+      document.getElementById('arch-detail-level').textContent = room.level_id || '-';
+      document.getElementById('arch-detail-status').textContent = room.status || '-';
+      document.getElementById('arch-detail-type').textContent = room.type || '-';
+      document.getElementById('arch-detail-archived').textContent = room.deleted_at ? new Date(room.deleted_at).toLocaleString() : '-';
+
+      loadArchivedRoomAccommodations(room.id);
+    }
+
+    function loadArchivedRoomAccommodations(roomId){
+      var el = document.getElementById('arch-detail-accommodations-list');
+      el.innerHTML = '<div class="loading" style="display:flex;align-items:center;justify-content:center;gap:6px;color:#6c757d;font-style:italic;padding:20px;font-size:12px;"><i class="fas fa-spinner fa-spin" style="color: var(--purple-primary); font-size: 12px;"></i><span>Loading...</span></div>';
+
+      fetch('/adminPages/rooms/' + roomId + '/accommodations')
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+          if (data.accommodations && data.accommodations.length){
+            var html = '<div style="display:grid;gap:6px;max-height:150px;overflow-y:auto;padding-right:4px;">';
+            data.accommodations.forEach(function(a){
+              html += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(138,92,246,.08); transition: all 0.3s ease;">';
+              html += '<div style=\'display:flex;align-items:center;gap:6px;\'>';
+              html += '<div style=\'width:24px;height:24px;background:linear-gradient(135deg,var(--purple-primary),#a29bfe);border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(138,92,246,.3);\'>';
+              html += '<i class="fas fa-hotel" style=\'color:white;font-size:10px;\'></i>';
+              html += '</div>';
+              html += '<div>';
+              html += '<strong style=\'color:var(--text-primary);font-size:12px;font-weight:700;display:block;\'>' + (a.name || '-') + '</strong>';
+              html += '<small style=\'color:#6c757d;font-size:10px;\'>Capacity: ' + (a.capacity ?? '-') + '</small>';
+              html += '</div>';
+              html += '</div>';
+              html += '</div>';
+            });
+            html += '</div>';
+            el.innerHTML = html;
+          } else {
+            el.innerHTML = '<div style="text-align:center;padding:20px;color:#6c757d;"><div style="width:40px;height:40px;background:linear-gradient(135deg, rgba(138,92,246,.1), rgba(138,92,246,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-hotel" style="font-size:16px;color:var(--purple-primary);opacity:.6;"></i></div><h4 style="color:#6c757d;margin:0 0 4px 0;font-weight:600;font-size:12px;">No Accommodations</h4><p style="font-style:italic;margin:0;color:#6c757d;font-size:10px;">No accommodations found</p></div>';
+          }
+        })
+        .catch(function(){
+          el.innerHTML = '<div style="text-align:center;padding:20px;color:#dc3545;"><div style="width:40px;height:40px;background:linear-gradient(135deg, rgba(220,53,69,.1), rgba(220,53,69,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size:16px;color:#dc3545;"></i></div><h4 style="color:#dc3545;margin:0 0 4px 0;font-weight:600;font-size:12px;">Error</h4><p style="font-style:italic;margin:0;color:#dc3545;font-size:10px;">Failed to load</p></div>';
+        });
+    }
 
     // Restore functionality
     document.querySelectorAll('[data-restore]').forEach(function(btn){
@@ -174,11 +315,11 @@
           methodField.name = '_method';
           methodField.value = 'PATCH';
           
-          // Status field - set to Active
+          // Status field - set to Available
           var statusField = document.createElement('input');
           statusField.type = 'hidden';
           statusField.name = 'status';
-          statusField.value = 'Active';
+          statusField.value = 'Available';
           
           form.appendChild(csrfToken);
           form.appendChild(methodField);

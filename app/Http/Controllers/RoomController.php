@@ -123,13 +123,13 @@ class RoomController extends Controller
                     
                     DB::commit();
                     return redirect()->back()->with('success', 'Room updated and archived due to maintenance status!');
-                } elseif ($oldStatus === 'Under Maintenance' && $newStatus === 'Active') {
+                } elseif ($oldStatus === 'Under Maintenance' && $newStatus === 'Available') {
                     // Restore the room if it was previously archived
                     $room->restore();
                     
                     History::create([
                         'userID' => Auth::user()->id,
-                        'status' => 'Restored room: ' . $room->room . ' (Status changed to Active)',
+                        'status' => 'Restored room: ' . $room->room . ' (Status changed to Available)',
                     ]);
                 }
             }
@@ -212,17 +212,17 @@ class RoomController extends Controller
             $room = Room::onlyTrashed()->findOrFail($id);
             $room->restore();
 
-            // Update status to Active if provided
-            if ($request->has('status') && $request->status === 'Active') {
-                $room->update(['status' => 'Active']);
+            // Update status to Available if provided
+            if ($request->has('status') && $request->status === 'Available') {
+                $room->update(['status' => 'Available']);
             }
 
             History::create([
                 'userID' => Auth::user()->id,
-                'status' => 'Restored room: ' . $room->room . ' (Status: Active)',
+                'status' => 'Restored room: ' . $room->room . ' (Status: Available)',
             ]);
 
-            return redirect()->back()->with('success', 'Room restored successfully with Active status!');
+            return redirect()->back()->with('success', 'Room restored successfully with Available status!');
         } catch (QueryException $e) {
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
         } catch (Exception $e) {

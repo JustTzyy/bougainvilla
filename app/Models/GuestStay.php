@@ -29,3 +29,4 @@ class GuestStay extends Model
 
  
 }
+

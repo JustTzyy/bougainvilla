@@ -27,9 +27,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::prefix('adminPages')->middleware('auth')->group(function () {
 
     //Dashboard
-    Route::get('/dashboard', function () {
-        return view('adminPages.dashboard');
-    })->name('adminPages.dashboard');
+    Route::get('/dashboard', [StayController::class, 'reports'])->name('adminPages.dashboard');
+
+    // Reports pages
+    Route::get('/reports/payments', [App\Http\Controllers\ReportController::class, 'payments'])->name('reports.payments');
+    Route::get('/reports/guests', [App\Http\Controllers\ReportController::class, 'guests'])->name('reports.guests');
+    Route::get('/reports/transactions', [App\Http\Controllers\ReportController::class, 'transactionReports'])->name('reports.transactions');
+    Route::get('/reports/all-transactions', [App\Http\Controllers\ReportController::class, 'allTransactions'])->name('reports.all-transactions');
+    Route::get('/reports/logs', [App\Http\Controllers\ReportController::class, 'logs'])->name('reports.logs');
+    Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'data'])->name('reports.data');
 
     //Settings
     Route::get('/settings', function () {
@@ -83,6 +89,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::delete('/rates/delete/{id}', [RateController::class, 'destroy'])->name('rates.destroy');
     Route::patch('/rates/restore/{id}', [RateController::class, 'restore'])->name('rates.restore');
     Route::get('/rates/archive', [RateController::class, 'archived'])->name('rates.archive');
+    Route::get('/rates/{id}/accommodations', [RateController::class, 'getAccommodationsByRate'])->name('rates.accommodations');
 
     // Room Crud
     Route::get('/rooms', [RoomController::class, 'index'])->name('adminPages.rooms');
@@ -100,6 +107,9 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::post('/stays/calculate', [StayController::class, 'calculateTotal'])->name('stays.calculate');
     Route::post('/stays/process', [StayController::class, 'processStay'])->name('stays.process');
     Route::post('/stays/end/{id}', [StayController::class, 'endStay'])->name('stays.end');
+    Route::post('/stays/extend/{id}', [StayController::class, 'extend'])->name('stays.extend');
+    Route::post('/stays/delete/{id}', [StayController::class, 'delete'])->name('stays.delete');
+    Route::post('/stays/restore/{id}', [StayController::class, 'restore'])->name('stays.restore');
     Route::get('/stays/active', [StayController::class, 'getActiveStays'])->name('stays.active');
 
     // Transaction Management Routes (Stays)
@@ -109,8 +119,10 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::post('/transactions/archive/{id}', [StayController::class, 'archive'])->name('transactions.archive');
     Route::patch('/transactions/restore/{id}', [StayController::class, 'restore'])->name('transactions.restore');
     Route::get('/archivetransactions', [StayController::class, 'archived'])->name('adminPages.archivetransactions');
-    Route::get('/transactionreports', [StayController::class, 'reports'])->name('adminPages.transactionreports');
+    Route::get('/transactionreports', [App\Http\Controllers\ReportController::class, 'transactionReports'])->name('adminPages.transactionreports');
     
+    // Activity Logs
+    Route::get('/auditlogs', [App\Http\Controllers\ReportController::class, 'auditLogs'])->name('adminPages.auditlogs');
 
 });
 

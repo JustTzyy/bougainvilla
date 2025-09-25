@@ -56,7 +56,7 @@
 
   <div class="chart-card card-tight">
     <div class="section-header-pad">
-      <h3 class="chart-title">List</h3>
+      <h3 class="chart-title">Archived List</h3>
     </div>
 
     <div class="table-wrapper">
@@ -66,8 +66,8 @@
             <th>ID</th>
             <th>Duration</th>
             <th>Price</th>
-            <th>Accommodation</th>
-            <th>Archive Date</th>
+            <th>Status</th>
+            <th>Date Archived</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -78,14 +78,14 @@
                   data-id="{{ $rate->id }}"
                   data-duration="{{ $rate->duration }}"
                   data-price="{{ $rate->price }}"
-                  data-accommodation="{{ $rate->accommodation->name ?? 'N/A' }}"
+                  data-accommodations="{{ $rate->accommodations->pluck('name')->implode(', ') }}"
                   data-status="{{ $rate->status ?? 'Archived' }}"
                   data-archived="{{ $rate->deleted_at }}">
                 <td data-label="ID">{{ $rate->id }}</td>
                 <td data-label="Duration">{{ $rate->duration }}</td>
                 <td data-label="Price">₱{{ number_format($rate->price, 2) }}</td>
-                <td data-label="Accommodation">{{ $rate->accommodation->name ?? 'N/A' }}</td>
-                <td data-label="Archive Date">{{ optional($rate->deleted_at)->format('M d, Y') }}</td>
+                <td data-label="Status">{{ $rate->status }}</td>
+                <td data-label="Date Archived">{{ optional($rate->deleted_at)->format('M d, Y H:i') }}</td>
                 <td data-label="Actions">
                   <button class="action-btn small" data-restore> 
                     <i class="fas fa-undo"></i> 
@@ -102,19 +102,19 @@
       </table>
     </div>
     
-    @if(isset($accommodations) && $accommodations->hasPages())
+    @if(isset($rates) && $rates->hasPages())
     <nav class="pagination-wrapper" aria-label="Table pagination">
         <ul class="pagination">
             {{-- Previous Page Link --}}
-            @if ($accommodations->onFirstPage())
+            @if ($rates->onFirstPage())
                 <li class="page-item disabled"><span>&laquo;</span></li>
             @else
-                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+                <li class="page-item"><a href="{{ $rates->previousPageUrl() }}">&laquo;</a></li>
             @endif
 
             {{-- Pagination Elements --}}
-            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
-                @if ($page == $accommodations->currentPage())
+            @foreach ($rates->getUrlRange(1, $rates->lastPage()) as $page => $url)
+                @if ($page == $rates->currentPage())
                     <li class="page-item active"><span>{{ $page }}</span></li>
                 @else
                     <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
@@ -122,8 +122,8 @@
             @endforeach
 
             {{-- Next Page Link --}}
-            @if ($accommodations->hasMorePages())
-                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @if ($rates->hasMorePages())
+                <li class="page-item"><a href="{{ $rates->nextPageUrl() }}">&raquo;</a></li>
             @else
                 <li class="page-item disabled"><span>&raquo;</span></li>
             @endif
@@ -133,48 +133,62 @@
   </div>
 </div>
 
-<!-- Rate Details Modal -->
-<div id="rateDetailsModal" class="modal">
+<!-- Rate Details Modal (for archived rates) -->
+<div id="archivedRateDetailsModal" class="modal">
   <div class="modal-card user-details-card">
-    <div class="modal-header">
-      <h3 class="chart-title">Rate Details</h3>
-      <button id="closeRateDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(138,92,246,.15);">
+      <h3 class="chart-title" style="color: var(--purple-primary); font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-tags" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
+        Rate Details
+      </h3>
+      <button id="closeArchivedRateDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
     </div>
     
-    <div class="user-details-content">
-      <div class="user-info-section">
-        <h4><i class="fas fa-tags"></i> Rate Information</h4>
-        <div class="info-grid">
-          <div class="info-item">
-            <label>ID:</label> 
-            <span id="detail-id">-</span>
+    <div class="user-details-content" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
+      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-info-circle" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
+          Rate Information
+        </h4>
+        <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display:block;font-size:10px;font-weight:600;color:#6c757d;">ID</label>
+            <span id="arch-detail-id" style="font-size:14px;font-weight:700;color:var(--text-primary);">-</span>
           </div>
-          <div class="info-item">
-            <label>Duration:</label> 
-            <span id="detail-duration">-</span>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display:block;font-size:10px;font-weight:600;color:#6c757d;">Duration</label>
+            <span id="arch-detail-duration" style="font-size:14px;font-weight:700;color:var(--text-primary);">-</span>
           </div>
-          <div class="info-item">
-            <label>Price:</label>
-            <span id="detail-price">-</span>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display:block;font-size:10px;font-weight:600;color:#6c757d;">Price</label>
+            <span id="arch-detail-price" style="font-size:14px;font-weight:700;color:var(--text-primary);">-</span>
           </div>
-          <div class="info-item">
-            <label>Accommodation:</label>
-            <span id="detail-accommodation">-</span>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display:block;font-size:10px;font-weight:600;color:#6c757d;">Status</label>
+            <span id="arch-detail-status" style="font-size:14px;font-weight:700;color:var(--text-primary);">-</span>
           </div>
-          <div class="info-item">
-            <label>Status:</label>
-            <span id="detail-status" class="status-badge">-</span>
+          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+            <label style="display:block;font-size:10px;font-weight:600;color:#6c757d;">Date Archived</label>
+            <span id="arch-detail-archived" style="font-size:14px;font-weight:700;color:var(--text-primary);">-</span>
           </div>
-          <div class="info-item">
-            <label>Archive Date:</label>
-            <span id="detail-archived">-</span>
-          </div>
+        </div>
+      </div>
+
+      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(138,92,246,.15);">
+          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
+          Accommodations
+        </h4>
+        <div class="info-item span-2" style="grid-column: span 2;">
+          <div id="arch-detail-accommodations" style="background: rgba(138,92,246,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(138,92,246,.2);"></div>
         </div>
       </div>
     </div>
     
-    <div class="modal-actions">
-      <button type="button" id="closeRateDetails" class="action-btn btn-outline">Close</button>
+    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(138,92,246,.15); border-radius: 0 0 16px 16px;">
+      <button type="button" id="closeArchivedRateDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(138,92,246,.1);">
+        <i class="fas fa-times" style="margin-right: 8px;"></i>Close
+      </button>
     </div>
   </div>
 </div>
@@ -193,36 +207,46 @@
       });
     });
 
-    // Rate details modal
-    var modal = document.getElementById('rateDetailsModal');
-    var closeBtn = document.getElementById('closeRateDetails');
-    var closeX = document.getElementById('closeRateDetailsModal');
-    
-    function openModal() { modal.style.display = 'flex'; }
-    function closeModal() { modal.style.display = 'none'; }
-    
-    if (closeBtn) closeBtn.addEventListener('click', closeModal);
-    if (closeX) closeX.addEventListener('click', closeModal);
+    // Archived rate details modal
+    var archModal = document.getElementById('archivedRateDetailsModal');
+    var closeArchBtn = document.getElementById('closeArchivedRateDetails');
+    var closeArchX = document.getElementById('closeArchivedRateDetailsModal');
+    function openArchModal(){ archModal.style.display = 'flex'; }
+    function closeArchModal(){ archModal.style.display = 'none'; }
+    if (closeArchBtn) closeArchBtn.addEventListener('click', closeArchModal);
+    if (closeArchX) closeArchX.addEventListener('click', closeArchModal);
 
     var rows = document.querySelectorAll('.rate-row');
-    rows.forEach(function(row) {
-      row.addEventListener('click', function(e) {
+    rows.forEach(function(row){
+      row.addEventListener('click', function(e){
         if (e.target.closest('button')) return;
         var r = this.dataset;
-        populateRateDetails(r);
-        openModal();
+        document.getElementById('arch-detail-id').textContent = r.id || '-';
+        document.getElementById('arch-detail-duration').textContent = r.duration || '-';
+        document.getElementById('arch-detail-price').textContent = r.price ? '₱' + parseFloat(r.price).toFixed(2) : '-';
+        document.getElementById('arch-detail-status').textContent = r.status || '-';
+        document.getElementById('arch-detail-archived').textContent = r.archived ? new Date(r.archived).toLocaleString() : '-';
+        var accContainer = document.getElementById('arch-detail-accommodations');
+        var names = (r.accommodations || '').split(',').filter(function(s){ return s.trim().length; });
+        if (names.length) {
+          var html = '<div style="display: grid; gap: 6px; max-height: 150px; overflow-y: auto; padding-right: 4px;">';
+          names.forEach(function(name){
+            html += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(138,92,246,.08); transition: all 0.3s ease; position: relative;">';
+            html += '<div style="display:flex;align-items:center;gap:6px;">';
+            html += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(138,92,246,.3);">';
+            html += '<i class="fas fa-hotel" style="color: white; font-size: 10px;"></i>';
+            html += '</div>';
+            html += '<strong style="color: var(--text-primary); font-size: 12px; font-weight: 700; display: block;">' + name.trim() + '</strong>';
+            html += '</div></div>';
+          });
+          html += '</div>';
+          accContainer.innerHTML = html;
+        } else {
+          accContainer.innerHTML = '<div style="text-align:center;color:#6c757d;font-size:10px;font-style:italic;">No accommodations</div>';
+        }
+        openArchModal();
       });
     });
-
-    // Populate details
-    function populateRateDetails(r) {
-      document.getElementById('detail-id').textContent = r.id || '-';
-      document.getElementById('detail-duration').textContent = r.duration || '-';
-      document.getElementById('detail-price').textContent = r.price ? '₱' + r.price : '-';
-      document.getElementById('detail-accommodation').textContent = r.accommodation || 'N/A';
-      document.getElementById('detail-status').textContent = r.status || '-';
-      document.getElementById('detail-archived').textContent = r.archived ? new Date(r.archived).toLocaleDateString() : '-';
-    }
 
     // Restore functionality
     document.querySelectorAll('[data-restore]').forEach(function(btn){
