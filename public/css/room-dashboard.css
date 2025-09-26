@@ -531,6 +531,13 @@
     display: none !important;
 }
 
+/* Override for process payment button when it should be visible */
+#processPaymentBtn:not(.hidden) {
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 @media (max-width: 768px) {
     .rooms-grid {
         grid-template-columns: repeat(2, 1fr);

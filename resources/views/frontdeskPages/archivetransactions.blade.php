@@ -1,4 +1,4 @@
-@extends('layouts.admindashboard')
+@extends('layouts.frontdeskdashboard')
 
 @section('title','Archived Transactions')
 
@@ -474,13 +474,13 @@
     document.getElementById('from').addEventListener('change', function() {
       var from = this.value;
       var to = document.getElementById('to').value;
-      window.location.href = '{{ route("adminPages.archivetransactions") }}?from=' + from + '&to=' + to;
+      window.location.href = '{{ route("frontdesk.archivetransactions") }}?from=' + from + '&to=' + to;
     });
     
     document.getElementById('to').addEventListener('change', function() {
       var from = document.getElementById('from').value;
       var to = this.value;
-      window.location.href = '{{ route("adminPages.archivetransactions") }}?from=' + from + '&to=' + to;
+      window.location.href = '{{ route("frontdesk.archivetransactions") }}?from=' + from + '&to=' + to;
     });
 
     // Client-side search
@@ -532,7 +532,7 @@
       guestModal.style.display = 'flex';
 
       // Fetch guest details
-      fetch('/adminPages/transactions/guest-details/' + transactionId)
+      fetch('/frontdesk/transactions/guest-details/' + transactionId)
         .then(response => response.json())
         .then(data => {
           if (data.success && data.guests) {

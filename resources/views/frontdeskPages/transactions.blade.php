@@ -1,4 +1,4 @@
-@extends('layouts.admindashboard')
+@extends('layouts.frontdeskdashboard')
 
 @section('title','Transactions')
 

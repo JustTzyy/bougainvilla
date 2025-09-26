@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\FrontDesk;
 
+use App\Http\Controllers\Controller;
 use App\Models\Stay;
 use App\Models\Room;
 use App\Models\Rate;
@@ -35,9 +36,9 @@ class StayController extends Controller
             // Get levels for filtering
             $levels = \App\Models\Level::where('status', 'Active')->get();
             
-            return view('adminPages.transactions', compact('rooms', 'levels'));
+            return view('frontdeskPages.transactions', compact('rooms', 'levels'));
         } catch (Exception $e) {
-            \Log::error('Stay Controller Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Stay Controller Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load room dashboard: ' . $e->getMessage());
         }
     }
@@ -448,10 +449,10 @@ class StayController extends Controller
                 ];
             });
 
-            return view('adminPages.archivetransactions', ['transactions' => $stays]);
+            return view('frontdeskPages.archivetransactions', ['transactions' => $stays]);
             
         } catch (Exception $e) {
-            \Log::error('Archived Transactions Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Archived Transactions Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load archived transactions: ' . $e->getMessage());
         }
     }
@@ -487,7 +488,7 @@ class StayController extends Controller
             
         } catch (Exception $e) {
             DB::rollBack();
-            \Log::error('Restore Stay Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Restore Stay Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to restore stay: ' . $e->getMessage());
         }
     }
@@ -539,11 +540,18 @@ class StayController extends Controller
             $toCarbon = $to ? Carbon::parse($to)->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $from ? Carbon::parse($from)->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
 
+            // Get current logged-in user ID
+            $currentUserId = Auth::id();
+
+            // Filter payments through receipts that belong to the logged-in user
             $paymentsQuery = Payment::query()
                 ->where('status', 'Completed')
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('stay', function($query) {
                     $query->whereNull('deleted_at'); // Only include payments from non-deleted stays
+                })
+                ->whereHas('receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include payments with receipts from current user
                 });
 
             $totals = $paymentsQuery->clone()
@@ -554,12 +562,15 @@ class StayController extends Controller
                 ->selectRaw('COUNT(*) as payments_count')
                 ->first();
 
-            // Daily breakdown (for charts)
+            // Daily breakdown (for charts) - filtered by user
             $daily = Payment::query()
                 ->where('status', 'Completed')
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('stay', function($query) {
                     $query->whereNull('deleted_at'); // Only include payments from non-deleted stays
+                })
+                ->whereHas('receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include payments with receipts from current user
                 })
                 ->selectRaw('DATE(created_at) as day')
                 ->selectRaw('SUM(amount) as amount')
@@ -569,32 +580,54 @@ class StayController extends Controller
                 ->orderBy('day')
                 ->get();
 
-            // KPI Metrics (no reservations list)
+            // KPI Metrics - show user-specific room data
             $roomsTotal = Room::count();
             $roomsAvailable = Room::where('status', 'Available')->count();
+            
+            // Count rooms occupied by stays that have payments with receipts from current user
+            $roomsOccupiedByUser = Stay::where('status', 'Active')
+                ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId);
+                })
+                ->distinct('roomID')
+                ->count('roomID');
+            
             $roomsOccupied = Room::where('status', 'In Use')->count();
             $roomsMaintenance = Room::where('status', 'Under Maintenance')->count();
-            $occupancyRate = $roomsTotal > 0 ? round(($roomsOccupied / $roomsTotal) * 100, 2) : 0;
+            $occupancyRate = $roomsTotal > 0 ? round(($roomsOccupiedByUser / $roomsTotal) * 100, 2) : 0;
 
-            // Date-range check-ins/outs for filters
+            // Date-range check-ins/outs for filters - filtered by user
             $checkinsRange = Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
                 ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
                 ->count();
             $checkoutsRange = Stay::whereBetween('checkOut', [$fromCarbon, $toCarbon])
                 ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
                 ->count();
 
             // Revenue shortcuts
-            // Guests involved within date range (unique guest-stay rows for stays that started in range)
+            // Guests involved within date range (unique guest-stay rows for stays that started in range) - filtered by user
             $guestsRange = GuestStay::whereIn('stayID', Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
                 ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
                 ->pluck('id'))
                 ->count();
 
-            // Recent Active Stays (Guests & Stays list) — no reservations
+            // Recent Active Stays (Guests & Stays list) — no reservations - filtered by user
             $activeStays = Stay::with(['room', 'guests'])
                 ->where('status', 'Active')
                 ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
                 ->orderByDesc('checkIn')
                 ->limit(12)
                 ->get()
@@ -611,13 +644,19 @@ class StayController extends Controller
                     ];
                 });
 
-            // Guest counts - based on date range
+            // Guest counts - based on date range - filtered by user
             $guestsInRange = GuestStay::whereIn('stayID', Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
                 ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
                 ->pluck('id'))->count();
             $guestsTotal = Guest::withTrashed()->count();
             $activeStayIds = Stay::where('status', 'Active')
                 ->whereNull('deleted_at')
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
                 ->pluck('id');
             $guestsInHouse = GuestStay::whereIn('stayID', $activeStayIds)->count();
             
@@ -640,7 +679,7 @@ class StayController extends Controller
                     'kpis' => [
                         'rooms_total' => (int) $roomsTotal,
                         'rooms_available' => (int) $roomsAvailable,
-                        'rooms_occupied' => (int) $roomsOccupied,
+                        'rooms_occupied' => (int) $roomsOccupiedByUser, // User-specific occupied rooms
                         'rooms_maintenance' => (int) $roomsMaintenance,
                         'occupancy_rate' => (float) $occupancyRate,
                         'checkins' => (int) $checkinsRange,
@@ -654,7 +693,7 @@ class StayController extends Controller
             }
 
             // Fallback to dashboard view with preloaded figures
-            return view('adminPages.dashboard', [
+            return view('frontdeskPages.dashboard', [
                 'reportFrom' => $fromCarbon->toDateString(),
                 'reportTo' => $toCarbon->toDateString(),
                 'reportTotals' => $totals,
@@ -663,7 +702,7 @@ class StayController extends Controller
                 'reportKpis' => [
                     'rooms_total' => (int) $roomsTotal,
                     'rooms_available' => (int) $roomsAvailable,
-                    'rooms_occupied' => (int) $roomsOccupied,
+                    'rooms_occupied' => (int) $roomsOccupiedByUser, // User-specific occupied rooms
                     'rooms_maintenance' => (int) $roomsMaintenance,
                     'occupancy_rate' => (float) $occupancyRate,
                     'checkins' => (int) $checkinsRange,
@@ -703,6 +742,8 @@ class StayController extends Controller
     public function getGuestDetails($id)
     {
         try {
+            \Log::info('FrontDesk getGuestDetails called with ID: ' . $id);
+            
             // First try to find as a Stay (for archived transactions)
             $stay = Stay::withTrashed()
                 ->with(['guests.address', 'room', 'rate.accommodations', 'payments.receipts'])
@@ -816,7 +857,8 @@ class StayController extends Controller
             ]);
 
         } catch (Exception $e) {
-            \Log::error('Get Guest Details Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Get Guest Details Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Get Guest Details Stack Trace: ' . $e->getTraceAsString());
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to fetch guest details: ' . $e->getMessage()

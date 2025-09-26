@@ -47,7 +47,9 @@ class AuthController extends Controller
 
                 return redirect()->route('adminPages.dashboard');
             } elseif ($user->roleID == 2) {
-                return redirect('/Dashboard/teacher');
+                Cookie::queue('username', $user->name, 60);
+
+                return redirect()->route('frontdesk.dashboard');
             } else {
                 return redirect()->route('login')
                     ->withErrors(['email' => 'Role not recognized.'])

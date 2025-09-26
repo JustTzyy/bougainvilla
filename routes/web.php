@@ -34,6 +34,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::get('/reports/guests', [App\Http\Controllers\ReportController::class, 'guests'])->name('reports.guests');
     Route::get('/reports/transactions', [App\Http\Controllers\ReportController::class, 'transactionReports'])->name('reports.transactions');
     Route::get('/reports/all-transactions', [App\Http\Controllers\ReportController::class, 'allTransactions'])->name('reports.all-transactions');
+    Route::get('/reports/all-archived-transactions', [App\Http\Controllers\ReportController::class, 'allArchivedTransactions'])->name('reports.all-archived-transactions');
     Route::get('/reports/logs', [App\Http\Controllers\ReportController::class, 'logs'])->name('reports.logs');
     Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'data'])->name('reports.data');
 
@@ -123,7 +124,53 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     
     // Activity Logs
     Route::get('/auditlogs', [App\Http\Controllers\ReportController::class, 'auditLogs'])->name('adminPages.auditlogs');
+    
+    // Guest details route
+    Route::get('/transactions/guest-details/{id}', [StayController::class, 'getGuestDetails'])->name('transactions.guest-details');
 
+});
+
+// FrontDesk Routes
+Route::prefix('frontdesk')->middleware('auth')->group(function () {
+    
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\FrontDesk\StayController::class, 'reports'])->name('frontdesk.dashboard');
+    
+    // Transaction Management Routes
+    Route::get('/transactions', [App\Http\Controllers\FrontDesk\StayController::class, 'index'])->name('frontdesk.transactions');
+    Route::post('/transactions', [App\Http\Controllers\FrontDesk\StayController::class, 'store'])->name('frontdesk.transactions.post');
+    Route::post('/transactions/update/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'update'])->name('frontdesk.transactions.update');
+    Route::post('/transactions/archive/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'archive'])->name('frontdesk.transactions.archive');
+    Route::patch('/transactions/restore/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'restore'])->name('frontdesk.transactions.restore');
+    Route::get('/archivetransactions', [App\Http\Controllers\FrontDesk\StayController::class, 'archived'])->name('frontdesk.archivetransactions');
+    Route::get('/transactionreports', [App\Http\Controllers\FrontDesk\ReportController::class, 'transactionReports'])->name('frontdesk.transactionreports');
+    
+    // Settings
+    Route::get('/settings', function () {
+        return view('frontdeskPages.settings');
+    })->name('frontdesk.settings');
+    
+    // Settings routes for frontdesk
+    Route::put('/settings/personal', [App\Http\Controllers\UserController::class, 'updatePersonal'])->name('frontdesk.settings.personal');
+    Route::put('/settings/email', [App\Http\Controllers\UserController::class, 'updateEmail'])->name('frontdesk.settings.email');
+    Route::put('/settings/password', [App\Http\Controllers\UserController::class, 'updatePassword'])->name('frontdesk.settings.password');
+    Route::delete('/settings/deactivate', [App\Http\Controllers\UserController::class, 'deactivateAccount'])->name('frontdesk.settings.deactivate');
+    
+    // Activity Logs
+    Route::get('/auditlogs', [App\Http\Controllers\FrontDesk\ReportController::class, 'auditLogs'])->name('frontdesk.auditlogs');
+    
+    // Guest details route
+    Route::get('/transactions/guest-details/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'getGuestDetails'])->name('frontdesk.transactions.guest-details');
+    
+    // Room Dashboard Routes (for frontdesk)
+    Route::get('/stays/rates/{accommodationId}', [App\Http\Controllers\FrontDesk\StayController::class, 'getRatesForAccommodation'])->name('frontdesk.stays.rates');
+    Route::post('/stays/calculate', [App\Http\Controllers\FrontDesk\StayController::class, 'calculateTotal'])->name('frontdesk.stays.calculate');
+    Route::post('/stays/process', [App\Http\Controllers\FrontDesk\StayController::class, 'processStay'])->name('frontdesk.stays.process');
+    Route::post('/stays/end/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'endStay'])->name('frontdesk.stays.end');
+    Route::post('/stays/extend/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'extend'])->name('frontdesk.stays.extend');
+    Route::post('/stays/delete/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'delete'])->name('frontdesk.stays.delete');
+    Route::post('/stays/restore/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'restore'])->name('frontdesk.stays.restore');
+    Route::get('/stays/active', [App\Http\Controllers\FrontDesk\StayController::class, 'getActiveStays'])->name('frontdesk.stays.active');
 });
 
 // Support the UI call fetch('/AdminPages/admin/{id}')

@@ -231,6 +231,110 @@
   </div>
 </div>
 
+<!-- Guest Details Modal -->
+<div id="guestDetailsModal" class="modal" style="display:none;">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Guest Details</h2>
+      <span class="close" id="closeGuestModal">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="guestDetailsContent">
+        <!-- Guest details will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Modal Styling */
+  .modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-content {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .modal-title {
+    margin: 0;
+    color: var(--purple-primary);
+    font-size: 24px;
+    font-weight: 700;
+  }
+  
+  .close {
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+  }
+  
+  .close:hover {
+    color: #000;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .guest-detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .guest-detail-item:last-child {
+    border-bottom: none;
+  }
+  
+  .guest-detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 120px;
+  }
+  
+  .guest-detail-value {
+    color: var(--text-primary);
+    flex: 1;
+    text-align: right;
+  }
+  
+  .transaction-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .transaction-row:hover {
+    background-color: #f8f9fa !important;
+  }
+</style>
+
 <script>
   (function(){
     // State
@@ -339,6 +443,95 @@
       // Trigger print dialog
       window.print();
     });
+
+    // Guest details modal functionality
+    var guestModal = document.getElementById('guestDetailsModal');
+    var closeGuestModal = document.getElementById('closeGuestModal');
+    var guestDetailsContent = document.getElementById('guestDetailsContent');
+
+    // Close modal when clicking X
+    closeGuestModal.addEventListener('click', function() {
+      guestModal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside
+    guestModal.addEventListener('click', function(e) {
+      if (e.target === guestModal) {
+        guestModal.style.display = 'none';
+      }
+    });
+
+    // Add click handlers to table rows
+    function addRowClickHandlers() {
+      var rows = document.querySelectorAll('#transactionReportsTable tbody tr.transaction-row');
+      rows.forEach(function(row) {
+        row.addEventListener('click', function() {
+          var transactionId = this.getAttribute('data-transaction-id');
+          if (transactionId) {
+            showGuestDetails(transactionId);
+          }
+        });
+      });
+    }
+
+    function showGuestDetails(transactionId) {
+      // Show loading state
+      guestDetailsContent.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; color: var(--purple-primary);"></i><p style="margin-top: 16px;">Loading guest details...</p></div>';
+      guestModal.style.display = 'flex';
+
+      // Fetch guest details
+      fetch('/adminPages/transactions/guest-details/' + transactionId)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.guests) {
+            displayGuestDetails(data.guests, data.transaction);
+          } else {
+            guestDetailsContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;"><i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i><p>No guest details found for this transaction.</p></div>';
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching guest details:', error);
+          guestDetailsContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc3545;"><i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i><p>Error loading guest details. Please try again.</p></div>';
+        });
+    }
+
+    function displayGuestDetails(guests, transaction) {
+      var html = '<div class="transaction-info" style="margin-bottom: 24px; padding: 16px; background: #f8f9ff; border-radius: 10px; border-left: 4px solid var(--purple-primary);">';
+      html += '<h4 style="margin: 0 0 12px 0; color: var(--purple-primary);">Transaction Information</h4>';
+      html += '<div class="guest-detail-item"><span class="guest-detail-label">Room:</span><span class="guest-detail-value">' + (transaction.room || 'N/A') + '</span></div>';
+      html += '<div class="guest-detail-item"><span class="guest-detail-label">Accommodation:</span><span class="guest-detail-value">' + (transaction.accommodation || 'N/A') + '</span></div>';
+      html += '<div class="guest-detail-item"><span class="guest-detail-label">Amount:</span><span class="guest-detail-value">₱' + (transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00') + '</span></div>';
+      html += '</div>';
+
+      html += '<h4 style="margin: 0 0 16px 0; color: var(--purple-primary);">Guest Information</h4>';
+      
+      if (guests && guests.length > 0) {
+        guests.forEach(function(guest, index) {
+          html += '<div style="margin-bottom: 20px; padding: 16px; border: 1px solid #e9ecef; border-radius: 10px; background: #fff;">';
+          html += '<h5 style="margin: 0 0 12px 0; color: var(--text-primary);">Guest ' + (index + 1) + '</h5>';
+          html += '<div class="guest-detail-item"><span class="guest-detail-label">Name:</span><span class="guest-detail-value">' + (guest.firstName || '') + ' ' + (guest.middleName || '') + ' ' + (guest.lastName || '') + '</span></div>';
+          html += '<div class="guest-detail-item"><span class="guest-detail-label">Contact:</span><span class="guest-detail-value">' + (guest.number || 'N/A') + '</span></div>';
+          if (guest.address) {
+            html += '<div class="guest-detail-item"><span class="guest-detail-label">Address:</span><span class="guest-detail-value">' + (guest.address.street || '') + ', ' + (guest.address.city || '') + ', ' + (guest.address.province || '') + ' ' + (guest.address.zipcode || '') + '</span></div>';
+          }
+          html += '</div>';
+        });
+      } else {
+        html += '<div style="text-align: center; padding: 20px; color: #6c757d;"><i class="fas fa-user-slash" style="font-size: 24px; margin-bottom: 8px; display: block;"></i><p>No guest information available</p></div>';
+      }
+
+      guestDetailsContent.innerHTML = html;
+    }
+
+    // Initialize row click handlers
+    addRowClickHandlers();
+
+    // Re-add handlers after pagination
+    var originalRenderTable = renderTable;
+    renderTable = function() {
+      originalRenderTable();
+      addRowClickHandlers();
+    };
   })();
 </script>
 

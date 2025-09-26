@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\FrontDesk;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Payment;
 use App\Models\Receipt;
@@ -14,13 +15,13 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
-    public function payments() { return view('adminPages.payments'); }
-    public function totalAmount() { return view('adminPages.total_amount'); }
-    public function tax() { return view('adminPages.tax'); }
-    public function subtotal() { return view('adminPages.subtotal'); }
-    public function checkins() { return view('adminPages.checkins'); }
-    public function checkouts() { return view('adminPages.checkouts'); }
-    public function guests() { return view('adminPages.guests'); }
+    public function payments() { return view('frontdeskPages.payments'); }
+    public function totalAmount() { return view('frontdeskPages.total_amount'); }
+    public function tax() { return view('frontdeskPages.tax'); }
+    public function subtotal() { return view('frontdeskPages.subtotal'); }
+    public function checkins() { return view('frontdeskPages.checkins'); }
+    public function checkouts() { return view('frontdeskPages.checkouts'); }
+    public function guests() { return view('frontdeskPages.guests'); }
     
     
     public function auditLogs(Request $request)
@@ -42,10 +43,10 @@ class ReportController extends Controller
             // Get all users for the filter dropdown
             $users = User::orderBy('name')->get();
             
-            return view('adminPages.auditlogs', compact('histories', 'users'));
+            return view('frontdeskPages.auditlogs', compact('histories', 'users'));
             
         } catch (Exception $e) {
-            \Log::error('Audit Logs Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Audit Logs Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load activity logs: ' . $e->getMessage());
         }
     }
@@ -99,10 +100,10 @@ class ReportController extends Controller
                 ];
             });
 
-            return view('adminPages.transactionreports', ['transactions' => $transactions]);
+            return view('frontdeskPages.transactionreports', ['transactions' => $transactions]);
             
         } catch (Exception $e) {
-            \Log::error('Transaction Reports Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Transaction Reports Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load transaction reports: ' . $e->getMessage());
         }
     }
@@ -155,10 +156,10 @@ class ReportController extends Controller
                 ];
             });
 
-            return view('adminPages.alltransactions', ['transactions' => $transactions]);
+            return view('frontdeskPages.alltransactions', ['transactions' => $transactions]);
 
         } catch (Exception $e) {
-            \Log::error('All Transactions Error: ' . $e->getMessage());
+            \Log::error('FrontDesk All Transactions Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load all transactions: ' . $e->getMessage());
         }
     }
@@ -174,17 +175,17 @@ class ReportController extends Controller
 
             // Debug: Check if there are any soft-deleted stays
             $softDeletedStays = Stay::onlyTrashed()->count();
-            \Log::info('Soft-deleted stays count: ' . $softDeletedStays);
+            \Log::info('FrontDesk Soft-deleted stays count: ' . $softDeletedStays);
             
             // Debug: Check if there are any receipts with soft-deleted stays
             $receiptsWithSoftDeletedStays = Receipt::whereHas('payment.stay', function($query) {
                 $query->onlyTrashed();
             })->count();
-            \Log::info('Receipts with soft-deleted stays count: ' . $receiptsWithSoftDeletedStays);
+            \Log::info('FrontDesk Receipts with soft-deleted stays count: ' . $receiptsWithSoftDeletedStays);
 
             // Alternative approach: Get soft-deleted stays first, then get their receipts
             $softDeletedStayIds = Stay::onlyTrashed()->pluck('id')->toArray();
-            \Log::info('Soft-deleted stay IDs: ' . json_encode($softDeletedStayIds));
+            \Log::info('FrontDesk Soft-deleted stay IDs: ' . json_encode($softDeletedStayIds));
 
             // Get transactions from ALL users with all related data
             // ONLY include transactions from soft-deleted stays
@@ -197,7 +198,7 @@ class ReportController extends Controller
                 ->paginate($perPage);
 
             // Debug: Log the count of archived transactions found
-            \Log::info('Archived transactions found: ' . $archivedTransactions->count());
+            \Log::info('FrontDesk Archived transactions found: ' . $archivedTransactions->count());
 
             // Transform the data for display
             $archivedTransactions->getCollection()->transform(function ($receipt) {
@@ -233,15 +234,15 @@ class ReportController extends Controller
                 ];
             });
 
-            return view('adminPages.allarchivetransactions', ['archivedTransactions' => $archivedTransactions]);
+            return view('frontdeskPages.allarchivetransactions', ['archivedTransactions' => $archivedTransactions]);
 
         } catch (Exception $e) {
-            \Log::error('All Archived Transactions Error: ' . $e->getMessage());
+            \Log::error('FrontDesk All Archived Transactions Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load archived transactions: ' . $e->getMessage());
         }
     }
 
-    // Generic data endpoint: /adminPages/reports/data?type=payments&from=YYYY-MM-DD&to=YYYY-MM-DD
+    // Generic data endpoint: /frontdeskPages/reports/data?type=payments&from=YYYY-MM-DD&to=YYYY-MM-DD
     public function data(Request $request)
     {
         $type = $request->query('type', 'payments');
@@ -375,16 +376,12 @@ class ReportController extends Controller
                 ->paginate($perPage);
             
             // Debug: Log the count
-            \Log::info('Logs count: ' . $logs->count());
+            \Log::info('FrontDesk Logs count: ' . $logs->count());
             
-            return view('adminPages.logs', compact('logs'));
+            return view('frontdeskPages.logs', compact('logs'));
         } catch (Exception $e) {
-            \Log::error('Logs Report Error: ' . $e->getMessage());
+            \Log::error('FrontDesk Logs Report Error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to load logs report: ' . $e->getMessage());
         }
     }
 }
-
-
-
-

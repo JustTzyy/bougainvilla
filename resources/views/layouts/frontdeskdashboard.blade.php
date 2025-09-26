@@ -5,10 +5,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - Purple Admin</title>
+    <title>@yield('title', 'Dashboard') - Purple FrontDesk</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @stack('styles')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Fix sidebar visibility - ensure it shows by default on desktop */
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+                width: var(--sidebar-width) !important;
+            }
+            .sidebar.collapsed {
+                width: 80px !important;
+                transform: translateX(0) !important;
+            }
+        }
+        
+        /* Mobile behavior - hide by default, show when collapsed class is present */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%) !important;
+            }
+            .sidebar.collapsed {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
 </head>
 
 <body class="dashboard-body">
@@ -28,7 +51,7 @@
                 </div>
                 <div class="user-info">
                     <div class="user-name">{{ Auth::user()->name ?? 'User' }}</div>
-                    <div class="user-role">{{ Auth::user()->role->role ?? 'Admin' }}</div>
+                    <div class="user-role">{{ Auth::user()->role->role ?? 'FrontDesk' }}</div>
                 </div>
                 <div class="bookmark-icon">
                     <i class="fas fa-bookmark"></i>
@@ -37,140 +60,40 @@
 
             <nav class="sidebar-nav">
                 <ul class="nav-list">
-                    <li class="nav-item {{ request()->routeIs('adminPages.dashboard') ? 'active' : '' }}">
-                        <a href="{{ route('adminPages.dashboard') }}" class="nav-link">
+                    <li class="nav-item {{ request()->routeIs('frontdesk.dashboard') ? 'active' : '' }}">
+                        <a href="{{ route('frontdesk.dashboard') }}" class="nav-link">
                             <i class="fas fa-home"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
 
                     <li
-                        class="nav-item has-submenu {{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archiveadminrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
-                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-user-lock"></i>
-                            <span>User Management</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                        <ul class="submenu" aria-label="Data submenu">
-                            <li
-                                class="{{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.archiveadminrecords') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.adminrecords') }}" class="submenu-link">
-                                    <span>Admin</span>
-                                </a>
-                            </li>
-                            <li
-                                class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
-                                    <span>FrontDesk</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li
-                        class="nav-item has-submenu 
-    {{ request()->routeIs('adminPages.accommodations') || request()->routeIs('adminPages.levels') ||   request()->routeIs('adminPages.rooms') || request()->routeIs('adminPages.rates') || request()->routeIs('accommodations.*') ? 'active' : '' }}">
-                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-user-lock"></i>
-                            <span>Room Management</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                        <ul class="submenu" aria-label="RoomManagement submenu">
-
-                            {{-- Accommodations --}}
-                            <li
-                                class="{{ request()->routeIs('adminPages.accommodations') || request()->routeIs('accommodations.archive') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.accommodations') }}" class="submenu-link">
-                                    <span>Accommodations</span>
-                                </a>
-                            </li>
-
-                            {{-- Levels --}}
-                            <li
-                                class="{{ request()->routeIs('adminPages.levels') || request()->routeIs('levels.*') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.levels') }}" class="submenu-link">
-                                    <span>Levels</span>
-                                </a>
-                            </li>
-
-                            {{-- Rooms --}}
-                            <li
-                                class="{{ request()->routeIs('adminPages.rooms') || request()->routeIs('rooms.*') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.rooms') }}" class="submenu-link">
-                                    <span>Rooms</span>
-                                </a>
-                            </li>
-
-                            <li
-                                class="{{ request()->routeIs('adminPages.rates') || request()->routeIs('rates.*') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.rates') }}" class="submenu-link">
-                                    <span>Rates</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li
-                        class="nav-item has-submenu {{ request()->routeIs('adminPages.transactions') || request()->routeIs('adminPages.archivetransactions') || request()->routeIs('adminPages.transactionreports') || request()->routeIs('transactions.*') ? 'active' : '' }}">
+                        class="nav-item has-submenu {{ request()->routeIs('frontdesk.transactions') || request()->routeIs('frontdesk.archivetransactions') || request()->routeIs('frontdesk.transactionreports') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-credit-card"></i>
-                            <span>Transact Management</span>
+                            <span>Transaction Management</span>
                             <i class="fas fa-chevron-right submenu-arrow"></i>
                         </a>
                         <ul class="submenu" aria-label="Transaction Management submenu">
                             <li
-                                class="{{ request()->routeIs('adminPages.transactions') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.transactions') }}" class="submenu-link">
-                                    <span>Transactions</span>
+                                class="{{ request()->routeIs('frontdesk.transactions') ? 'active' : '' }}">
+                                <a href="{{ route('frontdesk.transactions') }}" class="submenu-link">
+                                    <span>Current Transactions</span>
                                 </a>
                             </li>
                             <li
-                                class="{{ request()->routeIs('adminPages.archivetransactions') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.archivetransactions') }}" class="submenu-link">
+                                class="{{ request()->routeIs('frontdesk.archivetransactions') ? 'active' : '' }}">
+                                <a href="{{ route('frontdesk.archivetransactions') }}" class="submenu-link">
                                     <span>Archive Transactions</span>
                                 </a>
                             </li>
                             <li
-                                class="{{ request()->routeIs('adminPages.transactionreports') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.transactionreports') }}" class="submenu-link">
+                                class="{{ request()->routeIs('frontdesk.transactionreports') ? 'active' : '' }}">
+                                <a href="{{ route('frontdesk.transactionreports') }}" class="submenu-link">
                                     <span>Transaction Reports</span>
                                 </a>
                             </li>
                         </ul>
-                    </li>
-
-                    {{-- Reports quick links (Dashboard KPIs) --}}
-                    <li class="nav-item has-submenu {{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-chart-pie"></i>
-                            <span>Reports</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                        <ul class="submenu" aria-label="Reports submenu">
-                            <li class="{{ request()->routeIs('reports.payments') ? 'active' : '' }}">
-                                <a href="{{ route('reports.payments') }}" class="submenu-link"><span>Payments</span></a>
-                            </li>
-                            <li class="{{ request()->routeIs('reports.guests') ? 'active' : '' }}">
-                                <a href="{{ route('reports.guests') }}" class="submenu-link"><span>Guests</span></a>
-                            </li>
-                            <li class="{{ request()->routeIs('reports.all-transactions') ? 'active' : '' }}">
-                                <a href="{{ route('reports.all-transactions') }}" class="submenu-link"><span>All Transactions</span></a>
-                            </li>
-                            <li class="{{ request()->routeIs('reports.all-archived-transactions') ? 'active' : '' }}">
-                                <a href="{{ route('reports.all-archived-transactions') }}" class="submenu-link"><span>All Archive Transactions</span></a>
-                            </li>
-                            <li class="{{ request()->routeIs('reports.logs') ? 'active' : '' }}">
-                                <a href="{{ route('reports.logs') }}" class="submenu-link"><span>Logs Report</span></a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    
-
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span>Widgets</span>
-                        </a>
                     </li>
                    
                 </ul>
@@ -197,11 +120,11 @@
 
                         <!-- User Dropdown Menu -->
                         <div class="user-dropdown-menu" id="userDropdownMenu">
-                            <a href="{{ route('adminPages.settings') }}" class="dropdown-item">
+                            <a href="{{ route('frontdesk.settings') }}" class="dropdown-item">
                                 <i class="fas fa-cog dropdown-icon"></i>
                                 <span>Settings</span>
                             </a>
-                            <a href="{{ route('adminPages.auditlogs') }}" class="dropdown-item">
+                            <a href="{{ route('frontdesk.auditlogs') }}" class="dropdown-item">
                                 <i class="fas fa-history dropdown-icon activity"></i>
                                 <span>My Activity Log</span>
                             </a>
@@ -217,8 +140,7 @@
                     </div>
 
                     <div class="header-actions">
-
-
+                        <!-- Additional header actions can be added here -->
                     </div>
                 </div>
             </header>
@@ -318,13 +240,15 @@
         // Initialize responsive behavior
         if (window.innerWidth <= 768) {
             const sidebar = document.querySelector('.sidebar');
-            if (sidebar.classList.contains('collapsed')) {
-                createOverlay();
-                document.querySelector('.sidebar-overlay').classList.add('show');
-            }
+            // On mobile, sidebar should be hidden by default and shown when collapsed class is added
+            sidebar.classList.add('collapsed');
+        } else {
+            // On desktop, sidebar should be visible by default
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.remove('collapsed');
         }
 
-        // Auto-open any active submenu (Data, Room Management, etc.)
+        // Auto-open any active submenu (Transaction Management, Reports, etc.)
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.nav-item.has-submenu').forEach(function (item) {
                 if (item.classList.contains('active')) {

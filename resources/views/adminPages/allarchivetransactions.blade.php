@@ -1,6 +1,6 @@
 @extends('layouts.admindashboard')
 
-@section('title','Archived Transactions')
+@section('title','All Archive Transactions')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
@@ -8,7 +8,7 @@
 
 @section('content')
 <style>
-  /* Archived Transactions Styling */
+  /* All Archive Transactions Styling */
   
   .transaction-row:hover {
     background: #f8f9fa;
@@ -22,7 +22,7 @@
 
 <div class="dashboard-page">
   <div class="page-header">
-    <h1 class="page-title">Archived Transactions</h1>
+    <h1 class="page-title">All Archive Transactions</h1>
   </div>
 
   @if (session('success'))
@@ -68,7 +68,7 @@
   </div>
 
   <style>
-    /* Filter styling for archived transactions */
+    /* Filter styling for all archive transactions */
     #filterForm .btn-primary {
       background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
       border: 0;
@@ -88,87 +88,27 @@
       box-shadow: 0 4px 14px rgba(138,92,246,.25);
     }
 
-  /* Pagination styling for archived transactions */
-  #pagination { display: flex; justify-content: center; margin-top: 12px; }
-  #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
-  #pagination .page-link {
-    background: linear-gradient(135deg, #ffffff, #f8f9ff);
-    border: 1px solid rgba(138,92,246,.2);
-    color: var(--text-primary);
-    padding: 8px 12px;
-    border-radius: 10px;
-    font-weight: 700;
-    box-shadow: 0 3px 10px rgba(138,92,246,.08);
-    transition: all .2s ease;
-  }
-  #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(138,92,246,.15); border-color: rgba(138,92,246,.35); }
-  #pagination li.active .page-link {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 8px 22px rgba(138,92,246,.35);
-  }
-  #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
-
-  /* Laravel Pagination Styling */
-  .pagination-wrapper {
-    background: #ffffff;
-    border-radius: 15px;
-    padding: 8px;
-    box-shadow: 0 4px 20px rgba(138,92,246,.1);
-    display: inline-block;
-  }
-  .pagination-wrapper .pagination {
-    display: flex;
-    gap: 4px;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    align-items: center;
-  }
-  .pagination-wrapper .pagination li {
-    display: inline-block;
-  }
-  .pagination-wrapper .pagination .page-link {
-    background: #ffffff;
-    border: 1px solid rgba(138,92,246,.15);
-    color: #6c757d;
-    padding: 10px 14px;
-    border-radius: 12px;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all .2s ease;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 40px;
-    height: 40px;
-  }
-  .pagination-wrapper .pagination .page-link:hover {
-    background: rgba(138,92,246,.05);
-    border-color: rgba(138,92,246,.25);
-    color: var(--purple-primary);
-    text-decoration: none;
-    transform: translateY(-1px);
-  }
-  .pagination-wrapper .pagination li.active .page-link {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 4px 15px rgba(138,92,246,.3);
-  }
-  .pagination-wrapper .pagination .page-link.disabled {
-    opacity: .4;
-    cursor: not-allowed;
-    background: #f8f9fa;
-  }
-  .pagination-wrapper .pagination .page-link.disabled:hover {
-    transform: none;
-    background: #f8f9fa;
-    border-color: rgba(138,92,246,.15);
-    color: #6c757d;
-  }
+    /* Pagination styling for all archive transactions */
+    #pagination { display: flex; justify-content: center; margin-top: 12px; }
+    #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+    #pagination .page-link {
+      background: linear-gradient(135deg, #ffffff, #f8f9ff);
+      border: 1px solid rgba(138,92,246,.2);
+      color: var(--text-primary);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      box-shadow: 0 3px 10px rgba(138,92,246,.08);
+      transition: all .2s ease;
+    }
+    #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(138,92,246,.15); border-color: rgba(138,92,246,.35); }
+    #pagination li.active .page-link {
+      background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 22px rgba(138,92,246,.35);
+    }
+    #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
 
     /* Print Styles */
     @media print {
@@ -201,62 +141,87 @@
         background-color: #f5f5f5;
         font-weight: bold;
       }
+      .print-header {
+        text-align: center;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+      }
+      .print-header h1 {
+        margin: 0;
+        font-size: 24px;
+        color: #333;
+      }
+      .print-header p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        color: #666;
+      }
     }
   </style>
 
-  <div class="printable-content">
-    <div class="chart-card card-tight no-print">
-      <div class="section-header-pad" style="display:flex; align-items:center; gap:8px;">
-        <i class="fas fa-filter" style="color:var(--purple-primary);"></i>
-        <h3 class="chart-title" style="margin:0;">Filters</h3>
-      </div>
-      <form class="filters-wrap" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(138,92,246,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(138,92,246,.06);">
-        <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
-          <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">From</span>
-          <input type="date" id="from" class="date-input form-input" value="{{ request('from', now()->subDays(29)->toDateString()) }}" style="min-height:36px;">
-        </div>
-        <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
-          <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">To</span>
-          <input type="date" id="to" class="date-input form-input" value="{{ request('to', now()->toDateString()) }}" style="min-height:36px;">
-        </div>
-      </form>
+  <div class="chart-card card-tight">
+    <div class="section-header-pad no-print" style="display:flex; align-items:center; gap:8px;">
+      <i class="fas fa-filter" style="color:var(--purple-primary);"></i>
+      <h3 class="chart-title" style="margin:0;">Filters</h3>
     </div>
+    <form class="filters-wrap no-print" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(138,92,246,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(138,92,246,.06);">
+      <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+        <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">From</span>
+        <input type="date" id="from" class="date-input form-input" value="{{ request('from', now()->subDays(29)->toDateString()) }}" style="min-height:36px;">
+      </div>
+      <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+        <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">To</span>
+        <input type="date" id="to" class="date-input form-input" value="{{ request('to', now()->toDateString()) }}" style="min-height:36px;">
+      </div>
+    </form>
 
-    <div class="chart-card card-tight">
-      <div class="section-header-pad no-print" style="margin-top:16px;">
+    <div class="printable-content">
+
+      <div class="section-header-pad" style="margin-top:16px;">
         <h3 class="chart-title">List</h3>
       </div>
 
-    <div class="table-wrapper">
-      <table class="table sortable-table" id="archivedTransactionsTable">
+      <div class="table-wrapper">
+        <table class="table sortable-table" id="allTransactionsTable">
         <thead>
           <tr>
+            <th>User Full Name</th>
             <th>Room</th>
             <th>Accommodation</th>
             <th>Check-in</th>
+            <th>Check-out</th>
             <th>Amount</th>
-            <th>Date Archived</th>
+            <th>Date</th>
           </tr>
         </thead>
         <tbody>
-          @if(isset($transactions) && $transactions->count() > 0)
-            @foreach($transactions as $transaction)
+          @if(isset($archivedTransactions) && $archivedTransactions->count() > 0)
+            @foreach($archivedTransactions as $transaction)
               <tr class="transaction-row"
                   data-transaction-id="{{ $transaction->id }}"
-                  data-user-name="{{ $transaction->user_full_name }}"
-                  data-guest-name="{{ $transaction->guest_name }}"
-                  data-room="{{ $transaction->room }}"
+                  data-user-name="{{ $transaction->user_name }}"
+                  data-room="{{ $transaction->room_number }}"
                   data-accommodation="{{ $transaction->accommodation_name }}"
                   data-checkin="{{ $transaction->check_in }}"
                   data-checkout="{{ $transaction->check_out }}"
                   data-amount="{{ $transaction->amount }}"
-                  data-status="{{ $transaction->status }}"
-                  data-archived="{{ $transaction->deleted_at }}">
-                <td data-label="Room">{{ $transaction->room }}</td>
+                  data-date="{{ $transaction->created_at }}">
+                <td data-label="User Full Name">
+                  {{ $transaction->user_name }}
+                </td>
+                <td data-label="Room">{{ $transaction->room_number }}</td>
                 <td data-label="Accommodation">{{ $transaction->accommodation_name }}</td>
                 <td data-label="Check-in">
-                  @if($transaction->check_in)
-                    {{ \Carbon\Carbon::parse($transaction->check_in)->format('M d, Y H:i') }}
+                  @if($transaction->check_in && $transaction->check_in !== 'N/A')
+                    {{ $transaction->check_in->format('M d, Y H:i') }}
+                  @else
+                    <span class="text-muted">-</span>
+                  @endif
+                </td>
+                <td data-label="Check-out">
+                  @if($transaction->check_out && $transaction->check_out !== 'N/A')
+                    {{ $transaction->check_out->format('M d, Y H:i') }}
                   @else
                     <span class="text-muted">-</span>
                   @endif
@@ -264,15 +229,15 @@
                 <td data-label="Amount">
                   ₱{{ number_format($transaction->amount, 2) }}
                 </td>
-                <td data-label="Date Archived">{{ $transaction->deleted_at->format('M d, Y H:i') }}</td>
+                <td data-label="Date">{{ $transaction->created_at->format('M d, Y H:i') }}</td>
               </tr>
             @endforeach
           @else
             <tr>
-              <td colspan="5" class="text-center" style="padding:40px; color:#6c757d;">
-                <i class="fas fa-inbox" style="font-size:48px; margin-bottom:16px; display:block;"></i>
+              <td colspan="7" class="text-center" style="padding:40px; color:#6c757d;">
+                <i class="fas fa-archive" style="font-size:48px; margin-bottom:16px; display:block;"></i>
                 <p style="margin:0; font-size:16px;">No archived transactions found</p>
-                <p style="margin:8px 0 0 0; font-size:14px; color:#adb5bd;">Deleted stays will appear here</p>
+                <p style="margin:8px 0 0 0; font-size:14px; color:#adb5bd;">All archived transaction history will appear here</p>
               </td>
             </tr>
           @endif
@@ -285,13 +250,13 @@
 </div>
 
 <!-- Guest Details Modal -->
-<div id="guestDetailsModal" class="modal" style="display:none;">
-  <div class="modal-content" style="max-width: 600px;">
-    <div class="modal-header">
-      <h2 class="modal-title">Guest Details</h2>
-      <span class="close" id="closeGuestModal">&times;</span>
+<div id="guestDetailsModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+  <div class="modal-content" style="background-color: #fefefe; margin: 2% auto; padding: 0; border: none; border-radius: 16px; width: 90%; max-width: 800px; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+    <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); color: white; padding: 20px 24px; border-radius: 16px 16px 0 0;">
+      <h2 class="modal-title" style="margin: 0; font-size: 20px; font-weight: 700;">Guest Details</h2>
+      <span class="close" style="color: white; float: right; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; opacity: 0.8; transition: opacity 0.2s;">&times;</span>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding: 24px; max-height: calc(90vh - 80px); overflow-y: auto;">
       <div id="guestDetailsContent">
         <!-- Guest details will be loaded here -->
       </div>
@@ -300,64 +265,33 @@
 </div>
 
 <style>
-  /* Modal Styling */
+  /* Modal Styles */
   .modal {
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    animation: fadeIn 0.3s ease;
   }
   
   .modal-content {
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
+    animation: slideIn 0.3s ease;
   }
   
-  .modal-header {
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
-  .modal-title {
-    margin: 0;
-    color: var(--purple-primary);
-    font-size: 24px;
-    font-weight: 700;
-  }
-  
-  .close {
-    font-size: 28px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-    line-height: 1;
+  @keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
   
   .close:hover {
-    color: #000;
-  }
-  
-  .modal-body {
-    padding: 20px;
+    opacity: 1 !important;
   }
   
   .guest-detail-item {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 12px 0;
     border-bottom: 1px solid #f0f0f0;
   }
@@ -374,17 +308,19 @@
   
   .guest-detail-value {
     color: var(--text-primary);
-    flex: 1;
     text-align: right;
+    flex: 1;
   }
   
   .transaction-row {
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
   }
   
   .transaction-row:hover {
-    background-color: #f8f9fa !important;
+    background: #f8f9ff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(138,92,246,0.1);
   }
 </style>
 
@@ -397,18 +333,20 @@
     var pageSize = 10;
 
     // Get all rows from the table
-    var table = document.getElementById('archivedTransactionsTable').getElementsByTagName('tbody')[0];
+    var table = document.getElementById('allTransactionsTable').getElementsByTagName('tbody')[0];
     var rows = Array.from(table.rows);
     
     // Convert table rows to data objects
     allRows = rows.map(function(row) {
       var cells = row.cells;
       return {
-        room: cells[0] ? cells[0].textContent.trim() : '',
-        accommodation: cells[1] ? cells[1].textContent.trim() : '',
-        check_in: cells[2] ? cells[2].textContent.trim() : '',
-        amount: cells[3] ? cells[3].textContent.trim() : '',
-        date_archived: cells[4] ? cells[4].textContent.trim() : '',
+        user_name: cells[0] ? cells[0].textContent.trim() : '',
+        room: cells[1] ? cells[1].textContent.trim() : '',
+        accommodation: cells[2] ? cells[2].textContent.trim() : '',
+        check_in: cells[3] ? cells[3].textContent.trim() : '',
+        check_out: cells[4] ? cells[4].textContent.trim() : '',
+        amount: cells[5] ? cells[5].textContent.trim() : '',
+        date: cells[6] ? cells[6].textContent.trim() : '',
         element: row
       };
     });
@@ -420,7 +358,7 @@
         filteredRows = allRows.slice(); 
       } else {
         filteredRows = allRows.filter(function(r){
-          var t = (''+r.room+' '+r.accommodation+' '+r.check_in+' '+r.amount+' '+r.date_archived).toLowerCase();
+          var t = (''+r.user_name+' '+r.room+' '+r.accommodation+' '+r.check_in+' '+r.check_out+' '+r.amount+' '+r.date).toLowerCase();
           return t.indexOf(q) !== -1;
         });
       }
@@ -430,13 +368,14 @@
     }
 
     function renderTable(){
-      var tbody = document.getElementById('archivedTransactionsTable').getElementsByTagName('tbody')[0];
+      var tbody = document.getElementById('allTransactionsTable').getElementsByTagName('tbody')[0];
       tbody.innerHTML = '';
       var start = (currentPage - 1) * pageSize;
       var pageItems = filteredRows.slice(start, start + pageSize);
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      addRowClickHandlers(); // Add click handlers after rendering
     }
 
     function renderPagination(){
@@ -467,55 +406,17 @@
         currentPage = parseInt(btn.getAttribute('data-page')) || 1;
         renderTable();
         renderPagination();
+        addRowClickHandlers(); // Re-add click handlers after pagination
       });
     }
 
-    // Automatic filter event listeners
-    document.getElementById('from').addEventListener('change', function() {
-      var from = this.value;
-      var to = document.getElementById('to').value;
-      window.location.href = '{{ route("adminPages.archivetransactions") }}?from=' + from + '&to=' + to;
-    });
-    
-    document.getElementById('to').addEventListener('change', function() {
-      var from = document.getElementById('from').value;
-      var to = this.value;
-      window.location.href = '{{ route("adminPages.archivetransactions") }}?from=' + from + '&to=' + to;
-    });
-
-    // Client-side search
-    var search = document.getElementById('transactionSearch');
-    if (search) search.addEventListener('input', applySearch);
-
-    attachPaginationHandler();
-    applySearch();
-
-    // Print functionality
-    document.getElementById('printBtn').addEventListener('click', function() {
-      // Trigger print dialog
-      window.print();
-    });
-
-    // Guest details modal functionality
+    // Modal functionality
     var guestModal = document.getElementById('guestDetailsModal');
-    var closeGuestModal = document.getElementById('closeGuestModal');
     var guestDetailsContent = document.getElementById('guestDetailsContent');
+    var closeBtn = document.querySelector('.close');
 
-    // Close modal when clicking X
-    closeGuestModal.addEventListener('click', function() {
-      guestModal.style.display = 'none';
-    });
-
-    // Close modal when clicking outside
-    guestModal.addEventListener('click', function(e) {
-      if (e.target === guestModal) {
-        guestModal.style.display = 'none';
-      }
-    });
-
-    // Add click handlers to table rows
     function addRowClickHandlers() {
-      var rows = document.querySelectorAll('#archivedTransactionsTable tbody tr.transaction-row');
+      var rows = document.querySelectorAll('.transaction-row');
       rows.forEach(function(row) {
         row.addEventListener('click', function() {
           var transactionId = this.getAttribute('data-transaction-id');
@@ -555,37 +456,71 @@
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Amount:</span><span class="guest-detail-value">₱' + (transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00') + '</span></div>';
       html += '</div>';
 
-      html += '<h4 style="margin: 0 0 16px 0; color: var(--purple-primary);">Guest Information</h4>';
-      
       if (guests && guests.length > 0) {
+        html += '<div class="guests-section">';
+        html += '<h4 style="margin: 0 0 16px 0; color: var(--text-primary);">Guest Information</h4>';
+        
         guests.forEach(function(guest, index) {
-          html += '<div style="margin-bottom: 20px; padding: 16px; border: 1px solid #e9ecef; border-radius: 10px; background: #fff;">';
-          html += '<h5 style="margin: 0 0 12px 0; color: var(--text-primary);">Guest ' + (index + 1) + '</h5>';
+          html += '<div class="guest-card" style="background: #fff; border: 1px solid #e9ecef; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">';
+          html += '<h5 style="margin: 0 0 12px 0; color: var(--purple-primary);">Guest ' + (index + 1) + '</h5>';
           html += '<div class="guest-detail-item"><span class="guest-detail-label">Name:</span><span class="guest-detail-value">' + (guest.firstName || '') + ' ' + (guest.middleName || '') + ' ' + (guest.lastName || '') + '</span></div>';
-          html += '<div class="guest-detail-item"><span class="guest-detail-label">Contact:</span><span class="guest-detail-value">' + (guest.number || 'N/A') + '</span></div>';
+          html += '<div class="guest-detail-item"><span class="guest-detail-label">Phone:</span><span class="guest-detail-value">' + (guest.number || 'N/A') + '</span></div>';
+          
           if (guest.address) {
             html += '<div class="guest-detail-item"><span class="guest-detail-label">Address:</span><span class="guest-detail-value">' + (guest.address.street || '') + ', ' + (guest.address.city || '') + ', ' + (guest.address.province || '') + ' ' + (guest.address.zipcode || '') + '</span></div>';
+          } else {
+            html += '<div class="guest-detail-item"><span class="guest-detail-label">Address:</span><span class="guest-detail-value">N/A</span></div>';
           }
+          
           html += '</div>';
         });
+        
+        html += '</div>';
       } else {
-        html += '<div style="text-align: center; padding: 20px; color: #6c757d;"><i class="fas fa-user-slash" style="font-size: 24px; margin-bottom: 8px; display: block;"></i><p>No guest information available</p></div>';
+        html += '<div style="text-align: center; padding: 20px; color: #6c757d;"><i class="fas fa-user-slash" style="font-size: 32px; margin-bottom: 8px; display: block;"></i><p>No guest information available</p></div>';
       }
 
       guestDetailsContent.innerHTML = html;
     }
 
-    // Initialize row click handlers
-    addRowClickHandlers();
+    // Close modal functionality
+    closeBtn.addEventListener('click', function() {
+      guestModal.style.display = 'none';
+    });
 
-    // Re-add handlers after pagination
-    var originalRenderTable = renderTable;
-    renderTable = function() {
-      originalRenderTable();
-      addRowClickHandlers();
-    };
+    window.addEventListener('click', function(event) {
+      if (event.target === guestModal) {
+        guestModal.style.display = 'none';
+      }
+    });
+
+    // Automatic filter event listeners
+    document.getElementById('from').addEventListener('change', function() {
+      var from = this.value;
+      var to = document.getElementById('to').value;
+      window.location.href = '{{ route("reports.all-archived-transactions") }}?from=' + from + '&to=' + to;
+    });
+    
+    document.getElementById('to').addEventListener('change', function() {
+      var from = document.getElementById('from').value;
+      var to = this.value;
+      window.location.href = '{{ route("reports.all-archived-transactions") }}?from=' + from + '&to=' + to;
+    });
+
+    // Client-side search
+    var search = document.getElementById('transactionSearch');
+    if (search) search.addEventListener('input', applySearch);
+
+    // Print functionality
+    document.getElementById('printBtn').addEventListener('click', function() {
+      // Trigger print dialog
+      window.print();
+    });
+
+    attachPaginationHandler();
+    applySearch();
+    addRowClickHandlers(); // Add initial click handlers
   })();
 </script>
 
 @endsection
-
