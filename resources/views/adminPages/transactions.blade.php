@@ -7,6 +7,230 @@
 <link rel="stylesheet" href="{{ asset('css/room-dashboard.css') }}">
 <script src="{{ asset('js/ph-complete-address.js') }}"></script>
 <style>
+/* Floor and Status Filter Button Styles */
+.floor-selector .floor-btn,
+.status-filters .status-btn {
+  background-color: transparent;
+  color: var(--purple-primary);
+  border: 2px solid var(--purple-primary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.floor-selector .floor-btn:hover,
+.status-filters .status-btn:hover {
+  background-color: var(--purple-primary);
+  color: white;
+  border-color: var(--purple-primary);
+}
+
+.floor-selector .floor-btn.active,
+.status-filters .status-btn.active {
+  background-color: var(--purple-primary);
+  color: white;
+  border-color: var(--purple-primary);
+}
+
+/* Modal Header Fixed and Progress Bar Styles */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 90vh;
+  max-height: 90vh;
+}
+
+.modal-header {
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Progress Bar Styles */
+.progress-container {
+  background: #f8f9fa;
+  padding: 15px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple-primary), #8B5CF6);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  width: 0%;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.progress-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e9ecef;
+  z-index: 1;
+}
+
+.progress-step.completed:not(:last-child)::after {
+  background-color: var(--purple-primary);
+}
+
+.progress-step-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e9ecef;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active .progress-step-icon {
+  background-color: var(--purple-primary);
+  color: white;
+}
+
+.progress-step.completed .progress-step-icon {
+  background-color: var(--purple-primary);
+  color: white;
+}
+
+.progress-step-label {
+  font-size: 11px;
+  color: #6c757d;
+  margin-top: 5px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.progress-step.active .progress-step-label {
+  color: var(--purple-primary);
+  font-weight: 600;
+}
+
+.progress-step.completed .progress-step-label {
+  color: var(--purple-primary);
+  font-weight: 600;
+}
+
+/* Guest Form Header and Delete Button Styles */
+.guest-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.guest-form-header h4 {
+  margin: 0;
+  color: var(--purple-primary);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.delete-guest-btn {
+  background-color: transparent;
+  color: #dc3545;
+  border: 2px solid #dc3545;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.delete-guest-btn:hover {
+  background-color: #dc3545;
+  color: white;
+  border-color: #dc3545;
+}
+
+.delete-guest-btn i {
+  margin-right: 4px;
+}
+
+/* Room Card Styles */
+.room-box {
+  border: 3px solid;
+  background-color: transparent;
+  transition: all 0.2s ease;
+}
+
+.room-box.available {
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.room-box.available:hover {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.room-box.in-use {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.room-box.in-use:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+.room-box.active {
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.room-box.active:hover {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
 /* Receipt Styling */
 .receipt-container {
   background: white;
@@ -188,6 +412,32 @@
             <h2 class="modal-title" id="modalTitle">Room Details</h2>
             <span class="close">&times;</span>
         </div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-steps">
+                <div class="progress-step" id="step1">
+                    <div class="progress-step-icon">1</div>
+                    <div class="progress-step-label">Accommodation</div>
+                </div>
+                <div class="progress-step" id="step2">
+                    <div class="progress-step-icon">2</div>
+                    <div class="progress-step-label">Guest Info</div>
+                </div>
+                <div class="progress-step" id="step3">
+                    <div class="progress-step-icon">3</div>
+                    <div class="progress-step-label">Duration</div>
+                </div>
+                <div class="progress-step" id="step4">
+                    <div class="progress-step-icon">4</div>
+                    <div class="progress-step-label">Payment</div>
+                </div>
+            </div>
+        </div>
+        
         <div class="modal-body">
             <div id="accommodationInfo" class="accommodation-info">
                 <!-- Accommodation details will be loaded here -->
@@ -297,6 +547,7 @@ let roomIdToAccommodationId = {};
 let roomIdToGuestCount = {};
 let extensionMode = false; // false => new stay (Standard/Extending-Standard), true => extend (Extending/Extending-Standard)
 let pendingExtend = null; // { roomId, stayId }
+let currentStep = 1; // Track current step for progress bar
 function enableProcessPaymentButton() {
     var btn = document.getElementById('processPaymentBtn');
     if (!btn) return;
@@ -318,6 +569,32 @@ function enableProcessPaymentButton() {
     
     // Reset submitting state
     btn.dataset.submitting = '0';
+}
+
+function updateProgressBar(step) {
+    currentStep = step;
+    
+    // Update progress fill
+    const progressFill = document.getElementById('progressFill');
+    const progressPercentage = ((step - 1) / 3) * 100; // 4 steps total, so divide by 3
+    progressFill.style.width = progressPercentage + '%';
+    
+    // Update step indicators
+    for (let i = 1; i <= 4; i++) {
+        const stepElement = document.getElementById(`step${i}`);
+        stepElement.classList.remove('active', 'completed');
+        
+        if (i < step) {
+            stepElement.classList.add('completed');
+        } else if (i === step) {
+            stepElement.classList.add('active');
+        }
+    }
+}
+
+function resetProgressBar() {
+    currentStep = 1;
+    updateProgressBar(1);
 }
 
 // Initialize the dashboard
@@ -513,6 +790,9 @@ function displayAccommodationInfo(room) {
     const levelDesc = room.level && room.level.description ? room.level.description : '-';
     title.textContent = `Room ${room.room} - ${levelDesc}${modeSuffix}`;
     
+    // Reset progress bar to step 1
+    resetProgressBar();
+    
     if (extensionMode) {
         // Hide accommodation chooser when extending (auto-selected)
         infoDiv.innerHTML = '';
@@ -523,6 +803,9 @@ function displayAccommodationInfo(room) {
         // Show delete button for "In Use" rooms
         const deleteBtn = document.getElementById('deleteStayBtn');
         deleteBtn.classList.remove('hidden');
+        
+        // Skip to step 3 for extension mode
+        updateProgressBar(3);
         return;
     }
 
@@ -557,6 +840,8 @@ function displayAccommodationInfo(room) {
             const proceedBtn = document.getElementById('proceedBtn');
             proceedBtn.disabled = false;
             proceedBtn.classList.remove('hidden');
+            // Update progress to step 2
+            updateProgressBar(2);
         });
         optionsContainer.appendChild(option);
     });
@@ -580,10 +865,14 @@ function showGuestForm() {
         document.getElementById('guestFormSection').classList.add('hidden');
         loadRateOptions();
         document.getElementById('rateSelection').classList.remove('hidden');
+        // Update progress to step 3
+        updateProgressBar(3);
     } else {
         document.getElementById('guestFormSection').classList.remove('hidden');
         // Generate initial guest form
         addGuestForm();
+        // Update progress to step 2
+        updateProgressBar(2);
     }
 }
 
@@ -603,8 +892,14 @@ function addGuestForm() {
     
     const guestForm = document.createElement('div');
     guestForm.className = 'guest-form';
+    guestForm.dataset.guestIndex = guestCount - 1;
     guestForm.innerHTML = `
+        <div class="guest-form-header">
         <h4>Guest ${guestCount}</h4>
+            <button type="button" class="btn btn-danger btn-sm delete-guest-btn" onclick="deleteGuestForm(${guestCount - 1})">
+                <i class="fas fa-trash"></i> Remove Guest
+            </button>
+        </div>
         <div class="form-row">
         <div class="form-group">
                 <label class="form-label">First Name *</label>
@@ -662,6 +957,65 @@ function addGuestForm() {
     initializeGuestAddressDropdowns(guestCount - 1);
 }
 
+function deleteGuestForm(guestIndex) {
+    // Show confirmation dialog
+    if (!confirm('Are you sure you want to remove this guest? This action cannot be undone.')) {
+        return;
+    }
+    
+    // Find the guest form to remove
+    const guestForm = document.querySelector(`[data-guest-index="${guestIndex}"]`);
+    if (!guestForm) {
+        console.error('Guest form not found for index:', guestIndex);
+        return;
+    }
+    
+    // Remove the guest form
+    guestForm.remove();
+    
+    // Decrease guest count
+    guestCount--;
+    
+    // Re-number remaining guest forms
+    renumberGuestForms();
+    
+    // Recalculate total if rate is selected
+    if (selectedRate) {
+        calculateTotal();
+    }
+}
+
+function renumberGuestForms() {
+    const guestForms = document.querySelectorAll('.guest-form');
+    guestForms.forEach((form, index) => {
+        const header = form.querySelector('.guest-form-header h4');
+        const deleteBtn = form.querySelector('.delete-guest-btn');
+        
+        if (header) {
+            header.textContent = `Guest ${index + 1}`;
+        }
+        
+        if (deleteBtn) {
+            // Update the onclick attribute with new index
+            deleteBtn.setAttribute('onclick', `deleteGuestForm(${index})`);
+        }
+        
+        // Update the data-guest-index attribute
+        form.dataset.guestIndex = index;
+        
+        // Update all input names to reflect new indices
+        const inputs = form.querySelectorAll('input, select');
+        inputs.forEach(input => {
+            const name = input.getAttribute('name');
+            if (name) {
+                // Replace the guest index in the name attribute
+                const newName = name.replace(/guests\[\d+\]/, `guests[${index}]`);
+                input.setAttribute('name', newName);
+            }
+        });
+    });
+}
+
 function loadRateOptions() {
     // Get rates for the selected accommodation
     const accommodationId = selectedAccommodation ? selectedAccommodation.id : null;
@@ -678,6 +1032,8 @@ function loadRateOptions() {
                 const filtered = (data.rates || []).filter(r => allowed.includes(r.status));
                 displayRateOptions(filtered);
                 document.getElementById('rateSelection').classList.remove('hidden');
+                // Update progress to step 3
+                updateProgressBar(3);
             } else {
                 alert('Failed to load rates: ' + data.message);
             }
@@ -746,6 +1102,9 @@ function calculateTotal() {
     // Pre-fill amount paid with total for convenience
     document.getElementById('amountPaid').value = total.toFixed(2);
     document.getElementById('changeAmount').value = '0.00';
+    
+    // Update progress to step 4
+    updateProgressBar(4);
 }
 
 function calculateChange() {
@@ -1007,6 +1366,9 @@ function resetModal() {
         btn.dataset.submitting = '0';
         btn.disabled = false;
     }
+    
+    // Reset progress bar
+    resetProgressBar();
 }
 
 function updateRoomTimers() {

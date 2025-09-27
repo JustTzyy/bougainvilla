@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') - Purple Admin</title>
+    <title>@yield('title', 'Dashboard') - Bougainvilla Lodge Admin</title>
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @stack('styles')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -17,14 +17,32 @@
         <aside class="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <div class="logo-icon"></div>
-                    <span class="logo-text">Purple</span>
+                    <div class="logo-icon">
+                        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Flower petals -->
+                            <path d="M16 4 C20 8, 20 12, 16 16 C12 12, 12 8, 16 4 Z" fill="#8B0000"/>
+                            <path d="M28 16 C24 20, 20 20, 16 16 C20 12, 24 12, 28 16 Z" fill="#8B0000"/>
+                            <path d="M16 28 C12 24, 12 20, 16 16 C20 20, 20 24, 16 28 Z" fill="#8B0000"/>
+                            <path d="M4 16 C8 12, 12 12, 16 16 C12 20, 8 20, 4 16 Z" fill="#8B0000"/>
+                            <!-- Flower center -->
+                            <circle cx="16" cy="16" r="3" fill="#B8860B"/>
+                            <!-- Stem -->
+                            <rect x="15" y="20" width="2" height="8" fill="#1a1a1a"/>
+                            <!-- Leaves -->
+                            <ellipse cx="12" cy="24" rx="2" ry="1" fill="#1a1a1a" transform="rotate(-30 12 24)"/>
+                            <ellipse cx="20" cy="24" rx="2" ry="1" fill="#1a1a1a" transform="rotate(30 20 24)"/>
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <div class="logo-main">BOUGAINVIILA</div>
+                        <div class="logo-sub">LODGE</div>
+                    </div>
                 </div>
             </div>
 
             <div class="user-profile">
                 <div class="user-avatar">
-                    <i class="fas fa-user-circle" style="font-size:40px; color:#8a5cf6;"></i>
+                    <i class="fas fa-user-circle" style="font-size:40px; color:#B8860B;"></i>
                 </div>
                 <div class="user-info">
                     <div class="user-name">{{ Auth::user()->name ?? 'User' }}</div>
@@ -165,13 +183,7 @@
                         </ul>
                     </li>
 
-                    
-
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <span>Widgets</span>
-                        </a>
-                    </li>
+                
                    
                 </ul>
             </nav>
@@ -191,7 +203,7 @@
 
                 <div class="header-right">
                     <div class="user-dropdown" onclick="toggleUserDropdown()">
-                        <i class="fas fa-user-circle" style="font-size:40px; color:#8a5cf6;"></i>
+                        <i class="fas fa-user-circle" style="font-size:40px; color:#B8860B;"></i>
                         <span class="user-name-small">{{ Auth::user()->name ?? 'User' }}</span>
                         <i class="fas fa-chevron-down"></i>
 

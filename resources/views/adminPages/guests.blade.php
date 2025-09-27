@@ -10,42 +10,42 @@
 <style>
   /* Guests report aesthetics for filters and pagination (dash-style) */
   #filterForm .btn-primary {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     border: 0;
     color: #fff;
     padding: 10px 16px;
     border-radius: 10px;
     font-weight: 700;
-    box-shadow: 0 6px 18px rgba(138,92,246,.25);
+    box-shadow: 0 6px 18px rgba(184,134,11,.25);
     transition: all .2s ease;
   }
   #filterForm .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(138,92,246,.35);
+    box-shadow: 0 10px 24px rgba(184,134,11,.35);
   }
   #filterForm .btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 4px 14px rgba(138,92,246,.25);
+    box-shadow: 0 4px 14px rgba(184,134,11,.25);
   }
 
   #pagination { display: flex; justify-content: center; margin-top: 12px; }
   #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
   #pagination .page-link {
     background: linear-gradient(135deg, #ffffff, #f8f9ff);
-    border: 1px solid rgba(138,92,246,.2);
+    border: 1px solid rgba(184,134,11,.2);
     color: var(--text-primary);
     padding: 8px 12px;
     border-radius: 10px;
     font-weight: 700;
-    box-shadow: 0 3px 10px rgba(138,92,246,.08);
+    box-shadow: 0 3px 10px rgba(184,134,11,.08);
     transition: all .2s ease;
   }
-  #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(138,92,246,.15); border-color: rgba(138,92,246,.35); }
+  #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(184,134,11,.15); border-color: rgba(184,134,11,.35); }
   #pagination li.active .page-link {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     color: #fff;
     border-color: transparent;
-    box-shadow: 0 8px 22px rgba(138,92,246,.35);
+    box-shadow: 0 8px 22px rgba(184,134,11,.35);
   }
   #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
 
@@ -86,9 +86,9 @@
   }
 
   .table tbody tr:hover {
-    background: linear-gradient(135deg, rgba(138,92,246,.08), rgba(138,92,246,.12));
+    background: linear-gradient(135deg, rgba(184,134,11,.08), rgba(184,134,11,.12));
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(138,92,246,.15);
+    box-shadow: 0 4px 12px rgba(184,134,11,.15);
   }
 
   /* Print Styles */
@@ -149,7 +149,7 @@
       <input id="adminSearch" type="text" placeholder="Search guests" class="search-input">
     </div>
     <div class="toolbar-actions">
-      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(138,92,246,.25); transition: all .2s ease;">
+      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(184,134,11,.25); transition: all .2s ease;">
         <i class="fas fa-print" style="margin-right: 6px;"></i>Print Report
       </button>
     </div>
@@ -160,12 +160,12 @@
       <i class="fas fa-filter" style="color:var(--purple-primary);"></i>
       <h3 class="chart-title" style="margin:0;">Filters</h3>
     </div>
-    <form class="filters-wrap no-print" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(138,92,246,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(138,92,246,.06);">
-      <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+    <form class="filters-wrap no-print" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(184,134,11,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(184,134,11,.06);">
+      <div style="display:flex; gap:8px; align-items:center; background: rgba(184,134,11,.06); border:1px solid rgba(184,134,11,.15); padding:8px 10px; border-radius:10px;">
         <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">From</span>
         <input type="date" id="from" class="date-input form-input" value="{{ now()->subDays(29)->toDateString() }}" style="min-height:36px;">
       </div>
-      <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+      <div style="display:flex; gap:8px; align-items:center; background: rgba(184,134,11,.06); border:1px solid rgba(184,134,11,.15); padding:8px 10px; border-radius:10px;">
         <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">To</span>
         <input type="date" id="to" class="date-input form-input" value="{{ now()->toDateString() }}" style="min-height:36px;">
       </div>
@@ -188,8 +188,8 @@
 
 <!-- Guest Details Modal -->
 <div id="guestModal" class="modal" style="display: none;">
-  <div class="modal-content" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 20px; box-shadow: 0 20px 60px rgba(138,92,246,.3); max-width: 600px; width: 90%;">
-    <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); color: white; padding: 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center;">
+  <div class="modal-content" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 20px; box-shadow: 0 20px 60px rgba(184,134,11,.3); max-width: 600px; width: 90%;">
+    <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); color: white; padding: 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center;">
       <h2 style="margin: 0; font-size: 24px; font-weight: 700;">
         <i class="fas fa-user" style="margin-right: 10px;"></i>Guest Details
       </h2>
@@ -199,11 +199,11 @@
     </div>
     <div class="modal-body" style="padding: 30px;">
       <div class="guest-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
-        <div class="info-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 20px;">
+        <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 20px;">
           <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Full Name</div>
           <div class="info-value" id="modalGuestName" style="font-size: 18px; font-weight: 700; color: var(--text-primary);"></div>
         </div>
-        <div class="info-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 20px;">
+        <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 20px;">
           <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Contact Number</div>
           <div class="info-value" id="modalGuestNumber" style="font-size: 18px; font-weight: 700; color: var(--text-primary);"></div>
         </div>
@@ -214,19 +214,19 @@
           <i class="fas fa-bed" style="margin-right: 8px;"></i>Stay Information
         </h3>
         <div class="stay-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div class="info-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 15px;">
+          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
             <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Room</div>
             <div class="info-value" id="modalRoom" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
           </div>
-          <div class="info-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 15px;">
+          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
             <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Accommodation</div>
             <div class="info-value" id="modalAccommodation" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
           </div>
-          <div class="info-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 15px;">
+          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
             <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Check-in</div>
             <div class="info-value" id="modalCheckIn" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
           </div>
-          <div class="info-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 15px;">
+          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
             <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Check-out</div>
             <div class="info-value" id="modalCheckOut" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
           </div>
@@ -237,7 +237,7 @@
         <h3 style="color: var(--purple-primary); margin-bottom: 15px; font-size: 18px; font-weight: 700;">
           <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>Address Information
         </h3>
-        <div class="address-card" style="background: rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.2); border-radius: 15px; padding: 20px;">
+        <div class="address-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 20px;">
           <div id="modalAddress" style="font-size: 16px; line-height: 1.6; color: var(--text-primary);"></div>
         </div>
       </div>

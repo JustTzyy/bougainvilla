@@ -139,52 +139,52 @@
 <!-- Archived Room Details Modal -->
 <div id="archivedRoomDetailsModal" class="modal">
   <div class="modal-card user-details-card">
-    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(138,92,246,.15);">
+    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(184,134,11,.15);">
       <h3 class="chart-title" style="color: var(--purple-primary); font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
+        <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
         Archived Room Details
       </h3>
       <button id="closeArchivedRoomDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
     </div>
 
     <div class="user-details-content" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
-      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
-        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(138,92,246,.15);">
-          <i class="fas fa-info-circle" style="margin-right: 4px; background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
+      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(184,134,11,.15);">
+          <i class="fas fa-info-circle" style="margin-right: 4px; background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
           Room Information
         </h4>
         <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Room Number</label>
             <span id="arch-detail-room-number" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Level</label>
             <span id="arch-detail-level" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Status</label>
             <span id="arch-detail-status" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Type</label>
             <span id="arch-detail-type" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary);">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">Date Archived</label>
             <span id="arch-detail-archived" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
         </div>
       </div>
 
-      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
-        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(138,92,246,.15);">
-          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
+      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(184,134,11,.15);">
+          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
           Accommodations
         </h4>
         <div class="info-grid">
           <div class="info-item span-2" style="grid-column: span 2;">
-            <div id="arch-detail-accommodations-list" style="background: rgba(138,92,246,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(138,92,246,.2);">
+            <div id="arch-detail-accommodations-list" style="background: rgba(184,134,11,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(184,134,11,.2);">
               <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d; font-style: italic; font-size: 10px;">
                 <i class="fas fa-spinner fa-spin" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>
                 Loading...
@@ -195,7 +195,7 @@
       </div>
     </div>
 
-    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(138,92,246,.15); border-radius: 0 0 16px 16px;">
+    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(184,134,11,.15); border-radius: 0 0 16px 16px;">
       <button type="button" id="closeArchivedRoomDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600;">
         <i class="fas fa-times" style="margin-right: 8px;"></i>Close
       </button>
@@ -267,9 +267,9 @@
           if (data.accommodations && data.accommodations.length){
             var html = '<div style="display:grid;gap:6px;max-height:150px;overflow-y:auto;padding-right:4px;">';
             data.accommodations.forEach(function(a){
-              html += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(138,92,246,.08); transition: all 0.3s ease;">';
+              html += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(184,134,11,.08); transition: all 0.3s ease;">';
               html += '<div style=\'display:flex;align-items:center;gap:6px;\'>';
-              html += '<div style=\'width:24px;height:24px;background:linear-gradient(135deg,var(--purple-primary),#a29bfe);border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(138,92,246,.3);\'>';
+              html += '<div style=\'width:24px;height:24px;background:linear-gradient(135deg,var(--purple-primary),#DAA520);border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(184,134,11,.3);\'>';
               html += '<i class="fas fa-hotel" style=\'color:white;font-size:10px;\'></i>';
               html += '</div>';
               html += '<div>';
@@ -282,7 +282,7 @@
             html += '</div>';
             el.innerHTML = html;
           } else {
-            el.innerHTML = '<div style="text-align:center;padding:20px;color:#6c757d;"><div style="width:40px;height:40px;background:linear-gradient(135deg, rgba(138,92,246,.1), rgba(138,92,246,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-hotel" style="font-size:16px;color:var(--purple-primary);opacity:.6;"></i></div><h4 style="color:#6c757d;margin:0 0 4px 0;font-weight:600;font-size:12px;">No Accommodations</h4><p style="font-style:italic;margin:0;color:#6c757d;font-size:10px;">No accommodations found</p></div>';
+            el.innerHTML = '<div style="text-align:center;padding:20px;color:#6c757d;"><div style="width:40px;height:40px;background:linear-gradient(135deg, rgba(184,134,11,.1), rgba(184,134,11,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-hotel" style="font-size:16px;color:var(--purple-primary);opacity:.6;"></i></div><h4 style="color:#6c757d;margin:0 0 4px 0;font-weight:600;font-size:12px;">No Accommodations</h4><p style="font-style:italic;margin:0;color:#6c757d;font-size:10px;">No accommodations found</p></div>';
           }
         })
         .catch(function(){

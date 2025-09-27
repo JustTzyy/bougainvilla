@@ -22,13 +22,13 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, var(--purple-primary), #a29bfe, #6c5ce7);
+    background: linear-gradient(90deg, var(--purple-primary), #DAA520, #F4D03F);
   }
 
   /* User Details Modal Header */
   #userDetailsModal .modal-header {
     background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-    border-bottom: 1px solid rgba(138,92,246,.15);
+    border-bottom: 1px solid rgba(184,134,11,.15);
     padding: 12px 16px;
     position: relative;
   }
@@ -46,7 +46,7 @@
   #userDetailsModal .modal-header h3::before {
     content: '\1F464';
     font-size: 18px;
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -67,8 +67,8 @@
     background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
     border-radius: 10px;
     padding: 12px;
-    border: 1px solid rgba(138,92,246,.1);
-    box-shadow: 0 4px 12px rgba(138,92,246,.08);
+    border: 1px solid rgba(184,134,11,.1);
+    box-shadow: 0 4px 12px rgba(184,134,11,.08);
     position: relative;
     overflow: hidden;
   }
@@ -81,7 +81,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(90deg, var(--purple-primary), #DAA520);
   }
 
   /* Section Headers */
@@ -95,11 +95,11 @@
     align-items: center;
     gap: 6px;
     padding-bottom: 8px;
-    border-bottom: 2px solid rgba(138,92,246,.15);
+    border-bottom: 2px solid rgba(184,134,11,.15);
   }
 
   #userDetailsModal .user-info-section h4 i {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -128,7 +128,7 @@
     padding: 8px;
     background: rgba(255,255,255,.7);
     border-radius: 8px;
-    border: 1px solid rgba(138,92,246,.08);
+    border: 1px solid rgba(184,134,11,.08);
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -141,16 +141,16 @@
     left: 0;
     width: 4px;
     height: 100%;
-    background: linear-gradient(180deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(180deg, var(--purple-primary), #DAA520);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
 
   #userDetailsModal .info-item:hover {
     background: rgba(255,255,255,.9);
-    border-color: rgba(138,92,246,.2);
+    border-color: rgba(184,134,11,.2);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(138,92,246,.12);
+    box-shadow: 0 8px 20px rgba(184,134,11,.12);
   }
 
   #userDetailsModal .info-item:hover::before {
@@ -221,7 +221,7 @@
   #userDetailsModal .modal-actions {
     padding: 12px 16px;
     background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-    border-top: 1px solid rgba(138,92,246,.15);
+    border-top: 1px solid rgba(184,134,11,.15);
     display: flex;
     justify-content: flex-end;
   }
@@ -237,23 +237,23 @@
     border: 2px solid var(--purple-primary);
     font-weight: 700;
     letter-spacing: 0.3px;
-    box-shadow: 0 4px 12px rgba(138,92,246,.2);
+    box-shadow: 0 4px 12px rgba(184,134,11,.2);
     transition: all 0.3s ease;
     text-transform: uppercase;
     font-size: 12px;
   }
 
   #userDetailsModal .modal-actions .action-btn.btn-outline:hover {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     color: #fff;
     border-color: var(--purple-primary);
     transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(138,92,246,.35);
+    box-shadow: 0 6px 16px rgba(184,134,11,.35);
   }
 
   #userDetailsModal .modal-actions .action-btn.btn-outline:active {
     transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(138,92,246,.3);
+    box-shadow: 0 2px 8px rgba(184,134,11,.3);
   }
 
   #userDetailsModal .modal-actions .action-btn.btn-outline::before {

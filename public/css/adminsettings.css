@@ -38,9 +38,9 @@
 }
 
 .nav-tab.active {
-  background: linear-gradient(135deg, #8a5cf6, #a29bfe);
+  background: linear-gradient(135deg, #B8860B, #DAA520);
   color: white;
-  box-shadow: 0 4px 12px rgba(138, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
 }
 
 .nav-tab i {
@@ -94,8 +94,8 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #8a5cf6;
-  box-shadow: 0 0 0 3px rgba(138, 92, 246, 0.1);
+  border-color: #B8860B;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1);
 }
 
 .form-group input[readonly] {
@@ -131,7 +131,7 @@
 }
 
 .toggle-password:hover {
-  color: #8a5cf6;
+  color: #B8860B;
 }
 
 .toggle-password i {
@@ -153,24 +153,24 @@
   gap: 8px;
   padding: 12px 24px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #8a5cf6, #a29bfe);
+  background: linear-gradient(135deg, #B8860B, #DAA520);
   color: white;
   border: none;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(138, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(184, 134, 11, 0.3);
 }
 
 .action-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(138, 92, 246, 0.4);
+  box-shadow: 0 6px 16px rgba(184, 134, 11, 0.4);
 }
 
 .action-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(138, 92, 246, 0.3);
+  box-shadow: 0 2px 8px rgba(184, 134, 11, 0.3);
 }
 
 .action-btn.danger {

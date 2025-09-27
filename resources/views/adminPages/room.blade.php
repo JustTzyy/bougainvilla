@@ -11,36 +11,36 @@
   #roomDetailsModal .modal-card {
     max-width: 600px;
     border-radius: 16px;
-    box-shadow: 0 15px 40px rgba(138,92,246,.15);
+    box-shadow: 0 15px 40px rgba(184,134,11,.15);
     background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-    border: 1px solid rgba(138,92,246,.1);
+    border: 1px solid rgba(184,134,11,.1);
     overflow: hidden;
   }
 
   #roomDetailsModal .info-item:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(138,92,246,.15);
-    background: rgba(138,92,246,.08);
+    box-shadow: 0 8px 25px rgba(184,134,11,.15);
+    background: rgba(184,134,11,.08);
   }
 
   #roomDetailsModal .user-info-section:hover,
   #roomDetailsModal .address-info-section:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 30px rgba(138,92,246,.12);
+    box-shadow: 0 8px 30px rgba(184,134,11,.12);
   }
 
   #roomDetailsModal .action-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(138,92,246,.25);
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe) !important;
+    box-shadow: 0 8px 20px rgba(184,134,11,.25);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520) !important;
     color: white !important;
   }
 
   /* Accommodation cards enhanced hover effects */
   #detail-accommodations-list .accommodation-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(138,92,246,.2);
-    background: linear-gradient(135deg, rgba(138,92,246,.08), rgba(138,92,246,.04)) !important;
+    box-shadow: 0 12px 30px rgba(184,134,11,.2);
+    background: linear-gradient(135deg, rgba(184,134,11,.08), rgba(184,134,11,.04)) !important;
   }
 
   /* Loading animation enhancement */
@@ -77,12 +77,12 @@
 
   .accommodation-selection {
     background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-    border: 2px solid rgba(138,92,246,.1);
+    border: 2px solid rgba(184,134,11,.1);
     border-radius: 12px;
     width: 500px;
     padding: 20px;
     margin-top: 8px;
-    box-shadow: 0 4px 12px rgba(138,92,246,.08);
+    box-shadow: 0 4px 12px rgba(184,134,11,.08);
     transition: all 0.3s ease;
     flex: 1;
     display: flex;
@@ -92,8 +92,8 @@
   }
 
   .accommodation-selection:hover {
-    border-color: rgba(138,92,246,.2);
-    box-shadow: 0 6px 16px rgba(138,92,246,.12);
+    border-color: rgba(184,134,11,.2);
+    box-shadow: 0 6px 16px rgba(184,134,11,.12);
     transform: translateY(-1px);
   }
 
@@ -104,7 +104,7 @@
     padding: 16px 20px;
     margin-bottom: 12px;
     background: linear-gradient(135deg, rgba(255,255,255,.8), rgba(248,249,255,.6));
-    border: 1px solid rgba(138,92,246,.1);
+    border: 1px solid rgba(184,134,11,.1);
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -120,16 +120,16 @@
     left: 0;
     width: 4px;
     height: 100%;
-    background: linear-gradient(180deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(180deg, var(--purple-primary), #DAA520);
     opacity: 0;
     transition: opacity 0.3s ease;
   }
 
   .checkbox-label:hover {
-    background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02));
-    border-color: rgba(138,92,246,.2);
+    background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02));
+    border-color: rgba(184,134,11,.2);
     transform: translateX(4px);
-    box-shadow: 0 4px 12px rgba(138,92,246,.1);
+    box-shadow: 0 4px 12px rgba(184,134,11,.1);
   }
 
   .checkbox-label:hover::before {
@@ -148,7 +148,7 @@
   .checkmark {
     width: 24px;
     height: 24px;
-    border: 2px solid rgba(138,92,246,.3);
+    border: 2px solid rgba(184,134,11,.3);
     border-radius: 8px;
     background: #fff;
     position: relative;
@@ -158,13 +158,13 @@
 
   .checkbox-label:hover .checkmark {
     border-color: var(--purple-primary);
-    box-shadow: 0 2px 8px rgba(138,92,246,.2);
+    box-shadow: 0 2px 8px rgba(184,134,11,.2);
   }
 
   .checkbox-label input[type="checkbox"]:checked + .checkmark {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     border-color: var(--purple-primary);
-    box-shadow: 0 4px 12px rgba(138,92,246,.3);
+    box-shadow: 0 4px 12px rgba(184,134,11,.3);
   }
 
   .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
@@ -217,7 +217,7 @@
   /* Focus States */
   .checkbox-label:focus-within {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(138,92,246,.15);
+    box-shadow: 0 0 0 3px rgba(184,134,11,.15);
     border-color: var(--purple-primary);
   }
 
@@ -235,7 +235,7 @@
     transform: translate(-50%, -50%);
     width: 20px;
     height: 20px;
-    border: 2px solid rgba(138,92,246,.3);
+    border: 2px solid rgba(184,134,11,.3);
     border-top: 2px solid var(--purple-primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -521,9 +521,9 @@
 <!-- Room Details Modal -->
 <div id="roomDetailsModal" class="modal">
   <div class="modal-card user-details-card">
-    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(138,92,246,.15);">
+    <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(184,134,11,.15);">
       <h3 class="chart-title" style="color: var(--purple-primary); font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-        <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
+        <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
         Room Details
       </h3>
       <button id="closeRoomDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
@@ -531,37 +531,37 @@
     
     <div class="user-details-content" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
       <!-- Room Information Section -->
-      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
-        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(138,92,246,.15);">
-          <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
+      <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; margin-bottom: 8px; box-shadow: 0 2px 12px rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(184,134,11,.15);">
+          <i class="fas fa-bed" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
           Room Information
         </h4>
         <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
               <i class="fas fa-hashtag" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Room Number
             </label> 
             <span id="detail-room-number" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
               <i class="fas fa-layer-group" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Level
             </label>
             <span id="detail-level" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
               <i class="fas fa-toggle-on" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Status
             </label>
             <span id="detail-status" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
               <i class="fas fa-tag" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Type
             </label>
             <span id="detail-type" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">-</span>
           </div>
-          <div class="info-item" style="background: rgba(138,92,246,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
+          <div class="info-item" style="background: rgba(184,134,11,.05); padding: 8px; border-radius: 8px; border-left: 3px solid var(--purple-primary); transition: all 0.3s ease;">
             <label style="display: block; font-size: 10px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 2px;">
               <i class="fas fa-calendar-plus" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>Date Created
             </label>
@@ -571,14 +571,14 @@
       </div>
       
       <!-- Accommodations Information Section -->
-      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
-        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(138,92,246,.15);">
-          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
+      <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 10px; padding: 8px; box-shadow: 0 2px 12px rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.1);">
+        <h4 style="color: var(--purple-primary); font-size: 12px; font-weight: 700; margin: 0 0 6px 0; display: flex; align-items: center; gap: 4px; padding-bottom: 4px; border-bottom: 1px solid rgba(184,134,11,.15);">
+          <i class="fas fa-hotel" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 12px;"></i>
           Accommodations
         </h4>
         <div class="info-grid">
           <div class="info-item span-2" style="grid-column: span 2;">
-            <div id="detail-accommodations-list" style="background: rgba(138,92,246,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(138,92,246,.2);">
+            <div id="detail-accommodations-list" style="background: rgba(184,134,11,.03); border-radius: 6px; padding: 6px; min-height: 50px; border: 1px dashed rgba(184,134,11,.2);">
               <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d; font-style: italic; font-size: 10px;">
                 <i class="fas fa-spinner fa-spin" style="margin-right: 4px; color: var(--purple-primary); font-size: 10px;"></i>
                 Loading...
@@ -589,8 +589,8 @@
       </div>
     </div>
     
-    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(138,92,246,.15); border-radius: 0 0 16px 16px;">
-      <button type="button" id="closeRoomDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(138,92,246,.1);">
+    <div class="modal-actions" style="padding: 8px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(184,134,11,.15); border-radius: 0 0 16px 16px;">
+      <button type="button" id="closeRoomDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(184,134,11,.1);">
         <i class="fas fa-times" style="margin-right: 8px;"></i>Close
       </button>
     </div>
@@ -785,10 +785,10 @@
           if (data.accommodations && data.accommodations.length > 0) {
             var accommodationsHtml = '<div style="display: grid; gap: 6px; max-height: 150px; overflow-y: auto; padding-right: 4px;">';
             data.accommodations.forEach(function(accommodation) {
-              accommodationsHtml += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(138,92,246,.08); transition: all 0.3s ease; position: relative;">';
+              accommodationsHtml += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(184,134,11,.08); transition: all 0.3s ease; position: relative;">';
               accommodationsHtml += '<div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">';
               accommodationsHtml += '<div style="display: flex; align-items: center; gap: 6px;">';
-              accommodationsHtml += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(138,92,246,.3);">';
+              accommodationsHtml += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #DAA520); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(184,134,11,.3);">';
               accommodationsHtml += '<i class="fas fa-hotel" style="color: white; font-size: 10px;"></i>';
               accommodationsHtml += '</div>';
               accommodationsHtml += '<div>';
@@ -803,7 +803,7 @@
             accommodationsHtml += '</div>';
             accommodationsListElement.innerHTML = accommodationsHtml;
           } else {
-            accommodationsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(138,92,246,.1), rgba(138,92,246,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-hotel" style="font-size: 16px; color: var(--purple-primary); opacity: 0.6;"></i></div><h4 style="color: #6c757d; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">No Accommodations</h4><p style="font-style: italic; margin: 0; color: #6c757d; font-size: 10px;">No accommodations found</p></div>';
+            accommodationsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #6c757d;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(184,134,11,.1), rgba(184,134,11,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-hotel" style="font-size: 16px; color: var(--purple-primary); opacity: 0.6;"></i></div><h4 style="color: #6c757d; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">No Accommodations</h4><p style="font-style: italic; margin: 0; color: #6c757d; font-size: 10px;">No accommodations found</p></div>';
           }
         })
         .catch(error => {

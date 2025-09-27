@@ -6,14 +6,14 @@
     <link rel="stylesheet" href="{{ asset('css/archiveadminrecords.css') }}">
     <style>
         /* Enhanced Level Details Modal Styles (match active Levels page) */
-        #levelDetailsModal .modal-card { max-width: 600px; border-radius: 16px; box-shadow: 0 15px 40px rgba(138,92,246,.15); background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 1px solid rgba(138,92,246,.1); overflow: hidden; }
-        #levelDetailsModal .info-item:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(138,92,246,.15); background: rgba(138,92,246,.08); }
-        #levelDetailsModal .user-info-section:hover, #levelDetailsModal .address-info-section:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(138,92,246,.12); }
+        #levelDetailsModal .modal-card { max-width: 600px; border-radius: 16px; box-shadow: 0 15px 40px rgba(184,134,11,.15); background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 1px solid rgba(184,134,11,.1); overflow: hidden; }
+        #levelDetailsModal .info-item:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(184,134,11,.15); background: rgba(184,134,11,.08); }
+        #levelDetailsModal .user-info-section:hover, #levelDetailsModal .address-info-section:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(184,134,11,.12); }
         /* Status badge dynamic colors */
         #detail-status.status-active { }
         #detail-status.status-inactive { background: linear-gradient(135deg, #dc3545, #e74c3c) !important; color: #fff !important; box-shadow: 0 2px 8px rgba(220,53,69,.3); }
         /* Room cards */
-        #detail-rooms-list .room-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(138,92,246,.2); background: linear-gradient(135deg, rgba(138,92,246,.08), rgba(138,92,246,.04)) !important; }
+        #detail-rooms-list .room-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(184,134,11,.2); background: linear-gradient(135deg, rgba(184,134,11,.08), rgba(184,134,11,.04)) !important; }
         @keyframes pulse { 0%{opacity:1} 50%{opacity:.5} 100%{opacity:1} }
         #detail-rooms-list .loading { animation: pulse 1.5s ease-in-out infinite; }
         @media (max-width: 768px) { #levelDetailsModal .modal-card{ max-width:95%; margin:20px;} #levelDetailsModal .info-grid{ grid-template-columns:1fr !important; } }
@@ -144,9 +144,9 @@
     <!-- Level Details Modal -->
     <div id="levelDetailsModal" class="modal">
         <div class="modal-card user-details-card">
-            <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(138,92,246,.15);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-bottom: 1px solid rgba(184,134,11,.15);">
                 <h3 class="chart-title" style="color: var(--purple-primary); font-size: 18px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-layer-group" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
+                    <i class="fas fa-layer-group" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px;"></i>
                     Level Details
                 </h3>
                 <button id="closeLevelDetailsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
@@ -154,37 +154,37 @@
 
             <div class="user-details-content" style="padding: 12px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
                 <!-- Level Information Section -->
-                <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
-                    <h4 style="color: var(--purple-primary); font-size: 16px; font-weight: 700; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 2px solid rgba(138,92,246,.15);">
-                        <i class="fas fa-layer-group" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 18px;"></i>
+                <div class="user-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 12px; padding: 12px; margin-bottom: 12px; box-shadow: 0 2px 12px rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.1);">
+                    <h4 style="color: var(--purple-primary); font-size: 16px; font-weight: 700; margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 2px solid rgba(184,134,11,.15);">
+                        <i class="fas fa-layer-group" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 18px;"></i>
                         Level Information
                     </h4>
                     <div class="info-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                        <div class="info-item" style="background: rgba(138,92,246,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
+                        <div class="info-item" style="background: rgba(184,134,11,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
                             <label style="display:block;font-size:12px;font-weight:600;color:#6c757d;">
                                 <i class="fas fa-hashtag" style="margin-right:6px;color:var(--purple-primary);"></i>Floor Number
                             </label>
                             <span id="detail-floor-number" style="font-size:16px;font-weight:700;color:var(--text-primary);">-</span>
                         </div>
-                        <div class="info-item" style="background: rgba(138,92,246,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
+                        <div class="info-item" style="background: rgba(184,134,11,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
                             <label style="display:block;font-size:12px;font-weight:600;color:#6c757d;">
                                 <i class="fas fa-align-left" style="margin-right:6px;color:var(--purple-primary);"></i>Description
                             </label>
                             <span id="detail-description" style="font-size:16px;font-weight:700;color:var(--text-primary);">-</span>
                         </div>
-                        <div class="info-item" style="background: rgba(138,92,246,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
+                        <div class="info-item" style="background: rgba(184,134,11,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
                             <label style="display:block;font-size:12px;font-weight:600;color:#6c757d;">
                                 <i class="fas fa-toggle-on" style="margin-right:6px;color:var(--purple-primary);"></i>Status
                             </label>
                             <span id="detail-status" class="status-badge" style="display:inline-block;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">-</span>
                         </div>
-                        <div class="info-item" style="background: rgba(138,92,246,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
+                        <div class="info-item" style="background: rgba(184,134,11,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
                             <label style="display:block;font-size:12px;font-weight:600;color:#6c757d;">
                                 <i class="fas fa-calendar-plus" style="margin-right:6px;color:var(--purple-primary);"></i>Date Created
                             </label>
                             <span id="detail-created" style="font-size:16px;font-weight:700;color:var(--text-primary);">-</span>
                         </div>
-                        <div class="info-item" style="background: rgba(138,92,246,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
+                        <div class="info-item" style="background: rgba(184,134,11,.05); padding: 10px; border-radius: 10px; border-left: 4px solid var(--purple-primary);">
                             <label style="display:block;font-size:12px;font-weight:600;color:#6c757d;">
                                 <i class="fas fa-calendar-times" style="margin-right:6px;color:var(--purple-primary);"></i>Date Archived
                             </label>
@@ -194,14 +194,14 @@
                 </div>
 
                 <!-- Rooms Section -->
-                <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 12px; padding: 12px; box-shadow: 0 2px 12px rgba(138,92,246,.08); border: 1px solid rgba(138,92,246,.1);">
-                    <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid rgba(138,92,246,.15);">
-                        <i class="fas fa-door-open" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
+                <div class="address-info-section" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 12px; padding: 12px; box-shadow: 0 2px 12px rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.1);">
+                    <h4 style="color: var(--purple-primary); font-size: 14px; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid rgba(184,134,11,.15);">
+                        <i class="fas fa-door-open" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 14px;"></i>
                         Rooms
                     </h4>
                     <div class="info-grid">
                         <div class="info-item span-2" style="grid-column: span 2;">
-                            <div id="detail-rooms-list" style="background: rgba(138,92,246,.03); border-radius: 8px; padding: 8px; min-height: 60px; border: 1px dashed rgba(138,92,246,.2);">
+                            <div id="detail-rooms-list" style="background: rgba(184,134,11,.03); border-radius: 8px; padding: 8px; min-height: 60px; border: 1px dashed rgba(184,134,11,.2);">
                                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d; font-style: italic; font-size: 12px;">
                                     <i class="fas fa-spinner fa-spin" style="margin-right: 6px; color: var(--purple-primary); font-size: 12px;"></i>
                                     Loading...
@@ -212,8 +212,8 @@
                 </div>
             </div>
 
-            <div class="modal-actions" style="padding: 12px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(138,92,246,.15); border-radius: 0 0 16px 16px;">
-                <button type="button" id="closeLevelDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(138,92,246,.1);">
+            <div class="modal-actions" style="padding: 12px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-top: 1px solid rgba(184,134,11,.15); border-radius: 0 0 16px 16px;">
+                <button type="button" id="closeLevelDetails" class="action-btn btn-outline" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border: 2px solid var(--purple-primary); color: var(--purple-primary); padding: 12px 24px; border-radius: 12px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(184,134,11,.1);">
                     <i class="fas fa-times" style="margin-right: 8px;"></i>Close
                 </button>
             </div>
@@ -288,10 +288,10 @@
                             if (room.status === 'Available') { statusColor='#28a745'; statusBg='rgba(40,167,69,.15)'; statusIcon='fas fa-check-circle'; }
                             else if (room.status === 'Occupied') { statusColor='#dc3545'; statusBg='rgba(220,53,69,.15)'; statusIcon='fas fa-user'; }
                             else if (room.status === 'Under Maintenance') { statusColor='#ffc107'; statusBg='rgba(255,193,7,.15)'; statusIcon='fas fa-tools'; }
-                            html += '<div class="room-card" style="padding:8px;background:linear-gradient(135deg, rgba(138,92,246,.05), rgba(138,92,246,.02));border-radius:8px;border-left:3px solid var(--purple-primary);box-shadow:0 2px 6px rgba(138,92,246,.08);transition:all .3s ease;position:relative;">';
+                            html += '<div class="room-card" style="padding:8px;background:linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02));border-radius:8px;border-left:3px solid var(--purple-primary);box-shadow:0 2px 6px rgba(184,134,11,.08);transition:all .3s ease;position:relative;">';
                             html += '<div style="display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;">';
                             html += '<div style="display:flex;align-items:center;gap:6px;">';
-                            html += '<div style="width:24px;height:24px;background:linear-gradient(135deg,var(--purple-primary),#a29bfe);border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(138,92,246,.3);"><i class="fas fa-door-open" style="color:white;font-size:10px;"></i></div>';
+                            html += '<div style="width:24px;height:24px;background:linear-gradient(135deg,var(--purple-primary),#DAA520);border-radius:6px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(184,134,11,.3);"><i class="fas fa-door-open" style="color:white;font-size:10px;"></i></div>';
                             html += '<div><strong style="color:var(--text-primary);font-size:12px;font-weight:700;display:block;">' + (room.name || room.id) + '</strong><small style="color:#6c757d;font-size:10px;">ID: ' + room.id + '</small></div>';
                             html += '</div>';
                             html += '<span style="padding:3px 6px;border-radius:12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;background:' + statusBg + ';color:' + statusColor + ';display:flex;align-items:center;gap:2px;box-shadow:0 1px 4px rgba(0,0,0,.1);"><i class="' + statusIcon + '" style="font-size:8px;"></i>' + room.status + '</span>';
@@ -301,7 +301,7 @@
                         html += '</div>';
                         el.innerHTML = html;
                     } else {
-                        el.innerHTML = '<div style="text-align:center;padding:20px;color:#6c757d;"><div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(138,92,246,.1),rgba(138,92,246,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-door-closed" style="font-size:16px;color:var(--purple-primary);opacity:.6;"></i></div><h4 style="color:#6c757d;margin:0 0 4px 0;font-weight:600;font-size:12px;">No Rooms</h4><p style="font-style:italic;margin:0;color:#6c757d;font-size:10px;">No rooms found</p></div>';
+                        el.innerHTML = '<div style="text-align:center;padding:20px;color:#6c757d;"><div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(184,134,11,.1),rgba(184,134,11,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-door-closed" style="font-size:16px;color:var(--purple-primary);opacity:.6;"></i></div><h4 style="color:#6c757d;margin:0 0 4px 0;font-weight:600;font-size:12px;">No Rooms</h4><p style="font-style:italic;margin:0;color:#6c757d;font-size:10px;">No rooms found</p></div>';
                     }
                   })
                   .catch(()=>{ el.innerHTML = '<div style="text-align:center;padding:20px;color:#dc3545;"><div style="width:40px;height:40px;background:linear-gradient(135deg,rgba(220,53,69,.1),rgba(220,53,69,.05));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size:16px;color:#dc3545;"></i></div><h4 style="color:#dc3545;margin:0 0 4px 0;font-weight:600;font-size:12px;">Error</h4><p style="font-style:italic;margin:0;color:#dc3545;font-size:10px;">Failed to load</p></div>'; });
