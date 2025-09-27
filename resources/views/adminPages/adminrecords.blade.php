@@ -5,6 +5,48 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
 <script src="{{ asset('js/ph-complete-address.js') }}"></script>
+<style>
+/* Form validation error styles */
+.error-highlight {
+  border: 2px solid #dc3545 !important;
+  background-color: #f8d7da !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.error-highlight:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.tab-btn.error-tab {
+  background-color: #f8d7da !important;
+  border-color: #dc3545 !important;
+  color: #721c24 !important;
+  position: relative;
+}
+
+.tab-btn.error-tab::after {
+  content: "!";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.tab-btn.error-tab:hover {
+  background-color: #f5c6cb !important;
+  border-color: #dc3545 !important;
+}
+</style>
 @endpush
 
 @section('content')
@@ -439,6 +481,12 @@
     if (adminForm) {
       adminForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // Validate form before confirmation
+        if (!validateAdminForm()) {
+          return;
+        }
+        
         var firstName = document.querySelector('input[name="firstName"]').value;
         var lastName = document.querySelector('input[name="lastName"]').value;
         var email = document.querySelector('input[name="email"]').value;
@@ -528,6 +576,12 @@
     if (updateForm) {
       updateForm.addEventListener('submit', function(e) {
         e.preventDefault();
+        
+        // Validate update form before confirmation
+        if (!validateUpdateForm()) {
+          return;
+        }
+        
         var firstName = document.getElementById('u_firstName').value;
         var lastName = document.getElementById('u_lastName').value;
         var email = document.getElementById('u_email').value;
@@ -1000,6 +1054,185 @@
 
     // Call initialization when page loads
     initializeAddressDropdowns();
+
+    // Form validation functions
+    function validateAdminForm() {
+      var isValid = true;
+      var missingFields = [];
+      var tabsWithErrors = new Set();
+      
+      // Clear previous error highlights
+      clearErrorHighlights();
+      
+      // User Information Tab validation
+      var userFields = [
+        { name: 'firstName', label: 'First Name', required: true },
+        { name: 'lastName', label: 'Last Name', required: true },
+        { name: 'email', label: 'Email', required: true },
+        { name: 'birthday', label: 'Birthday', required: true },
+        { name: 'sex', label: 'Sex', required: true },
+        { name: 'contactNumber', label: 'Contact Number', required: true }
+      ];
+      
+      userFields.forEach(function(field) {
+        var element = document.querySelector('input[name="' + field.name + '"], select[name="' + field.name + '"]');
+        if (field.required && (!element || !element.value.trim())) {
+          missingFields.push(field.label);
+          tabsWithErrors.add('user');
+          if (element) {
+            element.classList.add('error-highlight');
+          }
+          isValid = false;
+        }
+      });
+      
+      // Address Information Tab validation
+      var addressFields = [
+        { name: 'street', label: 'Street Address', required: true },
+        { name: 'province', label: 'Province', required: true },
+        { name: 'city', label: 'City', required: true }
+      ];
+      
+      addressFields.forEach(function(field) {
+        var element = document.querySelector('input[name="' + field.name + '"], select[name="' + field.name + '"]');
+        if (field.required && (!element || !element.value.trim())) {
+          missingFields.push(field.label);
+          tabsWithErrors.add('address');
+          if (element) {
+            element.classList.add('error-highlight');
+          }
+          isValid = false;
+        }
+      });
+      
+      if (!isValid) {
+        // Highlight tabs with errors
+        highlightTabsWithErrors(Array.from(tabsWithErrors));
+        
+        // Show error message
+        var errorMessage = 'Please fill in the following required fields:\n\n' + missingFields.join('\n');
+        alert(errorMessage);
+        
+        // Switch to first tab with errors
+        if (tabsWithErrors.has('user')) {
+          switchToTab('user');
+        } else if (tabsWithErrors.has('address')) {
+          switchToTab('address');
+        }
+      }
+      
+      return isValid;
+    }
+    
+    function validateUpdateForm() {
+      var isValid = true;
+      var missingFields = [];
+      var tabsWithErrors = new Set();
+      
+      // Clear previous error highlights
+      clearErrorHighlights('#updateModal');
+      
+      // User Information Tab validation
+      var userFields = [
+        { name: 'u_firstName', label: 'First Name', required: true },
+        { name: 'u_lastName', label: 'Last Name', required: true },
+        { name: 'u_email', label: 'Email', required: true },
+        { name: 'u_birthday', label: 'Birthday', required: true },
+        { name: 'u_sex', label: 'Sex', required: true },
+        { name: 'u_contactNumber', label: 'Contact Number', required: true }
+      ];
+      
+      userFields.forEach(function(field) {
+        var element = document.getElementById(field.name);
+        if (field.required && (!element || !element.value.trim())) {
+          missingFields.push(field.label);
+          tabsWithErrors.add('update-user');
+          if (element) {
+            element.classList.add('error-highlight');
+          }
+          isValid = false;
+        }
+      });
+      
+      // Address Information Tab validation
+      var addressFields = [
+        { name: 'u_street', label: 'Street Address', required: true },
+        { name: 'u_province', label: 'Province', required: true },
+        { name: 'u_city', label: 'City', required: true }
+      ];
+      
+      addressFields.forEach(function(field) {
+        var element = document.getElementById(field.name);
+        if (field.required && (!element || !element.value.trim())) {
+          missingFields.push(field.label);
+          tabsWithErrors.add('update-address');
+          if (element) {
+            element.classList.add('error-highlight');
+          }
+          isValid = false;
+        }
+      });
+      
+      if (!isValid) {
+        // Highlight tabs with errors
+        highlightTabsWithErrors(Array.from(tabsWithErrors), '#updateModal');
+        
+        // Show error message
+        var errorMessage = 'Please fill in the following required fields:\n\n' + missingFields.join('\n');
+        alert(errorMessage);
+        
+        // Switch to first tab with errors
+        if (tabsWithErrors.has('update-user')) {
+          switchToTab('update-user', '#updateModal');
+        } else if (tabsWithErrors.has('update-address')) {
+          switchToTab('update-address', '#updateModal');
+        }
+      }
+      
+      return isValid;
+    }
+    
+    function clearErrorHighlights(modalSelector) {
+      var selector = modalSelector || '';
+      var errorElements = document.querySelectorAll(selector + ' .error-highlight');
+      errorElements.forEach(function(element) {
+        element.classList.remove('error-highlight');
+      });
+      
+      // Clear tab error highlights
+      var tabElements = document.querySelectorAll(selector + ' .tab-btn.error-tab');
+      tabElements.forEach(function(element) {
+        element.classList.remove('error-tab');
+      });
+    }
+    
+    function highlightTabsWithErrors(tabNames, modalSelector) {
+      var selector = modalSelector || '';
+      tabNames.forEach(function(tabName) {
+        var tabElement = document.querySelector(selector + ' [data-tab="' + tabName + '"]');
+        if (tabElement) {
+          tabElement.classList.add('error-tab');
+        }
+      });
+    }
+    
+    function switchToTab(tabName, modalSelector) {
+      var selector = modalSelector || '';
+      
+      // Remove active class from all tabs and contents
+      var tabBtns = document.querySelectorAll(selector + ' .tab-btn');
+      var tabContents = document.querySelectorAll(selector + ' .tab-content');
+      
+      tabBtns.forEach(function(tb) { tb.classList.remove('active'); });
+      tabContents.forEach(function(tc) { tc.classList.remove('active'); });
+      
+      // Add active class to target tab and content
+      var targetTab = document.querySelector(selector + ' [data-tab="' + tabName + '"]');
+      var targetContent = document.getElementById(tabName + '-tab');
+      
+      if (targetTab) targetTab.classList.add('active');
+      if (targetContent) targetContent.classList.add('active');
+    }
 
     // Archive functionality
     document.querySelectorAll('[data-archive]').forEach(function(btn){

@@ -2,14 +2,37 @@
 
 @section('content')
 <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+<script>
+  // Add login-body class to body element
+  document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.add('login-body');
+  });
+</script>
 
 <div class="login-page">
   <div class="login-card">
-    <div class="login-header">
-      <div class="login-badge"></div>
-      <h1 class="login-title">Purple</h1>
+    <!-- Centered Logo -->
+    <div class="logo-container">
+      <div class="logo">
+        <svg width="80" height="80" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <!-- Flower petals -->
+          <path d="M16 4 C20 8, 20 12, 16 16 C12 12, 12 8, 16 4 Z" fill="#8B0000"/>
+          <path d="M28 16 C24 20, 20 20, 16 16 C20 12, 24 12, 28 16 Z" fill="#8B0000"/>
+          <path d="M16 28 C12 24, 12 20, 16 16 C20 20, 20 24, 16 28 Z" fill="#8B0000"/>
+          <path d="M4 16 C8 12, 12 12, 16 16 C12 20, 8 20, 4 16 Z" fill="#8B0000"/>
+          <!-- Flower center -->
+          <circle cx="16" cy="16" r="3" fill="#B8860B"/>
+          <!-- Stem -->
+          <rect x="15" y="20" width="2" height="8" fill="#1a1a1a"/>
+          <!-- Leaves -->
+          <ellipse cx="12" cy="24" rx="2" ry="1" fill="#1a1a1a" transform="rotate(-30 12 24)"/>
+          <ellipse cx="20" cy="24" rx="2" ry="1" fill="#1a1a1a" transform="rotate(30 20 24)"/>
+        </svg>
+      </div>
+      <h1 class="brand-title">BOUGAINVILLA LODGE</h1>
+      <p class="brand-subtitle">Welcome back!</p>
+      <p class="brand-subtitle">Please sign in to your account</p>
     </div>
-    <p class="login-subtitle">Hello! let's get started<br>Sign in to continue.</p>
 
     <form method="POST" action="{{ route('login.post') }}">
       @csrf
@@ -49,7 +72,7 @@
         <div class="error-alert">{{ session('error') }}</div>
       @endif
 
-      <button type="submit" class="btn-primary">SIGN IN</button>
+      <button type="submit" class="btn-primary">LOGIN</button>
 
     </form>
   </div>

@@ -88,12 +88,13 @@
 }
 
 .room-box {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: transparent;
+    border: 3px solid #667eea;
     border-radius: 12px;
     padding: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
-    color: white;
+    color: #667eea;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -107,19 +108,38 @@
 
 .room-box:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.2);
+    background: rgba(102, 126, 234, 0.1);
 }
 
 .room-box.available {
-    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.room-box.available:hover {
+    background: rgba(76, 175, 80, 0.1);
+    box-shadow: 0 10px 25px rgba(76, 175, 80, 0.2);
 }
 
 .room-box.in-use {
-    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.room-box.in-use:hover {
+    background: rgba(244, 67, 54, 0.1);
+    box-shadow: 0 10px 25px rgba(244, 67, 54, 0.2);
 }
 
 .room-box.maintenance {
-    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    border-color: #ff9800;
+    color: #ff9800;
+}
+
+.room-box.maintenance:hover {
+    background: rgba(255, 152, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(255, 152, 0, 0.2);
 }
 
 .room-number {
@@ -138,8 +158,24 @@
     font-size: 12px;
     padding: 4px 8px;
     border-radius: 12px;
-    background: rgba(255,255,255,0.2);
+    background: #667eea;
+    color: white;
     margin-bottom: 5px;
+}
+
+.room-box.available .room-status {
+    background: #4CAF50;
+    color: white;
+}
+
+.room-box.in-use .room-status {
+    background: #f44336;
+    color: white;
+}
+
+.room-box.maintenance .room-status {
+    background: #ff9800;
+    color: white;
 }
 
 .room-capacity {
@@ -151,7 +187,8 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.3);
+    background: transparent;
+    border: 1px solid currentColor;
     padding: 4px 8px;
     border-radius: 8px;
     font-size: 10px;
@@ -184,13 +221,14 @@
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #f8f9fa;
+    color: #333;
     padding: 20px;
     border-radius: 12px 12px 0 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid #e0e0e0;
 }
 
 .modal-title {
@@ -200,7 +238,7 @@
 }
 
 .close {
-    color: white;
+    color: #666;
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -209,6 +247,7 @@
 
 .close:hover {
     opacity: 1;
+    color: #333;
 }
 
 .modal-body {
@@ -220,6 +259,7 @@
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
 }
 
 .accommodation-name {
@@ -536,6 +576,136 @@
     display: inline-block !important;
     visibility: visible !important;
     opacity: 1 !important;
+}
+
+/* Modal Button Styles - Outline Design */
+.modal .btn {
+    background: transparent;
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 16px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.modal .btn-primary {
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+.modal .btn-primary:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.modal .btn-success {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.modal .btn-success:hover {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal .btn-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.modal .btn-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.modal .btn-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.modal .btn-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Extend/Timeout Modal Button Styles */
+#extendTimeoutModal .btn {
+    background: transparent;
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+#extendTimeoutModal .btn-primary {
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+#extendTimeoutModal .btn-primary:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#extendTimeoutModal .btn-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+#extendTimeoutModal .btn-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Receipt Modal Button Styles */
+#receiptModal .btn {
+    background: transparent;
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 14px;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+#receiptModal .btn-primary {
+    border-color: #4CAF50;
+    color: #4CAF50;
+}
+
+#receiptModal .btn-primary:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#receiptModal .btn-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+#receiptModal .btn-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Accommodation Modal Specific Styles */
+#accommodationModal .modal-content {
+    max-width: 600px;
 }
 
 @media (max-width: 768px) {

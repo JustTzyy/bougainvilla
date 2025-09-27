@@ -18,7 +18,7 @@
       <input id="dashboardSearch" type="text" placeholder="Search dashboard data" class="search-input">
     </div>
     <div class="toolbar-actions">
-      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(138,92,246,.25); transition: all .2s ease;">
+      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(184,134,11,.25); transition: all .2s ease;">
         <i class="fas fa-print" style="margin-right: 6px;"></i>Print Report
       </button>
     </div>
@@ -33,18 +33,18 @@
     <style>
       .summary-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(180px,1fr)); gap:12px; margin-top:10px; }
       .summary-card { background:white; border:1px solid #eee; border-radius:12px; padding:14px; cursor:pointer; transition:.2s; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
-      .summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(138,92,246,.12); border-color: rgba(138,92,246,.35); }
+       .summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,26,26,.12); border-color: rgba(26,26,26,.35); }
       .summary-title { font-size:12px; color:#6c757d; text-transform:uppercase; letter-spacing:.3px; margin-bottom:6px; }
       .summary-value { font-size:20px; font-weight:800; color:#2b2d42; }
       .filters-wrap { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px; background:linear-gradient(135deg,#f8f9ff 0%,#ffffff 100%); border:1px solid #eee; border-radius:12px; }
       .filter-label { font-size:12px; font-weight:700; color:#6c757d; }
-      .date-input { appearance:none; padding:10px 12px; border:2px solid rgba(138,92,246,.2); border-radius:10px; background:white; transition:.2s; }
-      .date-input:focus { outline:none; border-color: var(--purple-primary); box-shadow: 0 0 0 3px rgba(138,92,246,.15); }
-      .btn-cta { background:linear-gradient(135deg, var(--purple-primary), #a29bfe); color:white; border:none; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; box-shadow:0 6px 20px rgba(138,92,246,.25); transition:.2s; }
-      .btn-cta:hover { transform: translateY(-2px); box-shadow:0 10px 28px rgba(138,92,246,.35); }
+      .date-input { appearance:none; padding:10px 12px; border:2px solid rgba(184,134,11,.2); border-radius:10px; background:white; transition:.2s; }
+      .date-input:focus { outline:none; border-color: var(--purple-primary); box-shadow: 0 0 0 3px rgba(184,134,11,.15); }
+      .btn-cta { background:linear-gradient(135deg, var(--purple-primary), #DAA520); color:white; border:none; border-radius:10px; padding:10px 16px; font-weight:700; cursor:pointer; box-shadow:0 6px 20px rgba(184,134,11,.25); transition:.2s; }
+      .btn-cta:hover { transform: translateY(-2px); box-shadow:0 10px 28px rgba(184,134,11,.35); }
       .quick-filters { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
-      .quick-filter { padding:8px 12px; border:1px solid rgba(138,92,246,.25); border-radius:999px; background:white; color:#6c5ce7; font-weight:700; cursor:pointer; transition:.2s; }
-      .quick-filter:hover { background:linear-gradient(135deg,rgba(138,92,246,.08),rgba(138,92,246,.03)); }
+       .quick-filter { padding:8px 12px; border:1px solid rgba(184,134,11,.25); border-radius:999px; background:white; color:#8B0000; font-weight:700; cursor:pointer; transition:.2s; }
+      .quick-filter:hover { background:linear-gradient(135deg,rgba(184,134,11,.08),rgba(184,134,11,.03)); }
       .panel { background:white; border:1px solid #eee; border-radius:12px; padding:12px; }
 
       /* Print Styles */
@@ -223,7 +223,7 @@
     window.opsChart = new Chart(opsCtx, {
       type: 'line',
       data: { labels: opsLabels, datasets: [
-        { label: 'Revenue', data: opsLabels.map(function(k){ return group[k].amount; }), borderColor:'#6c5ce7', backgroundColor:'rgba(108,92,231,.15)', tension:.25, fill:true },
+        { label: 'Revenue', data: opsLabels.map(function(k){ return group[k].amount; }), borderColor:'#8B0000', backgroundColor:'rgba(139,0,0,.15)', tension:.25, fill:true },
       ]},
       options: { plugins:{ legend:{ position:'bottom' }}, scales:{ y:{ ticks:{ callback:function(v){ return '₱'+v; }}}}}
     });
@@ -240,8 +240,8 @@
         datasets: [{
           label: 'Total Amount',
           data: totals,
-          borderColor: '#8a5cf6',
-          backgroundColor: 'rgba(138,92,246,0.15)',
+          borderColor: '#1a1a1a',
+          backgroundColor: 'rgba(184,134,11,0.15)',
           borderWidth: 2,
           tension: 0.25,
           pointRadius: 3,
@@ -269,7 +269,7 @@
         labels: ['Subtotal', 'Tax'],
         datasets: [{
           data: [Number(data.totals.subtotal||0), Number(data.totals.tax||0)],
-          backgroundColor: ['#4caf50', '#ff9800'],
+          backgroundColor: ['#8B0000', '#1a1a1a'],
           borderWidth: 0
         }]
       },

@@ -40,22 +40,22 @@
 
   /* Filter styling for logs report */
   #filterForm .btn-primary {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     border: 0;
     color: #fff;
     padding: 10px 16px;
     border-radius: 10px;
     font-weight: 700;
-    box-shadow: 0 6px 18px rgba(138,92,246,.25);
+    box-shadow: 0 6px 18px rgba(184,134,11,.25);
     transition: all .2s ease;
   }
   #filterForm .btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(138,92,246,.35);
+    box-shadow: 0 10px 24px rgba(184,134,11,.35);
   }
   #filterForm .btn-primary:active {
     transform: translateY(0);
-    box-shadow: 0 4px 14px rgba(138,92,246,.25);
+    box-shadow: 0 4px 14px rgba(184,134,11,.25);
   }
 
   /* Pagination styling for logs report */
@@ -63,20 +63,20 @@
   #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
   #pagination .page-link {
     background: linear-gradient(135deg, #ffffff, #f8f9ff);
-    border: 1px solid rgba(138,92,246,.2);
+    border: 1px solid rgba(184,134,11,.2);
     color: var(--text-primary);
     padding: 8px 12px;
     border-radius: 10px;
     font-weight: 700;
-    box-shadow: 0 3px 10px rgba(138,92,246,.08);
+    box-shadow: 0 3px 10px rgba(184,134,11,.08);
     transition: all .2s ease;
   }
-  #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(138,92,246,.15); border-color: rgba(138,92,246,.35); }
+  #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(184,134,11,.15); border-color: rgba(184,134,11,.35); }
   #pagination li.active .page-link {
-    background: linear-gradient(135deg, var(--purple-primary), #a29bfe);
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
     color: #fff;
     border-color: transparent;
-    box-shadow: 0 8px 22px rgba(138,92,246,.35);
+    box-shadow: 0 8px 22px rgba(184,134,11,.35);
   }
   #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
 
@@ -156,7 +156,7 @@
       <input id="logsSearch" type="text" placeholder="Search login/logout logs" class="search-input">
     </div>
     <div class="toolbar-actions">
-      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #a29bfe); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(138,92,246,.25); transition: all .2s ease;">
+      <button type="button" id="printBtn" class="btn btn-primary" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); border: 0; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 700; box-shadow: 0 6px 18px rgba(184,134,11,.25); transition: all .2s ease;">
         <i class="fas fa-print" style="margin-right: 6px;"></i>Print Report
       </button>
     </div>
@@ -168,12 +168,12 @@
         <i class="fas fa-filter" style="color:var(--purple-primary);"></i>
         <h3 class="chart-title" style="margin:0;">Filters</h3>
       </div>
-      <form class="filters-wrap" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(138,92,246,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(138,92,246,.06);">
-        <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+      <form class="filters-wrap" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(184,134,11,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(184,134,11,.06);">
+        <div style="display:flex; gap:8px; align-items:center; background: rgba(184,134,11,.06); border:1px solid rgba(184,134,11,.15); padding:8px 10px; border-radius:10px;">
           <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">From</span>
           <input type="date" id="from" class="date-input form-input" value="{{ now()->subDays(29)->toDateString() }}" style="min-height:36px;">
         </div>
-        <div style="display:flex; gap:8px; align-items:center; background: rgba(138,92,246,.06); border:1px solid rgba(138,92,246,.15); padding:8px 10px; border-radius:10px;">
+        <div style="display:flex; gap:8px; align-items:center; background: rgba(184,134,11,.06); border:1px solid rgba(184,134,11,.15); padding:8px 10px; border-radius:10px;">
           <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">To</span>
           <input type="date" id="to" class="date-input form-input" value="{{ now()->toDateString() }}" style="min-height:36px;">
         </div>
