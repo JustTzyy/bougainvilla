@@ -826,6 +826,11 @@ function processPayment() {
         
         if (data.success) {
             // Show receipt instead of alert
+            // Calculate the actual total (subtotal + tax)
+            const actualSubtotal = selectedRate ? selectedRate.price * guestCount : 0;
+            const actualTax = actualSubtotal * 0.12;
+            const actualTotal = actualSubtotal + actualTax;
+            
             showReceipt(data.receipt_data || {
                 receipt_id: data.receipt_id,
                 room: currentRoom.room,
@@ -833,9 +838,10 @@ function processPayment() {
                 accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
                 duration: selectedRate ? selectedRate.duration : '-',
                 guest_count: guestCount,
-                subtotal: selectedRate ? selectedRate.price * guestCount : 0,
-                tax: selectedRate ? (selectedRate.price * guestCount) * 0.12 : 0,
-                total: amountPaid,
+                subtotal: actualSubtotal,
+                tax: actualTax,
+                total: actualTotal,
+                amount_paid: amountPaid,
                 change: computedChange,
                 cashier: '{{ Auth::user()->name ?? "Staff" }}',
                 date_time: new Date().toLocaleString()
@@ -873,7 +879,11 @@ function processExtension() {
         alert('Amount paid must be at least the total amount');
         return;
     }
-    const payload = { rate_id: selectedRate.id };
+    const payload = { 
+        rate_id: selectedRate.id,
+        payment_amount: amountPaid,
+        payment_change: change
+    };
     document.getElementById('loading').style.display = 'block';
     fetch(`/adminPages/stays/extend/${resolvedStayId}`, {
         method: 'POST',
@@ -888,16 +898,23 @@ function processExtension() {
         document.getElementById('loading').style.display = 'none';
         if (data.success) {
             // Show receipt for extension
+            // Calculate the actual total for extension (subtotal + tax)
+            const extensionGuestCount = roomIdToGuestCount[String(currentRoom.id)] || 1;
+            const extensionSubtotal = selectedRate ? selectedRate.price * extensionGuestCount : 0;
+            const extensionTax = extensionSubtotal * 0.12;
+            const extensionTotal = extensionSubtotal + extensionTax;
+            
             showReceipt(data.receipt_data || {
                 receipt_id: data.receipt_id,
                 room: currentRoom.room,
                 level: currentRoom.level ? currentRoom.level.description : '-',
                 accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
                 duration: selectedRate ? selectedRate.duration : '-',
-                guest_count: roomIdToGuestCount[String(currentRoom.id)] || 1,
-                subtotal: selectedRate ? selectedRate.price * (roomIdToGuestCount[String(currentRoom.id)] || 1) : 0,
-                tax: selectedRate ? (selectedRate.price * (roomIdToGuestCount[String(currentRoom.id)] || 1)) * 0.12 : 0,
-                total: amountPaid,
+                guest_count: extensionGuestCount,
+                subtotal: extensionSubtotal,
+                tax: extensionTax,
+                total: extensionTotal,
+                amount_paid: amountPaid,
                 change: change,
                 cashier: '{{ Auth::user()->name ?? "Staff" }}',
                 date_time: new Date().toLocaleString(),
@@ -1132,7 +1149,7 @@ function showReceipt(receiptData) {
             </div>
             <div class="receipt-row">
                 <span>Amount Paid:</span>
-                <span>₱${parseFloat(receiptData.total || 0).toFixed(2)}</span>
+                <span>₱${parseFloat(receiptData.amount_paid || receiptData.total || 0).toFixed(2)}</span>
             </div>
             <div class="receipt-row">
                 <span>Change:</span>

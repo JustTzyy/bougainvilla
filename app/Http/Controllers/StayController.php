@@ -277,6 +277,8 @@ class StayController extends Controller
         try {
             $request->validate([
                 'rate_id' => 'required|exists:rates,id',
+                'payment_amount' => 'required|numeric|min:0',
+                'payment_change' => 'required|numeric|min:0'
             ]);
 
             DB::beginTransaction();
@@ -306,7 +308,7 @@ class StayController extends Controller
                 'tax' => $tax,
                 'subtotal' => $subtotal,
                 'status' => 'Completed',
-                'change' => 0,
+                'change' => $request->payment_change,
                 'stayID' => $stay->id,
             ]);
 

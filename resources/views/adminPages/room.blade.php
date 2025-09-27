@@ -424,7 +424,7 @@
         </div>
         <div class="form-group">
           <label>Type</label>
-          <input type="text" name="type" class="form-input" placeholder="e.g., Available, Occupied, Reserved, etc." required>
+          <input type="text" name="type" class="form-input" placeholder="e.g., Senior, Student, etc." required>
         </div>
         <div class="form-group accommodation-field">
           <label>Accommodations</label>
