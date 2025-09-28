@@ -1016,7 +1016,7 @@ function displayRateOptions(rates) {
         option.className = 'rate-option';
         option.dataset.rateId = rate.id;
         option.innerHTML = `
-            <div class="rate-duration">${rate.duration}</div>
+            <div class="rate-duration">${formatDurationDisplay(rate.duration)}</div>
             <div class="rate-price">₱${parseFloat(rate.price).toFixed(2)}</div>
         `;
         
@@ -1024,6 +1024,15 @@ function displayRateOptions(rates) {
             document.querySelectorAll('.rate-option').forEach(opt => opt.classList.remove('selected'));
             this.classList.add('selected');
             selectedRate = rate;
+            
+            // Debug: Log the selected rate
+            console.log('FrontDesk - Selected Rate:', {
+                id: rate.id,
+                duration: rate.duration,
+                formattedDuration: formatDurationDisplay(rate.duration),
+                price: rate.price,
+                status: rate.status
+            });
             
             // Calculate totals and show payment UI for both new stays and extensions
             if (extensionMode) {
@@ -1153,7 +1162,7 @@ function processPayment() {
                 room: currentRoom.room,
                 level: currentRoom.level ? currentRoom.level.description : '-',
                 accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
-                duration: selectedRate ? selectedRate.duration : '-',
+                duration: selectedRate ? formatDurationDisplay(selectedRate.duration) : '-',
                 guest_count: guestCount,
                 subtotal: selectedRate ? selectedRate.price * guestCount : 0,
                 tax: selectedRate ? (selectedRate.price * guestCount) * 0.12 : 0,
@@ -1195,9 +1204,13 @@ function processExtension() {
         alert('Amount paid must be at least the total amount');
         return;
     }
-    const payload = { rate_id: selectedRate.id };
+    const payload = { 
+        rate_id: selectedRate.id,
+        payment_amount: amountPaid,
+        payment_change: change
+    };
     document.getElementById('loading').style.display = 'block';
-    fetch(`/adminPages/stays/extend/${resolvedStayId}`, {
+    fetch(`/frontdesk/stays/extend/${resolvedStayId}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1210,16 +1223,23 @@ function processExtension() {
         document.getElementById('loading').style.display = 'none';
         if (data.success) {
             // Show receipt for extension
+            // Calculate the actual total for extension (subtotal + tax)
+            const extensionGuestCount = roomIdToGuestCount[String(currentRoom.id)] || 1;
+            const extensionSubtotal = selectedRate ? selectedRate.price * extensionGuestCount : 0;
+            const extensionTax = extensionSubtotal * 0.12;
+            const extensionTotal = extensionSubtotal + extensionTax;
+            
             showReceipt(data.receipt_data || {
                 receipt_id: data.receipt_id,
                 room: currentRoom.room,
                 level: currentRoom.level ? currentRoom.level.description : '-',
                 accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
-                duration: selectedRate ? selectedRate.duration : '-',
-                guest_count: roomIdToGuestCount[String(currentRoom.id)] || 1,
-                subtotal: selectedRate ? selectedRate.price * (roomIdToGuestCount[String(currentRoom.id)] || 1) : 0,
-                tax: selectedRate ? (selectedRate.price * (roomIdToGuestCount[String(currentRoom.id)] || 1)) * 0.12 : 0,
-                total: amountPaid,
+                duration: selectedRate ? formatDurationDisplay(selectedRate.duration) : '-',
+                guest_count: extensionGuestCount,
+                subtotal: extensionSubtotal,
+                tax: extensionTax,
+                total: extensionTotal,
+                amount_paid: amountPaid,
                 change: change,
                 cashier: '{{ Auth::user()->name ?? "Staff" }}',
                 date_time: new Date().toLocaleString(),
@@ -1391,7 +1411,40 @@ function parseDurationToHours(durationStr) {
     return 1;
 }
 
+function formatDurationDisplay(durationStr) {
+    if (!durationStr) return '-';
+    const s = String(durationStr).trim().toLowerCase();
+    const match = s.match(/(\d+(?:\.\d+)?)\s*(hour|hours|hr|hrs|minute|minutes|min|day|days|week|weeks|month|months)/);
+    if (!match) return durationStr; // Return original if no match
+    
+    const value = parseFloat(match[1]);
+    const unit = match[2];
+    
+    // Format with clear unit indicators
+    if (unit.startsWith('day')) {
+        return `${value} ${value === 1 ? 'Day' : 'Days'}`;
+    } else if (unit.startsWith('week')) {
+        return `${value} ${value === 1 ? 'Week' : 'Weeks'}`;
+    } else if (unit.startsWith('month')) {
+        return `${value} ${value === 1 ? 'Month' : 'Months'}`;
+    } else if (unit.startsWith('min')) {
+        return `${value} ${value === 1 ? 'Minute' : 'Minutes'}`;
+    } else if (unit.startsWith('hour') || unit.startsWith('hr')) {
+        return `${value} ${value === 1 ? 'Hour' : 'Hours'}`;
+    }
+    
+    return durationStr; // Return original if no recognized unit
+}
+
 function showReceipt(receiptData) {
+    // Debug: Log the receipt data being displayed
+    console.log('FrontDesk - Receipt Data:', {
+        duration: receiptData.duration,
+        room: receiptData.room,
+        accommodation: receiptData.accommodation,
+        total: receiptData.total
+    });
+    
     const receiptContent = document.getElementById('receiptContent');
     const now = new Date();
     const receiptId = receiptData.receipt_id || 'RCP-' + now.getTime();
@@ -1457,7 +1510,7 @@ function showReceipt(receiptData) {
             </div>
             <div class="receipt-row">
                 <span>Amount Paid:</span>
-                <span>₱${parseFloat(receiptData.total || 0).toFixed(2)}</span>
+                <span>₱${parseFloat(receiptData.amount_paid || receiptData.total || 0).toFixed(2)}</span>
             </div>
             <div class="receipt-row">
                 <span>Change:</span>

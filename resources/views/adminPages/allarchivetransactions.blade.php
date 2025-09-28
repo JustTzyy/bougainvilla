@@ -190,7 +190,7 @@
             <th>Room</th>
             <th>Accommodation</th>
             <th>Check-in</th>
-            <th>Check-out</th>
+            <th>Status</th>
             <th>Amount</th>
             <th>Date</th>
           </tr>
@@ -204,7 +204,6 @@
                   data-room="{{ $transaction->room_number }}"
                   data-accommodation="{{ $transaction->accommodation_name }}"
                   data-checkin="{{ $transaction->check_in }}"
-                  data-checkout="{{ $transaction->check_out }}"
                   data-amount="{{ $transaction->amount }}"
                   data-date="{{ $transaction->created_at }}">
                 <td data-label="User Full Name">
@@ -219,12 +218,8 @@
                     <span class="text-muted">-</span>
                   @endif
                 </td>
-                <td data-label="Check-out">
-                  @if($transaction->check_out && $transaction->check_out !== 'N/A')
-                    {{ $transaction->check_out->format('M d, Y H:i') }}
-                  @else
-                    <span class="text-muted">-</span>
-                  @endif
+                <td data-label="Status">
+                  {{ $transaction->status ?? 'Unknown' }}
                 </td>
                 <td data-label="Amount">
                   ₱{{ number_format($transaction->amount, 2) }}
@@ -322,6 +317,7 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(184,134,11,0.1);
   }
+
 </style>
 
 <script>
@@ -344,7 +340,7 @@
         room: cells[1] ? cells[1].textContent.trim() : '',
         accommodation: cells[2] ? cells[2].textContent.trim() : '',
         check_in: cells[3] ? cells[3].textContent.trim() : '',
-        check_out: cells[4] ? cells[4].textContent.trim() : '',
+        status: cells[4] ? cells[4].textContent.trim() : '',
         amount: cells[5] ? cells[5].textContent.trim() : '',
         date: cells[6] ? cells[6].textContent.trim() : '',
         element: row
@@ -358,7 +354,7 @@
         filteredRows = allRows.slice(); 
       } else {
         filteredRows = allRows.filter(function(r){
-          var t = (''+r.user_name+' '+r.room+' '+r.accommodation+' '+r.check_in+' '+r.check_out+' '+r.amount+' '+r.date).toLowerCase();
+          var t = (''+r.user_name+' '+r.room+' '+r.accommodation+' '+r.check_in+' '+r.status+' '+r.amount+' '+r.date).toLowerCase();
           return t.indexOf(q) !== -1;
         });
       }

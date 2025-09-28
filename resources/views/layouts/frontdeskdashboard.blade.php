@@ -96,7 +96,7 @@
                             <li
                                 class="{{ request()->routeIs('frontdesk.transactions') ? 'active' : '' }}">
                                 <a href="{{ route('frontdesk.transactions') }}" class="submenu-link">
-                                    <span>Current Transactions</span>
+                                    <span>Transactions</span>
                                 </a>
                             </li>
                             <li

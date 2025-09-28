@@ -12,9 +12,19 @@ class Receipt extends Model
 
     protected $fillable = [
         'status',
+        'status_type',
         'paymentID',
         'userID'
     ];
+
+    // Constants for status_type
+    const STATUS_TYPE_STANDARD = 'Standard';
+    const STATUS_TYPE_EXTEND = 'Extend';
+
+    public static function getValidStatusTypes()
+    {
+        return [self::STATUS_TYPE_STANDARD, self::STATUS_TYPE_EXTEND];
+    }
 
     // Relationships
     public function payment()

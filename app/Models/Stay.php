@@ -23,6 +23,16 @@ class Stay extends Model
         'checkOut' => 'datetime',
     ];
 
+    // Status constants
+    const STATUS_STANDARD = 'Standard';
+    const STATUS_EXTEND = 'Extend';
+
+    // Get valid status values
+    public static function getValidStatuses()
+    {
+        return [self::STATUS_STANDARD, self::STATUS_EXTEND];
+    }
+
     // Relationships
     public function rate()
     {

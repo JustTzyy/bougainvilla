@@ -172,10 +172,10 @@
                                 <a href="{{ route('reports.guests') }}" class="submenu-link"><span>Guests</span></a>
                             </li>
                             <li class="{{ request()->routeIs('reports.all-transactions') ? 'active' : '' }}">
-                                <a href="{{ route('reports.all-transactions') }}" class="submenu-link"><span>All Transactions</span></a>
+                                <a href="{{ route('reports.all-transactions') }}" class="submenu-link"><span>Overall Transactions</span></a>
                             </li>
                             <li class="{{ request()->routeIs('reports.all-archived-transactions') ? 'active' : '' }}">
-                                <a href="{{ route('reports.all-archived-transactions') }}" class="submenu-link"><span>All Archive Transactions</span></a>
+                                <a href="{{ route('reports.all-archived-transactions') }}" class="submenu-link"><span>Overall Archive Transactions</span></a>
                             </li>
                             <li class="{{ request()->routeIs('reports.logs') ? 'active' : '' }}">
                                 <a href="{{ route('reports.logs') }}" class="submenu-link"><span>Logs Report</span></a>

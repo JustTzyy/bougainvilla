@@ -11,18 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('stays_and_payments_tables', function (Blueprint $table) {
-            //
+        Schema::table('receipts', function (Blueprint $table) {
+            $table->enum('status_type', ['Standard', 'Extend'])->default('Standard')->after('status');
         });
     }
 
     /**
-     * Reverse the migrations.
+     * Reverse the migrations.S
      */
     public function down(): void
     {
-        Schema::table('stays_and_payments_tables', function (Blueprint $table) {
-            //
+        Schema::table('receipts', function (Blueprint $table) {
+            $table->dropColumn('status_type');
         });
     }
 };

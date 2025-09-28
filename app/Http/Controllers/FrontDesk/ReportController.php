@@ -77,11 +77,15 @@ class ReportController extends Controller
                 $accommodationName = 'N/A';
                 $checkIn = 'N/A';
                 $checkOut = 'N/A';
+                $status = 'Unknown';
                 
                 if ($receipt->payment && $receipt->payment->stay) {
                     $roomNumber = $receipt->payment->stay->room ? $receipt->payment->stay->room->room : 'N/A';
                     $checkIn = $receipt->payment->stay->checkIn;
                     $checkOut = $receipt->payment->stay->checkOut;
+                    $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                        ? $receipt->status_type 
+                        : Receipt::STATUS_TYPE_STANDARD;
                     
                     if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
                         $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
@@ -95,6 +99,7 @@ class ReportController extends Controller
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
+                    'status' => $status,
                     'amount' => $receipt->payment ? $receipt->payment->amount : 0,
                     'created_at' => $receipt->created_at
                 ];
@@ -133,11 +138,15 @@ class ReportController extends Controller
                 $accommodationName = 'N/A';
                 $checkIn = null;
                 $checkOut = null;
+                $status = 'Unknown';
 
                 if ($receipt->payment && $receipt->payment->stay) {
                     $roomNumber = $receipt->payment->stay->room ? $receipt->payment->stay->room->room : 'N/A';
                     $checkIn = $receipt->payment->stay->checkIn; // Pass Carbon object
                     $checkOut = $receipt->payment->stay->checkOut; // Pass Carbon object
+                    $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                        ? $receipt->status_type 
+                        : Receipt::STATUS_TYPE_STANDARD;
 
                     if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
                         $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
@@ -151,6 +160,7 @@ class ReportController extends Controller
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
+                    'status' => $status,
                     'amount' => $receipt->payment ? $receipt->payment->amount : 0,
                     'created_at' => $receipt->created_at
                 ];
@@ -206,6 +216,7 @@ class ReportController extends Controller
                 $accommodationName = 'N/A';
                 $checkIn = null;
                 $checkOut = null;
+                $status = 'Unknown';
 
                 if ($receipt->payment) {
                     // Get the stay with trashed included
@@ -215,6 +226,9 @@ class ReportController extends Controller
                         $roomNumber = $stay->room ? $stay->room->room : 'N/A';
                         $checkIn = $stay->checkIn; // Pass Carbon object
                         $checkOut = $stay->checkOut; // Pass Carbon object
+                        $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                            ? $receipt->status_type 
+                            : Receipt::STATUS_TYPE_STANDARD;
 
                         if ($stay->rate && $stay->rate->accommodations->count() > 0) {
                             $accommodationName = $stay->rate->accommodations->first()->name;
@@ -229,6 +243,7 @@ class ReportController extends Controller
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
+                    'status' => $status,
                     'amount' => $receipt->payment ? $receipt->payment->amount : 0,
                     'created_at' => $receipt->created_at
                 ];
@@ -279,6 +294,10 @@ class ReportController extends Controller
                             'tax' => $receipt->payment ? $receipt->payment->tax : 0,
                             'amount' => $receipt->payment ? $receipt->payment->amount : 0,
                             'change' => $receipt->payment ? $receipt->payment->change : 0,
+
+                            'status' => in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                                ? $receipt->status_type 
+                                : Receipt::STATUS_TYPE_STANDARD,
                             'created_at' => $receipt->created_at
                         ];
                     });

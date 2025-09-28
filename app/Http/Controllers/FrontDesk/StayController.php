@@ -26,7 +26,7 @@ class StayController extends Controller
         try {
             // Get rooms for room dashboard
             $rooms = Room::with(['level', 'accommodations', 'stays' => function($query) {
-                $query->where('status', 'Active')->where('checkOut', '>', now());
+                $query->whereIn('status', Stay::getValidStatuses())->where('checkOut', '>', now());
             }])
             ->where('status', '!=', 'Under Maintenance')
             ->orderBy('level_id')
@@ -143,11 +143,20 @@ class StayController extends Controller
             $tax = $subtotal * $taxRate;
             $total = $subtotal + $tax;
 
+            // Debug: Log the rate being used
+            \Log::info('FrontDesk - Creating stay with rate:', [
+                'rate_id' => $rate->id,
+                'duration' => $rate->duration,
+                'parsed_hours' => $this->parseDurationToHours($rate->duration),
+                'price' => $rate->price,
+                'status' => $rate->status
+            ]);
+            
             // Create stay
             $stay = Stay::create([
                 'checkIn' => now(),
                 'checkOut' => now()->addHours($this->parseDurationToHours($rate->duration)),
-                'status' => 'Active',
+                'status' => Stay::STATUS_STANDARD,
                 'rateID' => $rate->id,
                 'roomID' => $room->id
             ]);
@@ -196,6 +205,7 @@ class StayController extends Controller
             // Create receipt
             $receipt = Receipt::create([
                 'status' => 'Issued',
+                'status_type' => Stay::STATUS_STANDARD,
                 'paymentID' => $payment->id,
                 'userID' => Auth::id()
             ]);
@@ -242,9 +252,8 @@ class StayController extends Controller
 
             DB::beginTransaction();
 
-            // Update stay status
+            // Update stay status - keep current status but update checkout time
             $stay->update([
-                'status' => 'Completed',
                 'checkOut' => now()
             ]);
 
@@ -278,12 +287,14 @@ class StayController extends Controller
         try {
             $request->validate([
                 'rate_id' => 'required|exists:rates,id',
+                'payment_amount' => 'required|numeric|min:0',
+                'payment_change' => 'required|numeric|min:0'
             ]);
 
             DB::beginTransaction();
 
             $stay = Stay::findOrFail($id);
-            if ($stay->status !== 'Active') {
+            if (!in_array($stay->status, Stay::getValidStatuses())) {
                 return response()->json(['success' => false, 'message' => 'Stay is not active'], 400);
             }
 
@@ -292,7 +303,10 @@ class StayController extends Controller
             // Extend checkout from the later of current checkout or now
             $base = $stay->checkOut && $stay->checkOut->isFuture() ? $stay->checkOut : now();
             $newCheckout = $base->copy()->addHours($this->parseDurationToHours($rate->duration));
-            $stay->update(['checkOut' => $newCheckout]);
+            $stay->update([
+                'checkOut' => $newCheckout,
+                'status' => Stay::STATUS_EXTEND
+            ]);
 
             // Calculate amounts using previous guest count
             $guestCount = GuestStay::where('stayID', $stay->id)->count();
@@ -307,12 +321,13 @@ class StayController extends Controller
                 'tax' => $tax,
                 'subtotal' => $subtotal,
                 'status' => 'Completed',
-                'change' => 0,
+                'change' => $request->payment_change,
                 'stayID' => $stay->id,
             ]);
 
             $receipt = Receipt::create([
                 'status' => 'Issued',
+                'status_type' => Stay::STATUS_EXTEND,
                 'paymentID' => $payment->id,
                 'userID' => Auth::id()
             ]);
@@ -422,15 +437,22 @@ class StayController extends Controller
                     $accommodationName = $stay->rate->accommodations->first()->name;
                 }
                 
+                $status = Stay::STATUS_STANDARD; // Default status
                 if ($stay->payments && $stay->payments->count() > 0) {
                     $amount = $stay->payments->sum('amount');
                     
-                    // Get user from the first payment's receipt
-                    $firstPayment = $stay->payments->first();
-                    if ($firstPayment && $firstPayment->receipts && $firstPayment->receipts->count() > 0) {
-                        $receipt = $firstPayment->receipts->first();
+                    // Get user and status from the last payment's receipt (most recent transaction)
+                    $lastPayment = $stay->payments->last();
+                    if ($lastPayment && $lastPayment->receipts && $lastPayment->receipts->count() > 0) {
+                        $receipt = $lastPayment->receipts->first();
                         if ($receipt && $receipt->user) {
                             $userFullName = $receipt->user->firstName . ' ' . $receipt->user->lastName;
+                        }
+                        // Get status from receipt
+                        if ($receipt && $receipt->status_type) {
+                            $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                                ? $receipt->status_type 
+                                : Receipt::STATUS_TYPE_STANDARD;
                         }
                     }
                 }
@@ -444,7 +466,7 @@ class StayController extends Controller
                     'check_in' => $stay->checkIn,
                     'check_out' => $stay->checkOut,
                     'amount' => $amount,
-                    'status' => $stay->status,
+                    'status' => $status,
                     'deleted_at' => $stay->deleted_at
                 ];
             });
@@ -498,8 +520,8 @@ class StayController extends Controller
         try {
             // Load related room and rate with accommodations to infer accommodation for extension
             $stays = Stay::with(['room', 'rate.accommodations', 'guests'])
-                         ->where('status', 'Active')
-                         ->get();
+                        ->whereIn('status', Stay::getValidStatuses())
+                        ->get();
 
             // Map accommodation id used for the rate (first of rate->accommodations) if available
             $staysTransformed = $stays->map(function ($stay) {
@@ -585,7 +607,7 @@ class StayController extends Controller
             $roomsAvailable = Room::where('status', 'Available')->count();
             
             // Count rooms occupied by stays that have payments with receipts from current user
-            $roomsOccupiedByUser = Stay::where('status', 'Active')
+            $roomsOccupiedByUser = Stay::whereIn('status', Stay::getValidStatuses())
                 ->whereNull('deleted_at')
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId);
@@ -623,7 +645,7 @@ class StayController extends Controller
 
             // Recent Active Stays (Guests & Stays list) — no reservations - filtered by user
             $activeStays = Stay::with(['room', 'guests'])
-                ->where('status', 'Active')
+                ->whereIn('status', Stay::getValidStatuses())
                 ->whereNull('deleted_at')
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
@@ -652,7 +674,7 @@ class StayController extends Controller
                 })
                 ->pluck('id'))->count();
             $guestsTotal = Guest::withTrashed()->count();
-            $activeStayIds = Stay::where('status', 'Active')
+            $activeStayIds = Stay::whereIn('status', Stay::getValidStatuses())
                 ->whereNull('deleted_at')
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
@@ -724,7 +746,7 @@ class StayController extends Controller
         // Parse strings like "2 hours", "1 day", "30 minutes", "1 hr" etc.
         $s = strtolower(trim((string) $duration));
         if ($s === '') { return 1; }
-        if (!preg_match('/(\d+(?:\.\d+)?)\s*(hour|hours|hr|hrs|minute|minutes|min|day|days)/', $s, $m)) {
+        if (!preg_match('/(\d+(?:\.\d+)?)\s*(hour|hours|hr|hrs|minute|minutes|min|day|days|week|weeks|month|months)/', $s, $m)) {
             // Fallback: try to cast a leading number
             if (preg_match('/^\d+(?:\.\d+)?/', $s, $n)) {
                 return max(1, (int) $n[0]);
@@ -734,7 +756,9 @@ class StayController extends Controller
         $value = (float) $m[1];
         $unit = $m[2];
         if (str_starts_with($unit, 'day')) { return (int) round($value * 24); }
-        if (str_starts_with($unit, 'min')) { return max(1, (int) round($value / 60)); }
+        if (str_starts_with($unit, 'week')) { return (int) round($value * 24 * 7); }
+        if (str_starts_with($unit, 'month')) { return (int) round($value * 24 * 30); } // Approximate: 30 days per month
+        if (str_starts_with($unit, 'min')) { return $value / 60; }
         // hour/hr/hrs
         return max(1, (int) round($value));
     }

@@ -234,6 +234,7 @@
             <th>Room</th>
             <th>Accommodation</th>
             <th>Check-in</th>
+            <th>Status</th>
             <th>Amount</th>
             <th>Date Archived</th>
           </tr>
@@ -261,6 +262,9 @@
                     <span class="text-muted">-</span>
                   @endif
                 </td>
+                <td data-label="Status">
+                  {{ $transaction->status ?? 'Unknown' }}
+                </td>
                 <td data-label="Amount">
                   ₱{{ number_format($transaction->amount, 2) }}
                 </td>
@@ -269,7 +273,7 @@
             @endforeach
           @else
             <tr>
-              <td colspan="5" class="text-center" style="padding:40px; color:#6c757d;">
+              <td colspan="6" class="text-center" style="padding:40px; color:#6c757d;">
                 <i class="fas fa-inbox" style="font-size:48px; margin-bottom:16px; display:block;"></i>
                 <p style="margin:0; font-size:16px;">No archived transactions found</p>
                 <p style="margin:8px 0 0 0; font-size:14px; color:#adb5bd;">Deleted stays will appear here</p>
@@ -386,6 +390,7 @@
   .transaction-row:hover {
     background-color: #f8f9fa !important;
   }
+
 </style>
 
 <script>
@@ -407,8 +412,9 @@
         room: cells[0] ? cells[0].textContent.trim() : '',
         accommodation: cells[1] ? cells[1].textContent.trim() : '',
         check_in: cells[2] ? cells[2].textContent.trim() : '',
-        amount: cells[3] ? cells[3].textContent.trim() : '',
-        date_archived: cells[4] ? cells[4].textContent.trim() : '',
+        status: cells[3] ? cells[3].textContent.trim() : '',
+        amount: cells[4] ? cells[4].textContent.trim() : '',
+        date_archived: cells[5] ? cells[5].textContent.trim() : '',
         element: row
       };
     });
@@ -420,7 +426,7 @@
         filteredRows = allRows.slice(); 
       } else {
         filteredRows = allRows.filter(function(r){
-          var t = (''+r.room+' '+r.accommodation+' '+r.check_in+' '+r.amount+' '+r.date_archived).toLowerCase();
+          var t = (''+r.room+' '+r.accommodation+' '+r.check_in+' '+r.status+' '+r.amount+' '+r.date_archived).toLowerCase();
           return t.indexOf(q) !== -1;
         });
       }

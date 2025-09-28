@@ -76,11 +76,16 @@ class ReportController extends Controller
                 $accommodationName = 'N/A';
                 $checkIn = 'N/A';
                 $checkOut = 'N/A';
+                $status = 'Unknown';
                 
                 if ($receipt->payment && $receipt->payment->stay) {
                     $roomNumber = $receipt->payment->stay->room ? $receipt->payment->stay->room->room : 'N/A';
                     $checkIn = $receipt->payment->stay->checkIn;
                     $checkOut = $receipt->payment->stay->checkOut;
+                    // Use receipt status_type instead of stay status
+                    $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                        ? $receipt->status_type 
+                        : Receipt::STATUS_TYPE_STANDARD;
                     
                     if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
                         $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
@@ -94,6 +99,7 @@ class ReportController extends Controller
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
+                    'status' => $status,
                     'amount' => $receipt->payment ? $receipt->payment->amount : 0,
                     'created_at' => $receipt->created_at
                 ];
@@ -132,11 +138,16 @@ class ReportController extends Controller
                 $accommodationName = 'N/A';
                 $checkIn = null;
                 $checkOut = null;
+                $status = 'Unknown';
 
                 if ($receipt->payment && $receipt->payment->stay) {
                     $roomNumber = $receipt->payment->stay->room ? $receipt->payment->stay->room->room : 'N/A';
                     $checkIn = $receipt->payment->stay->checkIn; // Pass Carbon object
                     $checkOut = $receipt->payment->stay->checkOut; // Pass Carbon object
+                    // Use receipt status_type instead of stay status
+                    $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                        ? $receipt->status_type 
+                        : Receipt::STATUS_TYPE_STANDARD;
 
                     if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
                         $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
@@ -150,6 +161,7 @@ class ReportController extends Controller
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
+                    'status' => $status,
                     'amount' => $receipt->payment ? $receipt->payment->amount : 0,
                     'created_at' => $receipt->created_at
                 ];
@@ -172,68 +184,67 @@ class ReportController extends Controller
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
 
-            // Debug: Check if there are any soft-deleted stays
-            $softDeletedStays = Stay::onlyTrashed()->count();
-            \Log::info('Soft-deleted stays count: ' . $softDeletedStays);
-            
-            // Debug: Check if there are any receipts with soft-deleted stays
-            $receiptsWithSoftDeletedStays = Receipt::whereHas('payment.stay', function($query) {
-                $query->onlyTrashed();
-            })->count();
-            \Log::info('Receipts with soft-deleted stays count: ' . $receiptsWithSoftDeletedStays);
-
-            // Alternative approach: Get soft-deleted stays first, then get their receipts
-            $softDeletedStayIds = Stay::onlyTrashed()->pluck('id')->toArray();
-            \Log::info('Soft-deleted stay IDs: ' . json_encode($softDeletedStayIds));
-
-            // Get transactions from ALL users with all related data
-            // ONLY include transactions from soft-deleted stays
-            $archivedTransactions = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
-                ->whereBetween('created_at', [$fromCarbon, $toCarbon])
-                ->whereHas('payment', function($query) use ($softDeletedStayIds) {
-                    $query->whereIn('stayID', $softDeletedStayIds);
-                })
-                ->orderByDesc('created_at')
+            // Get soft-deleted stays from ALL users with all related data
+            $archivedStays = Stay::onlyTrashed()
+                ->with(['room.level', 'rate.accommodations', 'guests', 'payments.receipts.user'])
+                ->whereBetween('deleted_at', [$fromCarbon, $toCarbon])
+                ->orderBy('deleted_at', 'desc')
                 ->paginate($perPage);
 
-            // Debug: Log the count of archived transactions found
-            \Log::info('Archived transactions found: ' . $archivedTransactions->count());
-
-            // Transform the data for display
-            $archivedTransactions->getCollection()->transform(function ($receipt) {
+            // Transform the data for display - keep the paginator structure
+            $archivedStays->getCollection()->transform(function ($stay) {
+                $guestName = 'Unknown Guest';
                 $roomNumber = 'N/A';
                 $accommodationName = 'N/A';
-                $checkIn = null;
-                $checkOut = null;
-
-                if ($receipt->payment) {
-                    // Get the stay with trashed included
-                    $stay = Stay::withTrashed()->with(['room', 'rate.accommodations'])->find($receipt->payment->stayID);
+                $amount = 0;
+                $userFullName = 'Unknown User';
+                
+                if ($stay->guests && $stay->guests->count() > 0) {
+                    $guest = $stay->guests->first();
+                    $guestName = $guest->firstName . ' ' . $guest->lastName;
+                }
+                
+                if ($stay->room) {
+                    $roomNumber = $stay->room->room;
+                }
+                
+                if ($stay->rate && $stay->rate->accommodations && $stay->rate->accommodations->count() > 0) {
+                    $accommodationName = $stay->rate->accommodations->first()->name;
+                }
+                
+                $status = Stay::STATUS_STANDARD; // Default status
+                if ($stay->payments && $stay->payments->count() > 0) {
+                    $amount = $stay->payments->sum('amount');
                     
-                    if ($stay) {
-                        $roomNumber = $stay->room ? $stay->room->room : 'N/A';
-                        $checkIn = $stay->checkIn; // Pass Carbon object
-                        $checkOut = $stay->checkOut; // Pass Carbon object
-
-                        if ($stay->rate && $stay->rate->accommodations->count() > 0) {
-                            $accommodationName = $stay->rate->accommodations->first()->name;
+                    // Get user and status from the last payment's receipt (most recent transaction)
+                    $lastPayment = $stay->payments->last();
+                    if ($lastPayment && $lastPayment->receipts && $lastPayment->receipts->count() > 0) {
+                        $receipt = $lastPayment->receipts->first();
+                        if ($receipt && $receipt->user) {
+                            $userFullName = $receipt->user->firstName . ' ' . $receipt->user->lastName;
+                        }
+                        // Get status from receipt
+                        if ($receipt && $receipt->status_type) {
+                            $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                                ? $receipt->status_type 
+                                : Receipt::STATUS_TYPE_STANDARD;
                         }
                     }
                 }
-
+                
                 return (object) [
-                    'id' => $receipt->id,
-                    'user_name' => $receipt->user ? $receipt->user->firstName . ' ' . $receipt->user->lastName : 'Unknown User',
+                    'id' => $stay->id,
+                    'user_name' => $userFullName,
                     'room_number' => $roomNumber,
                     'accommodation_name' => $accommodationName,
-                    'check_in' => $checkIn,
-                    'check_out' => $checkOut,
-                    'amount' => $receipt->payment ? $receipt->payment->amount : 0,
-                    'created_at' => $receipt->created_at
+                    'check_in' => $stay->checkIn,
+                    'status' => $status,
+                    'amount' => $amount,
+                    'created_at' => $stay->deleted_at
                 ];
             });
 
-            return view('adminPages.allarchivetransactions', ['archivedTransactions' => $archivedTransactions]);
+            return view('adminPages.allarchivetransactions', ['archivedTransactions' => $archivedStays]);
 
         } catch (Exception $e) {
             \Log::error('All Archived Transactions Error: ' . $e->getMessage());
@@ -274,6 +285,9 @@ class ReportController extends Controller
                             'user_name' => $receipt->user ? $receipt->user->firstName . ' ' . $receipt->user->lastName : 'Unknown User',
                             'room_number' => $roomNumber,
                             'accommodation_name' => $accommodationName,
+                            'status' => in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
+                                ? $receipt->status_type 
+                                : Receipt::STATUS_TYPE_STANDARD,
                             'subtotal' => $receipt->payment ? $receipt->payment->subtotal : 0,
                             'tax' => $receipt->payment ? $receipt->payment->tax : 0,
                             'amount' => $receipt->payment ? $receipt->payment->amount : 0,
