@@ -290,6 +290,12 @@
 }
 
 
+/* Timer Alarm Animation */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
 /* Print Styles for Receipt */
 @media print {
   .receipt-actions {
@@ -1349,6 +1355,14 @@ function updateRoomTimers() {
         const diffMs = new Date(checkoutIso).getTime() - now;
         if (diffMs <= 0) {
             timer.textContent = '00:00:00';
+            // Add visual alarm effect
+            timer.style.color = '#dc3545';
+            timer.style.fontWeight = 'bold';
+            timer.style.animation = 'blink 1s infinite';
+            
+            // Play alarm sound
+            playAlarmSound();
+            
       // Show extend/timeout modal once
       const stayId = roomIdToStayId[roomId];
       if (stayId && !timer.dataset.prompted) {
@@ -1360,6 +1374,12 @@ function updateRoomTimers() {
       }
             return;
         }
+        
+        // Reset timer styling if time is still remaining
+        timer.style.color = '';
+        timer.style.fontWeight = '';
+        timer.style.animation = '';
+        
         const hours = Math.floor(diffMs / (1000 * 60 * 60));
         const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
@@ -1560,6 +1580,52 @@ function closeReceiptModal() {
     document.getElementById('receiptModal').style.display = 'none';
     // Reload the page to update room statuses
     location.reload();
+}
+
+// Alarm sound function
+function playAlarmSound() {
+    // Create audio context for generating alarm sound
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Create a beep sound using Web Audio API
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    // Connect oscillator to gain node to audio context
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Set alarm sound properties
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800Hz frequency
+    oscillator.type = 'square'; // Square wave for more alarm-like sound
+    
+    // Set volume envelope (fade in/out for beep effect)
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+    
+    // Play the alarm sound
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+    
+    // Play multiple beeps for more noticeable alarm
+    setTimeout(() => {
+        const oscillator2 = audioContext.createOscillator();
+        const gainNode2 = audioContext.createGain();
+        
+        oscillator2.connect(gainNode2);
+        gainNode2.connect(audioContext.destination);
+        
+        oscillator2.frequency.setValueAtTime(1000, audioContext.currentTime);
+        oscillator2.type = 'square';
+        
+        gainNode2.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode2.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+        gainNode2.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+        
+        oscillator2.start(audioContext.currentTime);
+        oscillator2.stop(audioContext.currentTime + 0.3);
+    }, 400);
 }
 
 

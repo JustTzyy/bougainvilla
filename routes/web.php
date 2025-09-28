@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LevelController;
+use App\Http\Controllers\Admin\CleanupController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -124,6 +125,12 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     
     // Activity Logs
     Route::get('/auditlogs', [App\Http\Controllers\ReportController::class, 'auditLogs'])->name('adminPages.auditlogs');
+    
+    // Guest Cleanup Routes
+    Route::get('/cleanup', [CleanupController::class, 'index'])->name('reports.cleanup');
+    Route::post('/cleanup/run', [CleanupController::class, 'runCleanup'])->name('reports.cleanup.run');
+    Route::post('/cleanup/soft-delete/{id}', [CleanupController::class, 'forceSoftDelete'])->name('reports.cleanup.soft-delete');
+    Route::post('/cleanup/hard-delete/{id}', [CleanupController::class, 'forceHardDelete'])->name('reports.cleanup.hard-delete');
     
     // Guest details route
     Route::get('/transactions/guest-details/{id}', [StayController::class, 'getGuestDetails'])->name('transactions.guest-details');

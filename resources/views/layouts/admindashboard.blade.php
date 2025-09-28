@@ -180,6 +180,9 @@
                             <li class="{{ request()->routeIs('reports.logs') ? 'active' : '' }}">
                                 <a href="{{ route('reports.logs') }}" class="submenu-link"><span>Logs Report</span></a>
                             </li>
+                            <li class="{{ request()->routeIs('reports.cleanup') ? 'active' : '' }}">
+                                <a href="{{ route('reports.cleanup') }}" class="submenu-link"><span>Guest Cleanup</span></a>
+                            </li>
                         </ul>
                     </li>
 

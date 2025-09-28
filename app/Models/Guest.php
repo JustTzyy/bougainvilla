@@ -16,6 +16,8 @@ class Guest extends Model
         'lastName',
         'number',
         'addressID',
+        'last_cleanup_check',
+        'cleanup_notified',
     ];
 
     public function address()
