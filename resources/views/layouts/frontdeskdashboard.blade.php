@@ -170,6 +170,9 @@
         </main>
     </div>
 
+    <!-- Password Change Modal -->
+    @include('components.password-change-modal')
+
     <script>
         // Responsive sidebar toggle functionality
         document.querySelector('.menu-toggle').addEventListener('click', function () {

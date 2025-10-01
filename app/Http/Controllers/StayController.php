@@ -694,6 +694,7 @@ class StayController extends Controller
                     'guests_total' => (int) $guestsTotal,
                     'guests_inhouse' => (int) $guestsInHouse,
                 ],
+                'password_changed' => Auth::user()->password_changed,
             ]);
         } catch (Exception $e) {
             return response()->json([

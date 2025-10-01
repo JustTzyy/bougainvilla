@@ -68,6 +68,7 @@ class UserController extends Controller
                 'sex' => $request->sex,
                 'contactNumber' => $request->contactNumber,
                 'password' => Hash::make($request->firstName . '123'),
+                'password_changed' => false,
                 'roleID' => $request->roleID,
                 'status' => 'Active',
             ]);
@@ -387,6 +388,7 @@ class UserController extends Controller
 
             $user->update([
                 'password' => Hash::make($request->password),
+                'password_changed' => true,
             ]);
 
             // Add history entry

@@ -40,9 +40,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::get('/reports/data', [App\Http\Controllers\ReportController::class, 'data'])->name('reports.data');
 
     //Settings
-    Route::get('/settings', function () {
-        return view('adminPages.adminsettings');
-    })->name('adminPages.settings');
+    Route::get('/settings', function () {return view('adminPages.adminsettings');})->name('adminPages.settings');
 
     Route::put('/settings/personal', [UserController::class, 'updatePersonal'])->name('adminPages.settings.personal');
     Route::put('/settings/email', [UserController::class, 'updateEmail'])->name('adminPages.settings.email');
@@ -153,9 +151,7 @@ Route::prefix('frontdesk')->middleware('auth')->group(function () {
     Route::get('/transactionreports', [App\Http\Controllers\FrontDesk\ReportController::class, 'transactionReports'])->name('frontdesk.transactionreports');
     
     // Settings
-    Route::get('/settings', function () {
-        return view('frontdeskPages.settings');
-    })->name('frontdesk.settings');
+    Route::get('/settings', function () {return view('frontdeskPages.settings');})->name('frontdesk.settings');
     
     // Settings routes for frontdesk
     Route::put('/settings/personal', [App\Http\Controllers\UserController::class, 'updatePersonal'])->name('frontdesk.settings.personal');
@@ -180,7 +176,6 @@ Route::prefix('frontdesk')->middleware('auth')->group(function () {
     Route::get('/stays/active', [App\Http\Controllers\FrontDesk\StayController::class, 'getActiveStays'])->name('frontdesk.stays.active');
 });
 
-// Support the UI call fetch('/AdminPages/admin/{id}')
 
 
 

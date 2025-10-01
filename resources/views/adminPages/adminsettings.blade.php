@@ -332,6 +332,21 @@
     const tabs = document.querySelectorAll('.nav-tab');
     const tabContents = document.querySelectorAll('.tab-content');
 
+    // Check if URL has hash for password tab
+    if (window.location.hash === '#password-tab') {
+      // Remove active class from all tabs and contents
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(tc => tc.classList.remove('active'));
+      
+      // Activate password tab
+      const passwordTab = document.querySelector('[data-tab="password"]');
+      const passwordContent = document.getElementById('password-tab');
+      if (passwordTab && passwordContent) {
+        passwordTab.classList.add('active');
+        passwordContent.classList.add('active');
+      }
+    }
+
     tabs.forEach(tab => {
       tab.addEventListener('click', function() {
         const targetTab = this.getAttribute('data-tab');
