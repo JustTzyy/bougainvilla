@@ -21,7 +21,7 @@ class RoomController extends Controller
         try {
             $rooms = Room::with(['level', 'accommodations'])
                         ->orderBy('room')
-                        ->paginate(10);
+                        ->get();
             
             $levels = Level::where('status', 'Active')->get();
             $accommodations = Accommodation::all();
@@ -236,7 +236,7 @@ class RoomController extends Controller
             $rooms = Room::onlyTrashed()
                         ->with(['level', 'accommodations'])
                         ->orderByDesc('deleted_at')
-                        ->paginate(10);
+                        ->get();
             
             return view('adminPages.archiverooms', compact('rooms'));
         } catch (Exception $e) {

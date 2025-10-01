@@ -67,6 +67,9 @@
                 </a>
             </div>
         </div>
+        
+        <!-- Client-side pagination -->
+        <nav class="pagination no-print" aria-label="Table pagination" id="pagination" style="display:none;"></nav>
 
         <div class="chart-card card-tight">
             <div class="section-header-pad">
@@ -110,34 +113,6 @@
                     </tbody>
                 </table>
             </div>
- @if(isset($accommodations) && $accommodations->hasPages())
-    <nav class="pagination-wrapper" aria-label="Table pagination">
-        <ul class="pagination">
-            {{-- Previous Page Link --}}
-            @if ($accommodations->onFirstPage())
-                <li class="page-item disabled"><span>&laquo;</span></li>
-            @else
-                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
-            @endif
-
-            {{-- Pagination Elements --}}
-            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
-                @if ($page == $accommodations->currentPage())
-                    <li class="page-item active"><span>{{ $page }}</span></li>
-                @else
-                    <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
-                @endif
-            @endforeach
-
-            {{-- Next Page Link --}}
-            @if ($accommodations->hasMorePages())
-                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
-            @else
-                <li class="page-item disabled"><span>&raquo;</span></li>
-            @endif
-        </ul>
-    </nav>
-@endif
         </div>
     </div>
 
@@ -222,17 +197,90 @@
 
     <script>
         (function () {
-            var search = document.getElementById('archiveSearch');
-            var table = document.getElementById('archivedTable').getElementsByTagName('tbody')[0];
+            // State
+            var allRows = [];
+            var filteredRows = [];
+            var currentPage = 1;
+            var pageSize = 10;
 
-            // Search functionality
-            if (search) search.addEventListener('input', function () {
-                var q = this.value.toLowerCase();
-                Array.prototype.forEach.call(table.rows, function (row) {
-                    var text = row.innerText.toLowerCase();
-                    row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
-                });
+            // Get all rows from the table
+            var table = document.getElementById('archivedTable').getElementsByTagName('tbody')[0];
+            var rows = Array.from(table.rows);
+            
+            // Convert table rows to data objects
+            allRows = rows.map(function(row) {
+                var cells = row.cells;
+                return {
+                    id: cells[0] ? cells[0].textContent.trim() : '',
+                    description: cells[1] ? cells[1].textContent.trim() : '',
+                    status: cells[2] ? cells[2].textContent.trim() : '',
+                    archived: cells[3] ? cells[3].textContent.trim() : '',
+                    element: row
+                };
             });
+
+            function applySearch(){
+                var search = document.getElementById('archiveSearch');
+                var q = (search ? search.value : '').toLowerCase();
+                if (!q) { 
+                    filteredRows = allRows.slice(); 
+                } else { 
+                    filteredRows = allRows.filter(function(r){ 
+                        return (r.id + ' ' + r.description + ' ' + r.status + ' ' + r.archived).toLowerCase().indexOf(q) !== -1; 
+                    }); 
+                }
+                currentPage = 1;
+                renderTable();
+                renderPagination();
+            }
+
+            function renderTable(){
+                var tbody = document.getElementById('archivedTable').getElementsByTagName('tbody')[0];
+                tbody.innerHTML = '';
+                var start = (currentPage - 1) * pageSize;
+                var end = start + pageSize;
+                var pageItems = filteredRows.slice(start, end);
+                pageItems.forEach(function(r){
+                    tbody.appendChild(r.element);
+                });
+            }
+
+            function renderPagination(){
+                var container = document.getElementById('pagination');
+                var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+                if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
+                container.style.display = '';
+                var html = '<ul class="pagination">';
+                function pageItem(p, label, disabled, active){
+                    var liCls = active ? 'active' : '';
+                    var btnCls = 'page-link' + (disabled ? ' disabled' : '');
+                    return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
+                }
+                html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
+                for (var p=1; p<=totalPages; p++){
+                    html += pageItem(p, p, false, p===currentPage);
+                }
+                html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
+                html += '</ul>';
+                container.innerHTML = html;
+            }
+
+            function attachPaginationHandler(){
+                var container = document.getElementById('pagination');
+                container.addEventListener('click', function(e){
+                    var btn = e.target.closest('button[data-page]');
+                    if (!btn) return;
+                    var p = parseInt(btn.getAttribute('data-page'));
+                    if (p && p !== currentPage) { currentPage = p; renderTable(); renderPagination(); }
+                });
+            }
+
+            // Initialize
+            attachPaginationHandler();
+            applySearch();
+
+            var search = document.getElementById('archiveSearch');
+            if (search) search.addEventListener('input', applySearch);
 
             // Level details modal functionality
             var modal = document.getElementById('levelDetailsModal');

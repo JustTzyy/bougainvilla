@@ -227,7 +227,7 @@ class UserController extends Controller
             $users = User::onlyTrashed()
                 ->where('roleID', 1)
                 ->orderByDesc('deleted_at')
-                ->paginate(10);
+                ->get();
 
             return view('adminPages.archiveadminrecords', compact('users'));
         } catch (Exception $e) {
@@ -241,7 +241,7 @@ class UserController extends Controller
             $users = User::onlyTrashed()
                 ->where('roleID', 2)
                 ->orderByDesc('deleted_at')
-                ->paginate(10);
+                ->get();
 
             return view('adminPages.archivefrontdeskrecords', compact('users'));
         } catch (Exception $e) {

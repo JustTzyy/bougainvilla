@@ -15,7 +15,7 @@ class RateController extends Controller
     public function index()
     {
         try {
-            $rates = Rate::with('accommodations')->orderBy('id')->paginate(10);
+            $rates = Rate::with('accommodations')->orderBy('id')->get();
             $accommodations = Accommodation::all();
             return view('adminPages.rate', compact('rates', 'accommodations'));
         } catch (Exception $e) {
@@ -138,7 +138,7 @@ class RateController extends Controller
     public function archived()
     {
         try {
-            $rates = Rate::onlyTrashed()->with('accommodations')->paginate(10);
+            $rates = Rate::onlyTrashed()->with('accommodations')->get();
             return view('adminPages.archiveRates', compact('rates'));
         } catch (Exception $e) {
             return back()->with('error', 'Failed to load archived rates: ' . $e->getMessage());

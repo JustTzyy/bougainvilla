@@ -394,6 +394,28 @@
           justify-content: center;
         }
       }
+
+      /* Pagination styling for rates */
+      #pagination { display: flex; justify-content: center; margin-top: 12px; }
+      #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+      #pagination .page-link {
+        background: linear-gradient(135deg, #ffffff, #f8f9ff);
+        border: 1px solid rgba(184,134,11,.2);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        box-shadow: 0 3px 10px rgba(184,134,11,.08);
+        transition: all .2s ease;
+      }
+      #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(184,134,11,.15); border-color: rgba(184,134,11,.35); }
+      #pagination li.active .page-link {
+        background: linear-gradient(135deg, var(--purple-primary), #DAA520);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 8px 22px rgba(184,134,11,.35);
+      }
+      #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
     </style>
 @endpush
 
@@ -494,11 +516,7 @@
                     </tbody>
                 </table>
             </div>
-            @if(isset($rates) && $rates->hasPages())
-                <nav class="pagination" aria-label="Table pagination">
-                    {{ $rates->links() }}
-                </nav>
-            @endif
+            <nav class="pagination no-print" aria-label="Table pagination" id="pagination" style="display:none;"></nav>
         </div>
     </div>
 
@@ -680,12 +698,97 @@
 
     <script>
         (function () {
+            // State
+            var allRows = [];
+            var filteredRows = [];
+            var currentPage = 1;
+            var pageSize = 10;
+
+            // Get all rows from the table
+            var table = document.getElementById('ratesTable').getElementsByTagName('tbody')[0];
+            var rows = Array.from(table.rows);
+            
+            // Convert table rows to data objects
+            allRows = rows.map(function(row) {
+              var cells = row.cells;
+              return {
+                id: cells[0] ? cells[0].textContent.trim() : '',
+                duration: cells[1] ? cells[1].textContent.trim() : '',
+                price: cells[2] ? cells[2].textContent.trim() : '',
+                status: cells[3] ? cells[3].textContent.trim() : '',
+                created: cells[4] ? cells[4].textContent.trim() : '',
+                element: row
+              };
+            });
+
+            function applySearch(){
+              var search = document.getElementById('adminSearch');
+              var q = (search ? search.value : '').toLowerCase();
+              if (!q) { 
+                filteredRows = allRows.slice(); 
+              } else {
+                filteredRows = allRows.filter(function(r){
+                  var t = (''+r.id+' '+r.duration+' '+r.price+' '+r.status+' '+r.created).toLowerCase();
+                  return t.indexOf(q) !== -1;
+                });
+              }
+              currentPage = 1;
+              renderTable();
+              renderPagination();
+            }
+
+            function renderTable(){
+              var tbody = document.getElementById('ratesTable').getElementsByTagName('tbody')[0];
+              tbody.innerHTML = '';
+              var start = (currentPage - 1) * pageSize;
+              var pageItems = filteredRows.slice(start, start + pageSize);
+              pageItems.forEach(function(r){
+                tbody.appendChild(r.element);
+              });
+            }
+
+            function renderPagination(){
+              var container = document.getElementById('pagination');
+              var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+              if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
+              container.style.display = '';
+              var html = '<ul class="pagination">';
+              function pageItem(p, label, disabled, active){
+                var liCls = active ? 'active' : '';
+                var btnCls = 'page-link' + (disabled ? ' disabled' : '');
+                return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
+              }
+              html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
+              for (var p=1; p<=totalPages; p++){
+                html += pageItem(p, p, false, p===currentPage);
+              }
+              html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
+              html += '</ul>';
+              container.innerHTML = html;
+            }
+
+            function attachPaginationHandler(){
+              var container = document.getElementById('pagination');
+              container.addEventListener('click', function(e){
+                var btn = e.target.closest('button[data-page]');
+                if (!btn || btn.classList.contains('disabled')) return;
+                currentPage = parseInt(btn.getAttribute('data-page')) || 1;
+                renderTable();
+                renderPagination();
+              });
+            }
+
+            // Client-side search
+            var search = document.getElementById('adminSearch');
+            if (search) search.addEventListener('input', applySearch);
+
+            attachPaginationHandler();
+            applySearch();
+
             var modal = document.getElementById('rateModal');
             var openBtn = document.getElementById('openAddAdmin');
             var closeBtn = document.getElementById('closeRateModal');
             var cancelBtn = document.getElementById('cancelRate');
-            var search = document.getElementById('adminSearch');
-            var table = document.getElementById('ratesTable').getElementsByTagName('tbody')[0];
 
             // Open Add Modal
             function openModal() { modal.style.display = 'flex'; }
@@ -710,14 +813,12 @@
             if (closeBtn) closeBtn.addEventListener('click', closeModal);
             if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
 
-            // Search
-            if (search) search.addEventListener('input', function () {
-                var q = this.value.toLowerCase();
-                Array.prototype.forEach.call(table.rows, function (row) {
-                    var text = row.innerText.toLowerCase();
-                    row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
-                });
-            });
+            // Re-add handlers after pagination
+            var originalRenderTable = renderTable;
+            renderTable = function() {
+              originalRenderTable();
+              addRowClickHandlers();
+            };
 
             // Update modal logic
             var updateModal = document.getElementById('updateModal');
@@ -813,50 +914,55 @@
             if (closeRateDetailsBtn) closeRateDetailsBtn.addEventListener('click', closeRateDetailsModal);
             if (closeRateDetailsModalBtn) closeRateDetailsModalBtn.addEventListener('click', closeRateDetailsModal);
 
-            // Row click opens details (event delegation for robustness)
-            var ratesTable = document.getElementById('ratesTable');
-            if (ratesTable) {
-              ratesTable.addEventListener('click', function(e){
-                var row = e.target.closest('.rate-row');
-                if (!row) return;
-                if (e.target.closest('button')) return;
-                var d = row.dataset;
-                    document.getElementById('detail-rate-id').textContent = d.rateId || '-';
-                    document.getElementById('detail-rate-duration').textContent = d.duration || '-';
-                    document.getElementById('detail-rate-price').textContent = d.price ? '₱' + (parseFloat(d.price).toFixed(2)) : '-';
-                    document.getElementById('detail-rate-status').textContent = d.status || '-';
-                    document.getElementById('detail-rate-created').textContent = d.created ? new Date(d.created).toLocaleDateString() : '-';
-                    var accContainer = document.getElementById('detail-rate-accommodations');
-                    accContainer.innerHTML = '<div class="loading" style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #6c757d; font-style: italic; padding: 12px; font-size: 12px;"><i class="fas fa-spinner fa-spin" style="color: var(--purple-primary); font-size: 12px;"></i><span>Loading...</span></div>';
-                    fetch('/adminPages/rates/' + (d.rateId || '') + '/accommodations')
-                      .then(function(resp){ return resp.json(); })
-                      .then(function(data){
-                        if (data.accommodations && data.accommodations.length) {
-                          var html = '<div style="display: grid; gap: 6px; max-height: 150px; overflow-y: auto; padding-right: 4px;">';
-                          data.accommodations.forEach(function(a){
-                            html += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(184,134,11,.08); transition: all 0.3s ease; position: relative;">';
-                            html += '<div style="display:flex;align-items:center;gap:6px;">';
-                            html += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #DAA520); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(184,134,11,.3);">';
-                            html += '<i class="fas fa-hotel" style="color: white; font-size: 10px;"></i>';
+            // Row click opens details
+            function addRowClickHandlers() {
+              var ratesTable = document.getElementById('ratesTable');
+              if (ratesTable) {
+                ratesTable.addEventListener('click', function(e){
+                  var row = e.target.closest('.rate-row');
+                  if (!row) return;
+                  if (e.target.closest('button')) return;
+                  var d = row.dataset;
+                      document.getElementById('detail-rate-id').textContent = d.rateId || '-';
+                      document.getElementById('detail-rate-duration').textContent = d.duration || '-';
+                      document.getElementById('detail-rate-price').textContent = d.price ? '₱' + (parseFloat(d.price).toFixed(2)) : '-';
+                      document.getElementById('detail-rate-status').textContent = d.status || '-';
+                      document.getElementById('detail-rate-created').textContent = d.created ? new Date(d.created).toLocaleDateString() : '-';
+                      var accContainer = document.getElementById('detail-rate-accommodations');
+                      accContainer.innerHTML = '<div class="loading" style="display: flex; align-items: center; justify-content: center; gap: 6px; color: #6c757d; font-style: italic; padding: 12px; font-size: 12px;"><i class="fas fa-spinner fa-spin" style="color: var(--purple-primary); font-size: 12px;"></i><span>Loading...</span></div>';
+                      fetch('/adminPages/rates/' + (d.rateId || '') + '/accommodations')
+                        .then(function(resp){ return resp.json(); })
+                        .then(function(data){
+                          if (data.accommodations && data.accommodations.length) {
+                            var html = '<div style="display: grid; gap: 6px; max-height: 150px; overflow-y: auto; padding-right: 4px;">';
+                            data.accommodations.forEach(function(a){
+                              html += '<div class="accommodation-card" style="padding: 8px; background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02)); border-radius: 8px; border-left: 3px solid var(--purple-primary); box-shadow: 0 2px 6px rgba(184,134,11,.08); transition: all 0.3s ease; position: relative;">';
+                              html += '<div style="display:flex;align-items:center;gap:6px;">';
+                              html += '<div style="width: 24px; height: 24px; background: linear-gradient(135deg, var(--purple-primary), #DAA520); border-radius: 6px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(184,134,11,.3);">';
+                              html += '<i class="fas fa-hotel" style="color: white; font-size: 10px;"></i>';
+                              html += '</div>';
+                              html += '<div>';
+                              html += '<strong style="color: var(--text-primary); font-size: 12px; font-weight: 700; display: block;">' + a.name + '</strong>';
+                              html += '<small style="color: #6c757d; font-size: 10px;">Capacity: ' + (a.capacity ?? '-') + '</small>';
+                              html += '</div>';
+                              html += '</div></div>';
+                            });
                             html += '</div>';
-                            html += '<div>';
-                            html += '<strong style="color: var(--text-primary); font-size: 12px; font-weight: 700; display: block;">' + a.name + '</strong>';
-                            html += '<small style="color: #6c757d; font-size: 10px;">Capacity: ' + (a.capacity ?? '-') + '</small>';
-                            html += '</div>';
-                            html += '</div></div>';
-                          });
-                          html += '</div>';
-                          accContainer.innerHTML = html;
-                        } else {
-                          accContainer.innerHTML = '<div style="text-align:center;color:#6c757d;font-size:10px;font-style:italic;">No accommodations</div>';
-                        }
-                      })
-                      .catch(function(){
-                        accContainer.innerHTML = '<div style="text-align:center;color:#dc3545;font-size:10px;font-style:italic;">Failed to load</div>';
-                      });
-                openRateDetailsModal();
-              });
+                            accContainer.innerHTML = html;
+                          } else {
+                            accContainer.innerHTML = '<div style="text-align:center;color:#6c757d;font-size:10px;font-style:italic;">No accommodations</div>';
+                          }
+                        })
+                        .catch(function(){
+                          accContainer.innerHTML = '<div style="text-align:center;color:#dc3545;font-size:10px;font-style:italic;">Failed to load</div>';
+                        });
+                  openRateDetailsModal();
+                });
+              }
             }
+
+            // Initialize row click handlers
+            addRowClickHandlers();
         })();
     </script>
 

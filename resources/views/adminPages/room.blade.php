@@ -277,6 +277,28 @@
       font-size: 12px;
     }
   }
+
+  /* Pagination styling for rooms */
+  #pagination { display: flex; justify-content: center; margin-top: 12px; }
+  #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+  #pagination .page-link {
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    border: 1px solid rgba(184,134,11,.2);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 3px 10px rgba(184,134,11,.08);
+    transition: all .2s ease;
+  }
+  #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(184,134,11,.15); border-color: rgba(184,134,11,.35); }
+  #pagination li.active .page-link {
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 22px rgba(184,134,11,.35);
+  }
+  #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
 </style>
 @endpush
 
@@ -380,11 +402,7 @@
         </tbody>
       </table>
     </div>
-    @if(isset($rooms) && $rooms->hasPages())
-      <nav class="pagination" aria-label="Table pagination">
-        {{ $rooms->links() }}
-      </nav>
-    @endif
+    <nav class="pagination no-print" aria-label="Table pagination" id="pagination" style="display:none;"></nav>
   </div>
 </div>
 
@@ -599,12 +617,97 @@
 
 <script>
   (function(){
+    // State
+    var allRows = [];
+    var filteredRows = [];
+    var currentPage = 1;
+    var pageSize = 10;
+
+    // Get all rows from the table
+    var table = document.getElementById('roomsTable').getElementsByTagName('tbody')[0];
+    var rows = Array.from(table.rows);
+    
+    // Convert table rows to data objects
+    allRows = rows.map(function(row) {
+      var cells = row.cells;
+      return {
+        room: cells[0] ? cells[0].textContent.trim() : '',
+        level: cells[1] ? cells[1].textContent.trim() : '',
+        status: cells[2] ? cells[2].textContent.trim() : '',
+        type: cells[3] ? cells[3].textContent.trim() : '',
+        created: cells[4] ? cells[4].textContent.trim() : '',
+        element: row
+      };
+    });
+
+    function applySearch(){
+      var search = document.getElementById('adminSearch');
+      var q = (search ? search.value : '').toLowerCase();
+      if (!q) { 
+        filteredRows = allRows.slice(); 
+      } else {
+        filteredRows = allRows.filter(function(r){
+          var t = (''+r.room+' '+r.level+' '+r.status+' '+r.type+' '+r.created).toLowerCase();
+          return t.indexOf(q) !== -1;
+        });
+      }
+      currentPage = 1;
+      renderTable();
+      renderPagination();
+    }
+
+    function renderTable(){
+      var tbody = document.getElementById('roomsTable').getElementsByTagName('tbody')[0];
+      tbody.innerHTML = '';
+      var start = (currentPage - 1) * pageSize;
+      var pageItems = filteredRows.slice(start, start + pageSize);
+      pageItems.forEach(function(r){
+        tbody.appendChild(r.element);
+      });
+    }
+
+    function renderPagination(){
+      var container = document.getElementById('pagination');
+      var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+      if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
+      container.style.display = '';
+      var html = '<ul class="pagination">';
+      function pageItem(p, label, disabled, active){
+        var liCls = active ? 'active' : '';
+        var btnCls = 'page-link' + (disabled ? ' disabled' : '');
+        return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
+      }
+      html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
+      for (var p=1; p<=totalPages; p++){
+        html += pageItem(p, p, false, p===currentPage);
+      }
+      html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
+      html += '</ul>';
+      container.innerHTML = html;
+    }
+
+    function attachPaginationHandler(){
+      var container = document.getElementById('pagination');
+      container.addEventListener('click', function(e){
+        var btn = e.target.closest('button[data-page]');
+        if (!btn || btn.classList.contains('disabled')) return;
+        currentPage = parseInt(btn.getAttribute('data-page')) || 1;
+        renderTable();
+        renderPagination();
+      });
+    }
+
+    // Client-side search
+    var search = document.getElementById('adminSearch');
+    if (search) search.addEventListener('input', applySearch);
+
+    attachPaginationHandler();
+    applySearch();
+
     var modal = document.getElementById('roomModal');
     var openBtn = document.getElementById('openAddAdmin');
     var closeBtn = document.getElementById('closeRoomModal');
     var cancelBtn = document.getElementById('cancelRoom');
-    var search = document.getElementById('adminSearch');
-    var table = document.getElementById('roomsTable').getElementsByTagName('tbody')[0];
 
     // Open Add Modal
     function openModal(){ 
@@ -658,14 +761,12 @@
       }
     });
 
-    // Client-side search
-    if (search) search.addEventListener('input', function(){
-      var q = this.value.toLowerCase();
-      Array.prototype.forEach.call(table.rows, function(row){
-        var text = row.innerText.toLowerCase();
-        row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
-      });
-    });
+    // Re-add handlers after pagination
+    var originalRenderTable = renderTable;
+    renderTable = function() {
+      originalRenderTable();
+      addRowClickHandlers();
+    };
 
     // Update modal logic
     var updateModal = document.getElementById('updateModal');
@@ -742,24 +843,29 @@
     if (closeRoomDetailsModalBtn) closeRoomDetailsModalBtn.addEventListener('click', closeRoomDetailsModal);
 
     // Room row click handler
-    var roomRows = document.querySelectorAll('.room-row');
-    roomRows.forEach(function(row) {
-      row.addEventListener('click', function(e) {
-        // Don't trigger if clicking on action buttons
-        if (e.target.closest('button')) return;
-        var r = this.dataset;
-        populateRoomDetails({
-          id: r.roomId,
-          room: r.room,
-          level_id: r.levelId,
-          status: r.status,
-          type: r.type,
-          created_at: r.created,
-          accommodations: r.accommodations
+    function addRowClickHandlers() {
+      var roomRows = document.querySelectorAll('.room-row');
+      roomRows.forEach(function(row) {
+        row.addEventListener('click', function(e) {
+          // Don't trigger if clicking on action buttons
+          if (e.target.closest('button')) return;
+          var r = this.dataset;
+          populateRoomDetails({
+            id: r.roomId,
+            room: r.room,
+            level_id: r.levelId,
+            status: r.status,
+            type: r.type,
+            created_at: r.created,
+            accommodations: r.accommodations
+          });
+          openRoomDetailsModal();
         });
-        openRoomDetailsModal();
       });
-    });
+    }
+
+    // Initialize row click handlers
+    addRowClickHandlers();
 
     // Populate room details in modal
     function populateRoomDetails(room) {

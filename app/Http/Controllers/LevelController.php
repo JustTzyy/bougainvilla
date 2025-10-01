@@ -15,7 +15,7 @@ class LevelController extends Controller
     public function index(Request $request)
     {
         try {
-            $levels = Level::query()->orderBy('id')->paginate(10);
+            $levels = Level::query()->orderBy('id')->get();
             return view('adminPages.level', compact('levels'));
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to load levels: ' . $e->getMessage());
@@ -148,7 +148,7 @@ class LevelController extends Controller
     public function archived(Request $request)
     {
         try {
-            $levels = Level::onlyTrashed()->orderByDesc('deleted_at')->paginate(10);
+            $levels = Level::onlyTrashed()->orderByDesc('deleted_at')->get();
             return view('adminPages.archivelevels', compact('levels'));
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to load archived levels: ' . $e->getMessage());

@@ -16,7 +16,7 @@ class AccommodationController extends Controller
     public function index(Request $request)
     {
         try {
-            $accommodations = Accommodation::query()->orderBy('id')->paginate(10);
+            $accommodations = Accommodation::query()->orderBy('id')->get();
             return view('adminPages.accommodation', compact('accommodations'));
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to load accommodations: ' . $e->getMessage());
@@ -149,7 +149,7 @@ class AccommodationController extends Controller
     public function archived(Request $request)
     {
         try {
-            $accommodations = Accommodation::onlyTrashed()->orderByDesc('deleted_at')->paginate(10);
+            $accommodations = Accommodation::onlyTrashed()->orderByDesc('deleted_at')->get();
             return view('adminPages.archiveaccommodations', compact('accommodations'));
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to load archived accommodations: ' . $e->getMessage());

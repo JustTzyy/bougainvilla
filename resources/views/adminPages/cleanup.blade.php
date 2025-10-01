@@ -106,7 +106,7 @@
     gap: 10px;
     margin-bottom: 20px;
 }
-
+    
 .btn-primary {
     background-color: var(--purple-primary);
     color: white;
