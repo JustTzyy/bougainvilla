@@ -21,18 +21,18 @@ class CleanupController extends Controller
         $activeGuests = Guest::whereNull('deleted_at')->count();
         $softDeletedGuests = Guest::onlyTrashed()->count();
 
-        // Guests ready for soft delete (3+ months old)
+        // Get ALL guests ready for soft delete (3+ months old) - no server-side pagination
         $guestsForSoftDelete = Guest::whereNull('deleted_at')
             ->where('created_at', '<=', $threeMonthsAgo)
             ->orderBy('created_at', 'asc')
-            ->paginate(10);
+            ->get();
 
-        // Guests ready for hard delete (soft deleted 3+ months ago)
+        // Get ALL guests ready for hard delete (soft deleted 3+ months ago) - no server-side pagination
         $guestsForHardDelete = Guest::onlyTrashed()
             ->where('deleted_at', '<=', $threeMonthsAgo)
             ->where('created_at', '<=', $sixMonthsAgo)
             ->orderBy('deleted_at', 'asc')
-            ->paginate(10);
+            ->get();
 
         return view('adminPages.cleanup', compact(
             'totalGuests',

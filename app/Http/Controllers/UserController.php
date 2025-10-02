@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+    use SafeDataAccessTrait;
+    use EnhancedLoggingTrait;
     public function admin(Request $request)
     {
         try {
@@ -56,6 +58,12 @@ class UserController extends Controller
 
 
             $name = $request->firstName . ' ' . ($request->middleName ?? '') . ' ' . $request->lastName;
+
+            // Log the user creation operation
+            $this->logBusinessOperation('Creating new user', [
+                'email' => $request->email,
+                'role_id' => $request->roleID
+            ]);
 
             $user = User::create([
                 'firstName' => $request->firstName,
@@ -385,6 +393,12 @@ class UserController extends Controller
             if (!Hash::check($request->current_password, $user->password)) {
                 return redirect()->back()->with('error', 'Current password is incorrect.')->withInput();
             }
+
+            // Log the password change operation
+            $this->logSecurityEvent('User password changed', [
+                'user_id' => $user->id,
+                'user_email' => $user->email
+            ]);
 
             $user->update([
                 'password' => Hash::make($request->password),

@@ -19,7 +19,9 @@ Route::get('/', function () {
 Route::get('/Authentication/login', [AuthController::class, 'loginInterface'])->name('login');
 
 //Login Processes
-Route::post('/Authentication/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/Authentication/login', [AuthController::class, 'login'])
+    ->middleware('rate.limit.login')
+    ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 

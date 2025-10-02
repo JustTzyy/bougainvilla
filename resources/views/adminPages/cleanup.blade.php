@@ -176,6 +176,58 @@
     background-color: #f8d7da;
     color: #721c24;
 }
+
+/* Custom Pagination Styling to match other pages */
+.pagination-wrapper { 
+    display: flex; 
+    justify-content: center; 
+    margin-top: 20px; 
+}
+
+.pagination-wrapper .pagination { 
+    display: flex; 
+    gap: 6px; 
+    list-style: none; 
+    padding: 0; 
+    margin: 0; 
+}
+
+.pagination-wrapper .page-link {
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    border: 1px solid rgba(184,134,11,.2);
+    color: var(--text-primary);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 3px 10px rgba(184,134,11,.08);
+    transition: all .2s ease;
+    text-decoration: none;
+}
+
+.pagination-wrapper .page-link:hover { 
+    transform: translateY(-1px); 
+    box-shadow: 0 6px 16px rgba(184,134,11,.15); 
+    border-color: rgba(184,134,11,.35); 
+}
+
+.pagination-wrapper .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 8px 22px rgba(184,134,11,.35);
+}
+
+.pagination-wrapper .page-link.disabled { 
+    opacity: .5; 
+    cursor: not-allowed; 
+}
+
+.pagination-wrapper .page-item.disabled .page-link {
+    opacity: .5; 
+    cursor: not-allowed;
+    background: #f8f9fa;
+    color: #6c757d;
+}
 </style>
 @endpush
 
@@ -201,7 +253,7 @@
             <div class="stat-label">Soft Deleted</div>
         </div>
         <div class="stat-card">
-            <div class="stat-number">{{ $guestsForSoftDelete->total() }}</div>
+            <div class="stat-number">{{ $guestsForSoftDelete->count() }}</div>
             <div class="stat-label">Ready for Soft Delete</div>
         </div>
     </div>
@@ -228,7 +280,7 @@
         </h2>
         
         @if($guestsForSoftDelete->count() > 0)
-            <table class="guest-table">
+            <table class="guest-table" id="soft-delete-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -263,9 +315,10 @@
                 </tbody>
             </table>
             
-            <div class="pagination-links">
-                {{ $guestsForSoftDelete->links() }}
-            </div>
+            <!-- Client-side Pagination for Soft Delete -->
+            <nav class="pagination-wrapper" aria-label="Soft delete pagination" id="softDeletePagination" style="display:none;">
+                <ul class="pagination" id="softDeletePaginationList"></ul>
+            </nav>
         @else
             <div class="empty-state">
                 <i class="fas fa-check-circle"></i>
@@ -282,7 +335,7 @@
         </h2>
         
         @if($guestsForHardDelete->count() > 0)
-            <table class="guest-table">
+            <table class="guest-table" id="hard-delete-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -319,9 +372,10 @@
                 </tbody>
             </table>
             
-            <div class="pagination-links">
-                {{ $guestsForHardDelete->links() }}
-            </div>
+            <!-- Client-side Pagination for Hard Delete -->
+            <nav class="pagination-wrapper" aria-label="Hard delete pagination" id="hardDeletePagination" style="display:none;">
+                <ul class="pagination" id="hardDeletePaginationList"></ul>
+            </nav>
         @else
             <div class="empty-state">
                 <i class="fas fa-check-circle"></i>
@@ -432,5 +486,91 @@ function hardDeleteGuest(guestId) {
         alert('Error: ' + error.message);
     });
 }
+
+// Client-side pagination functionality
+(function(){
+    var pageSize = 10;
+    
+    // Initialize pagination for both tables
+    function initializePagination() {
+        initTablePagination('soft-delete-table', 'softDeletePagination', 'softDeletePaginationList');
+        initTablePagination('hard-delete-table', 'hardDeletePagination', 'hardDeletePaginationList');
+    }
+    
+    function initTablePagination(tableId, paginationId, paginationListId) {
+        var table = document.getElementById(tableId);
+        if (!table) return;
+        
+        var tbody = table.getElementsByTagName('tbody')[0];
+        if (!tbody) return;
+        
+        var rows = Array.from(tbody.rows);
+        var totalPages = Math.ceil(rows.length / pageSize);
+        var currentPage = 1;
+        
+        function showPage(page) {
+            var startIndex = (page - 1) * pageSize;
+            var endIndex = startIndex + pageSize;
+            
+            rows.forEach(function(row, index) {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            updatePaginationControls(page, totalPages, paginationId, paginationListId, showPage);
+        }
+        
+        if (totalPages > 1) {
+            document.getElementById(paginationId).style.display = 'flex';
+            showPage(1);
+        }
+    }
+    
+    function updatePaginationControls(currentPage, totalPages, paginationId, paginationListId, showPageCallback) {
+        var paginationList = document.getElementById(paginationListId);
+        if (!paginationList) return;
+        
+        var html = '';
+        
+        // Previous button
+        html += '<li class="page-item ' + (currentPage === 1 ? 'disabled' : '') + '">';
+        html += '<a class="page-link" href="#" data-page="' + Math.max(1, currentPage - 1) + '">&laquo;</a>';
+        html += '</li>';
+        
+        // Page numbers
+        var startPage = Math.max(1, currentPage - 2);
+        var endPage = Math.min(totalPages, currentPage + 2);
+        
+        for (var i = startPage; i <= endPage; i++) {
+            var activeClass = i === currentPage ? 'active' : '';
+            html += '<li class="page-item ' + activeClass + '">';
+            html += '<a class="page-link" href="#" data-page="' + i + '">' + i + '</a>';
+            html += '</li>';
+        }
+        
+        // Next button
+        html += '<li class="page-item ' + (currentPage === totalPages ? 'disabled' : '') + '">';
+        html += '<a class="page-link" href="#" data-page="' + Math.min(totalPages, currentPage + 1) + '">&raquo;</a>';
+        html += '</li>';
+        
+        paginationList.innerHTML = html;
+        
+        // Add click event listeners
+        paginationList.addEventListener('click', function(e) {
+            e.preventDefault();
+            var target = e.target.closest('.page-link');
+            if (target && !target.closest('.page-item').classList.contains('disabled')) {
+                var page = parseInt(target.getAttribute('data-page'));
+                showPageCallback(page);
+            }
+        });
+    }
+    
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initializePagination);
+})();
 </script>
 @endsection

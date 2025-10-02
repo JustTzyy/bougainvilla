@@ -14,6 +14,7 @@ use Carbon\Carbon;
 
 class ReportController extends Controller
 {
+    use SafeDataAccessTrait;
     public function payments() { return view('adminPages.payments'); }
     public function totalAmount() { return view('adminPages.total_amount'); }
     public function tax() { return view('adminPages.tax'); }
@@ -26,18 +27,21 @@ class ReportController extends Controller
     public function auditLogs(Request $request)
     {
         try {
-            $perPage = 10;
-            
             // Handle date filtering
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
             
-            // Get activity logs only for the currently logged-in user
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
+            
+            // Get all activity logs for the currently logged-in user
             $histories = History::with('user')
                 ->where('userID', auth()->id())
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->orderByDesc('created_at')
-                ->paginate($perPage);
+                ->get(); // Get all records instead of paginating
             
             // Get all users for the filter dropdown
             $users = User::orderBy('name')->get();
@@ -53,13 +57,16 @@ class ReportController extends Controller
     public function transactionReports(Request $request)
     {
         try {
-            $perPage = 15;
-            
             // Handle date filtering
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
             
-            // Get transactions for the logged-in user with all related data
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
+            
+            // Get ALL transactions for the logged-in user with all related data (no pagination)
             // Exclude transactions from soft-deleted stays
             $transactions = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
                 ->where('userID', auth()->id())
@@ -68,10 +75,10 @@ class ReportController extends Controller
                     $query->whereNull('deleted_at'); // Only include stays that are not soft-deleted
                 })
                 ->orderByDesc('created_at')
-                ->paginate($perPage);
+                ->get(); // Changed from paginate() to get() to load all records
 
             // Transform the data for display
-            $transactions->getCollection()->transform(function ($receipt) {
+            $transactions->transform(function ($receipt) {
                 $roomNumber = 'N/A';
                 $accommodationName = 'N/A';
                 $checkIn = 'N/A';
@@ -79,22 +86,21 @@ class ReportController extends Controller
                 $status = 'Unknown';
                 
                 if ($receipt->payment && $receipt->payment->stay) {
-                    $roomNumber = $receipt->payment->stay->room ? $receipt->payment->stay->room->room : 'N/A';
-                    $checkIn = $receipt->payment->stay->checkIn;
-                    $checkOut = $receipt->payment->stay->checkOut;
+                    $stay = $receipt->payment->stay;
+                    $roomNumber = $this->getRoomNumber($stay->room);
+                    $checkIn = $stay->checkIn; // Return Carbon object directly
+                    $checkOut = $stay->checkOut; // Return Carbon object directly
                     // Use receipt status_type instead of stay status
                     $status = in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
                         ? $receipt->status_type 
                         : Receipt::STATUS_TYPE_STANDARD;
                     
-                    if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
-                        $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
-                    }
+                    $accommodationName = $this->getAccommodationName($stay->rate);
                 }
                 
                 return (object) [
                     'id' => $receipt->id,
-                    'user_name' => $receipt->user ? $receipt->user->firstName . ' ' . $receipt->user->lastName : 'Unknown User',
+                    'user_name' => $this->getUserFullName($receipt->user),
                     'room_number' => $roomNumber,
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
@@ -116,13 +122,16 @@ class ReportController extends Controller
     public function allTransactions(Request $request)
     {
         try {
-            $perPage = 15;
-            
             // Handle date filtering
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+            
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
 
-            // Get transactions from ALL users with all related data
+            // Get ALL transactions from ALL users with all related data (no pagination)
             // Exclude transactions from soft-deleted stays
             $transactions = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
@@ -130,10 +139,10 @@ class ReportController extends Controller
                     $query->whereNull('deleted_at'); // Only include stays that are not soft-deleted
                 })
                 ->orderByDesc('created_at')
-                ->paginate($perPage);
+                ->get(); // Changed from paginate() to get() to load all records
 
             // Transform the data for display
-            $transactions->getCollection()->transform(function ($receipt) {
+            $transactions->transform(function ($receipt) {
                 $roomNumber = 'N/A';
                 $accommodationName = 'N/A';
                 $checkIn = null;
@@ -156,7 +165,7 @@ class ReportController extends Controller
 
                 return (object) [
                     'id' => $receipt->id,
-                    'user_name' => $receipt->user ? $receipt->user->firstName . ' ' . $receipt->user->lastName : 'Unknown User',
+                    'user_name' => $this->getUserFullName($receipt->user),
                     'room_number' => $roomNumber,
                     'accommodation_name' => $accommodationName,
                     'check_in' => $checkIn,
@@ -178,21 +187,24 @@ class ReportController extends Controller
     public function allArchivedTransactions(Request $request)
     {
         try {
-            $perPage = 15;
-            
             // Handle date filtering
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+            
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
 
-            // Get soft-deleted stays from ALL users with all related data
+            // Get ALL soft-deleted stays from ALL users with all related data (no pagination)
             $archivedStays = Stay::onlyTrashed()
                 ->with(['room.level', 'rate.accommodations', 'guests', 'payments.receipts.user'])
                 ->whereBetween('deleted_at', [$fromCarbon, $toCarbon])
                 ->orderBy('deleted_at', 'desc')
-                ->paginate($perPage);
+                ->get(); // Changed from paginate() to get() to load all records
 
-            // Transform the data for display - keep the paginator structure
-            $archivedStays->getCollection()->transform(function ($stay) {
+            // Transform the data for display
+            $archivedStays->transform(function ($stay) {
                 $guestName = 'Unknown Guest';
                 $roomNumber = 'N/A';
                 $accommodationName = 'N/A';
@@ -257,7 +269,21 @@ class ReportController extends Controller
     {
         $type = $request->query('type', 'payments');
         $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
-        $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+        
+        // For guests, use a wider default date range (1 year) to show all historical data
+        if ($type === 'guests') {
+            $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subYear()->startOfDay();
+        } else {
+            $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+        }
+        
+        // Validate date range - from date should not be later than to date
+        if ($fromCarbon->isAfter($toCarbon)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'The "From" date cannot be later than the "To" date. Please adjust your date range.'
+            ], 400);
+        }
 
         switch ($type) {
             case 'payments':
@@ -282,7 +308,7 @@ class ReportController extends Controller
                         
                         return [
                             'id' => $receipt->id,
-                            'user_name' => $receipt->user ? $receipt->user->firstName . ' ' . $receipt->user->lastName : 'Unknown User',
+                            'user_name' => $this->getUserFullName($receipt->user),
                             'room_number' => $roomNumber,
                             'accommodation_name' => $accommodationName,
                             'status' => in_array($receipt->status_type, Receipt::getValidStatusTypes()) 
@@ -383,10 +409,10 @@ class ReportController extends Controller
     public function logs(Request $request)
     {
         try {
-            $perPage = 10;
+            // Get ALL logs with all related data (no pagination)
             $logs = Log::with('user')
                 ->orderByDesc('created_at')
-                ->paginate($perPage);
+                ->get(); // Changed from paginate() to get() to load all records
             
             // Debug: Log the count
             \Log::info('Logs count: ' . $logs->count());

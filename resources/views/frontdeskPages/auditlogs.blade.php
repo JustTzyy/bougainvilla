@@ -48,6 +48,59 @@
     color: #383d41;
   }
 
+  /* Custom Pagination Styling */
+  .custom-pagination .pagination {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .custom-pagination .pagination li {
+    margin: 0;
+  }
+
+  .custom-pagination .pagination .page-link {
+    display: block;
+    padding: 12px 16px;
+    text-decoration: none;
+    color: #333;
+    background: white;
+    border: 1px solid #ddd;
+    border-right: none;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+
+  .custom-pagination .pagination li:last-child .page-link {
+    border-right: 1px solid #ddd;
+  }
+
+  .custom-pagination .pagination .page-link:hover {
+    background: #f8f9fa;
+    color: #DAA520;
+  }
+
+  .custom-pagination .pagination li.active .page-link {
+    background: linear-gradient(135deg, #DAA520, #B8860B);
+    color: white;
+    border-color: #DAA520;
+  }
+
+  .custom-pagination .pagination .page-link.disabled {
+    color: #6c757d;
+    cursor: not-allowed;
+    background: #f8f9fa;
+  }
+
+  .custom-pagination .pagination .page-link.disabled:hover {
+    background: #f8f9fa;
+    color: #6c757d;
+  }
+
   .badge-logout {
     background-color: #f8d7da;
     color: #721c24;
@@ -256,59 +309,14 @@
           </tbody>
         </table>
       </div>
-      <nav class="pagination no-print" aria-label="Table pagination" id="pagination" style="display:none;"></nav>
-      
-      <!-- Laravel Pagination -->
-      @if(isset($histories) && $histories->hasPages())
-        <div class="no-print" style="display: flex; justify-content: center; margin-top: 20px;">
-          <div class="custom-pagination">
-            <ul class="pagination">
-              {{-- Previous Page Link --}}
-              @if ($histories->onFirstPage())
-                <li class="disabled">
-                  <span class="page-link disabled">
-                    <i class="fas fa-chevron-left"></i>
-                  </span>
-                </li>
-              @else
-                <li>
-                  <a href="{{ $histories->previousPageUrl() }}" class="page-link" rel="prev">
-                    <i class="fas fa-chevron-left"></i>
-                  </a>
-                </li>
-              @endif
-
-              {{-- Pagination Elements --}}
-              @foreach ($histories->getUrlRange(1, $histories->lastPage()) as $page => $url)
-                @if ($page == $histories->currentPage())
-                  <li class="active">
-                    <span class="page-link">{{ $page }}</span>
-                  </li>
-                @else
-                  <li>
-                    <a href="{{ $url }}" class="page-link">{{ $page }}</a>
-                  </li>
-                @endif
-              @endforeach
-
-              {{-- Next Page Link --}}
-              @if ($histories->hasMorePages())
-                <li>
-                  <a href="{{ $histories->nextPageUrl() }}" class="page-link" rel="next">
-                    <i class="fas fa-chevron-right"></i>
-                  </a>
-                </li>
-              @else
-                <li class="disabled">
-                  <span class="page-link disabled">
-                    <i class="fas fa-chevron-right"></i>
-                  </span>
-                </li>
-              @endif
-            </ul>
-          </div>
+      <!-- Client-side pagination -->
+      <div class="no-print" style="display: flex; justify-content: center; margin-top: 20px;" id="paginationWrapper">
+        <div class="custom-pagination">
+          <ul class="pagination" id="activityLogsPagination">
+            <!-- Pagination will be populated by JavaScript -->
+          </ul>
         </div>
-      @endif
+      </div>
     </div>
   </div>
 </div>
@@ -318,6 +326,8 @@
     // State
     var allRows = [];
     var filteredRows = [];
+    var currentPage = 1;
+    var recordsPerPage = 10;
 
     // Get all rows from the table
     var table = document.getElementById('activityLogsTable').getElementsByTagName('tbody')[0];
@@ -346,7 +356,9 @@
           return t.indexOf(q) !== -1;
         });
       }
+      currentPage = 1; // Reset to first page when searching
       renderTable();
+      updatePagination();
     }
 
     function renderTable(){
@@ -362,10 +374,86 @@
                        '</td>';
         tbody.appendChild(tr);
       } else {
-        filteredRows.forEach(function(r){
-          tbody.appendChild(r.element);
+        // Calculate pagination
+        var startIndex = (currentPage - 1) * recordsPerPage;
+        var endIndex = startIndex + recordsPerPage;
+        var pageRows = filteredRows.slice(startIndex, endIndex);
+        
+        pageRows.forEach(function(r){
+          tbody.appendChild(r.element.cloneNode(true));
         });
       }
+    }
+
+    function updatePagination() {
+      var paginationContainer = document.getElementById('activityLogsPagination');
+      var totalPages = Math.ceil(filteredRows.length / recordsPerPage);
+      
+      if (totalPages <= 1) {
+        document.getElementById('paginationWrapper').style.display = 'none';
+        return;
+      }
+      
+      document.getElementById('paginationWrapper').style.display = 'flex';
+      paginationContainer.innerHTML = '';
+      
+      // Previous button
+      var prevLi = document.createElement('li');
+      var prevLink = document.createElement('a');
+      prevLink.href = '#';
+      prevLink.className = 'page-link' + (currentPage === 1 ? ' disabled' : '');
+      prevLink.innerHTML = '<i class="fas fa-chevron-left"></i>';
+      prevLink.onclick = function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+          updatePagination();
+        }
+      };
+      prevLi.appendChild(prevLink);
+      paginationContainer.appendChild(prevLi);
+      
+      // Page numbers
+      for (var i = 1; i <= totalPages; i++) {
+        var li = document.createElement('li');
+        if (i === currentPage) {
+          li.className = 'active';
+        }
+        
+        var link = document.createElement('a');
+        link.href = '#';
+        link.className = 'page-link';
+        link.textContent = i;
+        link.onclick = (function(page) {
+          return function(e) {
+            e.preventDefault();
+            currentPage = page;
+            renderTable();
+            updatePagination();
+          };
+        })(i);
+        
+        li.appendChild(link);
+        paginationContainer.appendChild(li);
+      }
+      
+      // Next button
+      var nextLi = document.createElement('li');
+      var nextLink = document.createElement('a');
+      nextLink.href = '#';
+      nextLink.className = 'page-link' + (currentPage === totalPages ? ' disabled' : '');
+      nextLink.innerHTML = '<i class="fas fa-chevron-right"></i>';
+      nextLink.onclick = function(e) {
+        e.preventDefault();
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+          updatePagination();
+        }
+      };
+      nextLi.appendChild(nextLink);
+      paginationContainer.appendChild(nextLi);
     }
 
 
@@ -386,6 +474,7 @@
     var search = document.getElementById('activitySearch');
     if (search) search.addEventListener('input', applySearch);
 
+    // Initialize the table and pagination
     applySearch();
 
     // Print functionality

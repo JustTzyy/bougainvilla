@@ -27,7 +27,8 @@
   <div class="printable-content">
   <div class="chart-card card-tight">
     <div class="section-header-pad">
-      <h3 class="chart-title">Revenue Summary</h3>
+      <h3 class="chart-title">💰 Financial Revenue Summary</h3>
+      <p style="margin: 4px 0 0 0; font-size: 12px; color: #6c757d; text-align: center;">Overview of total revenue, payments, and financial performance</p>
     </div>
 
     <style>
@@ -145,7 +146,10 @@
     </div>
 
     <div class="chart-card" style="margin-top:16px;">
-      <div class="section-header-pad"><h3 class="chart-title">Operations KPIs</h3></div>
+      <div class="section-header-pad">
+        <h3 class="chart-title">🏨 Hotel Operations KPIs</h3>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #6c757d; text-align: center;">Key performance indicators for room occupancy and guest management</p>
+      </div>
       <div class="summary-grid" id="kpiGrid">
         <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Rooms Available</div><div class="summary-value" id="kpiAvail">0</div></div>
         <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Rooms Occupied</div><div class="summary-value" id="kpiOcc">0</div></div>
@@ -156,19 +160,34 @@
     </div>
 
     <div class="chart-card no-print" style="margin-top:16px;">
-      <div class="section-header-pad"><h3 class="chart-title">Daily Revenue</h3></div>
+      <div class="section-header-pad">
+        <h3 class="chart-title">📊 Daily Revenue Analytics</h3>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #6c757d; text-align: center;">Visual analysis of daily revenue trends with detailed data breakdown</p>
+      </div>
       <div style="display:grid; grid-template-columns: 2fr 1fr; gap: 16px; align-items:start;">
         <div class="panel">
+          <div style="text-align: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+            <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #2b2d42;">📈 Daily Revenue Trend</h4>
+            <p style="margin: 0; font-size: 11px; color: #6c757d;">Revenue performance over time</p>
+          </div>
           <canvas id="dailyLine" height="120"></canvas>
         </div>
         <div class="panel">
+          <div style="text-align: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+            <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #2b2d42;">🥧 Revenue Breakdown</h4>
+            <p style="margin: 0; font-size: 11px; color: #6c757d;">Subtotal vs Tax distribution</p>
+          </div>
           <canvas id="breakdownPie" height="120"></canvas>
         </div>
       </div>
       <div id="dailyTable" class="table-wrapper">
+        <div style="text-align: center; margin-bottom: 12px; padding: 12px; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border-radius: 8px;">
+          <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: #2b2d42;">📊 Daily Revenue Data Table</h4>
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #6c757d;">Detailed breakdown of daily financial performance</p>
+        </div>
         <table class="table">
           <thead>
-            <tr><th>Date</th><th>Subtotal</th><th>Tax</th><th>Total</th></tr>
+            <tr><th>📅 Date</th><th>💰 Subtotal</th><th>🏛️ Tax</th><th>💵 Total</th></tr>
           </thead>
           <tbody id="dailyRows"></tbody>
         </table>
@@ -176,8 +195,15 @@
     </div>
 
     <div class="chart-card no-print" style="margin-top:16px;">
-      <div class="section-header-pad"><h3 class="chart-title">Daily Operational Metrics</h3></div>
+      <div class="section-header-pad">
+        <h3 class="chart-title">📈 Daily Operational Metrics</h3>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #6c757d; text-align: center;">Daily revenue tracking and operational insights</p>
+      </div>
       <div class="panel">
+        <div style="text-align: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
+          <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #2b2d42;">🏨 Operational Performance Chart</h4>
+          <p style="margin: 0; font-size: 11px; color: #6c757d;">Daily revenue tracking and operational insights</p>
+        </div>
         <canvas id="opsLine" height="110"></canvas>
       </div>
     </div>

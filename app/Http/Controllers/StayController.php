@@ -116,25 +116,42 @@ class StayController extends Controller
             $request->validate([
                 'room_id' => 'required|exists:rooms,id',
                 'rate_id' => 'required|exists:rates,id',
-                'guests' => 'required|array|min:1',
+                'guests' => 'required|array|min:1|max:10', // Limit max guests
                 'guests.*.firstName' => 'required|string|max:255',
                 'guests.*.lastName' => 'required|string|max:255',
                 'guests.*.middleName' => 'nullable|string|max:255',
-                'guests.*.number' => 'nullable|string|max:255',
+                'guests.*.number' => 'nullable|string|max:20',
                 'guests.*.address' => 'required|array',
                 'guests.*.address.street' => 'required|string|max:255',
                 'guests.*.address.city' => 'required|string|max:255',
                 'guests.*.address.province' => 'required|string|max:255',
-                'guests.*.address.zipcode' => 'required|string|max:255',
-                'payment_amount' => 'required|numeric|min:0',
-                'payment_change' => 'required|numeric|min:0'
+                'guests.*.address.zipcode' => 'required|string|max:10',
+                'payment_amount' => 'required|numeric|min:0|max:999999.99',
+                'payment_change' => 'required|numeric|min:0|max:999999.99'
             ]);
 
             DB::beginTransaction();
 
-            // Get rate details
+            // Get rate details with additional validation
             $rate = Rate::findOrFail($request->rate_id);
+            if (!$rate || !$rate->isAvailable()) {
+                throw new \Exception('Selected rate is not available. Status: ' . ($rate->status ?? 'Unknown'));
+            }
+
             $room = Room::findOrFail($request->room_id);
+            if (!$room || $room->status !== 'Available') {
+                throw new \Exception('Room is not available for booking. Current status: ' . ($room->status ?? 'Unknown'));
+            }
+
+            // Check if room is already occupied
+            $existingStay = Stay::where('roomID', $room->id)
+                ->whereIn('status', Stay::getValidStatuses())
+                ->where('checkOut', '>', now())
+                ->first();
+            
+            if ($existingStay) {
+                throw new \Exception('Room is already occupied');
+            }
             
             // Calculate amounts
             $subtotal = $rate->price * count($request->guests);
@@ -405,6 +422,11 @@ class StayController extends Controller
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
             
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
+            
             // Get archived stays with all related data including receipts and users - filtered by current user
             $stays = Stay::onlyTrashed()
                 ->with(['room.level', 'rate.accommodations', 'guests', 'payments.receipts.user'])
@@ -560,6 +582,17 @@ class StayController extends Controller
             // Defaults: last 30 days
             $toCarbon = $to ? Carbon::parse($to)->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $from ? Carbon::parse($from)->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+            
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The "From" date cannot be later than the "To" date. Please adjust your date range.'
+                    ], 400);
+                }
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
 
             $paymentsQuery = Payment::query()
                 ->where('status', 'Completed')

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @stack('styles')
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="{{ asset('js/date-range-validator.js') }}" defer></script>
     <style>
         /* Fix sidebar visibility - ensure it shows by default on desktop */
         @media (min-width: 769px) {

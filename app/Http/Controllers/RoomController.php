@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Log;
 
 class RoomController extends Controller
 {
+    use SafeDataAccessTrait;
+    use EnhancedLoggingTrait;
     public function index(Request $request)
     {
         try {

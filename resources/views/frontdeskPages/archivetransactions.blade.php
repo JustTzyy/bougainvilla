@@ -329,30 +329,33 @@
   }
   
   .modal-header {
-    padding: 20px;
-    border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 20px !important;
+    border-bottom: 1px solid #eee !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: linear-gradient(135deg, #DAA520, #B8860B) !important;
+    color: white !important;
+    border-radius: 15px 15px 0 0 !important;
   }
   
   .modal-title {
-    margin: 0;
-    color: var(--purple-primary);
-    font-size: 24px;
-    font-weight: 700;
+    margin: 0 !important;
+    color: white !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
   }
   
   .close {
-    font-size: 28px;
-    font-weight: bold;
-    color: #aaa;
-    cursor: pointer;
-    line-height: 1;
+    font-size: 28px !important;
+    font-weight: bold !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    cursor: pointer !important;
+    line-height: 1 !important;
   }
   
   .close:hover {
-    color: #000;
+    color: white !important;
   }
   
   .modal-body {
@@ -553,19 +556,19 @@
     }
 
     function displayGuestDetails(guests, transaction) {
-      var html = '<div class="transaction-info" style="margin-bottom: 24px; padding: 16px; background: #f8f9ff; border-radius: 10px; border-left: 4px solid var(--purple-primary);">';
-      html += '<h4 style="margin: 0 0 12px 0; color: var(--purple-primary);">Transaction Information</h4>';
+      var html = '<div class="transaction-info" style="margin-bottom: 24px; padding: 16px; background: #fff8e1; border-radius: 10px; border-left: 4px solid #DAA520;">';
+      html += '<h4 style="margin: 0 0 12px 0; color: #DAA520;">Transaction Information</h4>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Room:</span><span class="guest-detail-value">' + (transaction.room || 'N/A') + '</span></div>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Accommodation:</span><span class="guest-detail-value">' + (transaction.accommodation || 'N/A') + '</span></div>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Amount:</span><span class="guest-detail-value">₱' + (transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00') + '</span></div>';
       html += '</div>';
 
-      html += '<h4 style="margin: 0 0 16px 0; color: var(--purple-primary);">Guest Information</h4>';
+      html += '<h4 style="margin: 0 0 16px 0; color: #DAA520;">Guest Information</h4>';
       
       if (guests && guests.length > 0) {
         guests.forEach(function(guest, index) {
           html += '<div style="margin-bottom: 20px; padding: 16px; border: 1px solid #e9ecef; border-radius: 10px; background: #fff;">';
-          html += '<h5 style="margin: 0 0 12px 0; color: var(--text-primary);">Guest ' + (index + 1) + '</h5>';
+          html += '<h5 style="margin: 0 0 12px 0; color: #DAA520;">Guest ' + (index + 1) + '</h5>';
           html += '<div class="guest-detail-item"><span class="guest-detail-label">Name:</span><span class="guest-detail-value">' + (guest.firstName || '') + ' ' + (guest.middleName || '') + ' ' + (guest.lastName || '') + '</span></div>';
           html += '<div class="guest-detail-item"><span class="guest-detail-label">Contact:</span><span class="guest-detail-value">' + (guest.number || 'N/A') + '</span></div>';
           if (guest.address) {

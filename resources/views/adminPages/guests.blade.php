@@ -163,7 +163,7 @@
     <form class="filters-wrap no-print" id="filterForm" style="display:flex; flex-wrap:wrap; gap:12px; align-items:center; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%); border:1px solid rgba(184,134,11,.15); padding:12px; border-radius:12px; box-shadow: 0 4px 14px rgba(184,134,11,.06);">
       <div style="display:flex; gap:8px; align-items:center; background: rgba(184,134,11,.06); border:1px solid rgba(184,134,11,.15); padding:8px 10px; border-radius:10px;">
         <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">From</span>
-        <input type="date" id="from" class="date-input form-input" value="{{ now()->subDays(29)->toDateString() }}" style="min-height:36px;">
+        <input type="date" id="from" class="date-input form-input" value="{{ now()->subYear()->toDateString() }}" style="min-height:36px;">
       </div>
       <div style="display:flex; gap:8px; align-items:center; background: rgba(184,134,11,.06); border:1px solid rgba(184,134,11,.15); padding:8px 10px; border-radius:10px;">
         <span class="filter-label" style="font-weight:600; color:var(--text-secondary);">To</span>

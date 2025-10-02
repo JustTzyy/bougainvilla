@@ -21,6 +21,8 @@ use Carbon\Carbon;
 
 class StayController extends Controller
 {
+    use \App\Http\Controllers\SafeDataAccessTrait;
+    use \App\Http\Controllers\EnhancedLoggingTrait;
     public function index(Request $request)
     {
         try {
@@ -117,25 +119,49 @@ class StayController extends Controller
             $request->validate([
                 'room_id' => 'required|exists:rooms,id',
                 'rate_id' => 'required|exists:rates,id',
-                'guests' => 'required|array|min:1',
+                'guests' => 'required|array|min:1|max:10', // Limit max guests
                 'guests.*.firstName' => 'required|string|max:255',
                 'guests.*.lastName' => 'required|string|max:255',
                 'guests.*.middleName' => 'nullable|string|max:255',
-                'guests.*.number' => 'nullable|string|max:255',
+                'guests.*.number' => 'nullable|string|max:20',
                 'guests.*.address' => 'required|array',
                 'guests.*.address.street' => 'required|string|max:255',
                 'guests.*.address.city' => 'required|string|max:255',
                 'guests.*.address.province' => 'required|string|max:255',
-                'guests.*.address.zipcode' => 'required|string|max:255',
-                'payment_amount' => 'required|numeric|min:0',
-                'payment_change' => 'required|numeric|min:0'
+                'guests.*.address.zipcode' => 'required|string|max:10',
+                'payment_amount' => 'required|numeric|min:0|max:999999.99',
+                'payment_change' => 'required|numeric|min:0|max:999999.99'
             ]);
 
             DB::beginTransaction();
 
-            // Get rate details
+            // Get rate details with additional validation
             $rate = Rate::findOrFail($request->rate_id);
+            if (!$rate || !$rate->isAvailable()) {
+                throw new \Exception('Selected rate is not available. Status: ' . ($rate->status ?? 'Unknown'));
+            }
+
             $room = Room::findOrFail($request->room_id);
+            if (!$room || $room->status !== 'Available') {
+                throw new \Exception('Room is not available for booking. Current status: ' . ($room->status ?? 'Unknown'));
+            }
+
+            // Check if room is already occupied
+            $existingStay = Stay::where('roomID', $room->id)
+                ->whereIn('status', Stay::getValidStatuses())
+                ->where('checkOut', '>', now())
+                ->first();
+            
+            if ($existingStay) {
+                throw new \Exception('Room is already occupied');
+            }
+
+            // Log the business operation
+            $this->logBusinessOperation('Processing new stay', [
+                'room_id' => $room->id,
+                'rate_id' => $rate->id,
+                'guest_count' => count($request->guests)
+            ]);
             
             // Calculate amounts
             $subtotal = $rate->price * count($request->guests);
@@ -287,18 +313,32 @@ class StayController extends Controller
         try {
             $request->validate([
                 'rate_id' => 'required|exists:rates,id',
-                'payment_amount' => 'required|numeric|min:0',
-                'payment_change' => 'required|numeric|min:0'
+                'payment_amount' => 'required|numeric|min:0|max:999999.99',
+                'payment_change' => 'required|numeric|min:0|max:999999.99'
             ]);
 
             DB::beginTransaction();
 
             $stay = Stay::findOrFail($id);
+            if (!$stay) {
+                throw new \Exception('Stay not found');
+            }
+            
             if (!in_array($stay->status, Stay::getValidStatuses())) {
-                return response()->json(['success' => false, 'message' => 'Stay is not active'], 400);
+                throw new \Exception('Stay is not active and cannot be extended');
             }
 
             $rate = Rate::findOrFail($request->rate_id);
+            if (!$rate || !$rate->isAvailable()) {
+                throw new \Exception('Selected rate is not available. Status: ' . ($rate->status ?? 'Unknown'));
+            }
+
+            // Log the business operation
+            $this->logBusinessOperation('Extending stay', [
+                'stay_id' => $stay->id,
+                'rate_id' => $rate->id,
+                'room_id' => $stay->roomID
+            ]);
 
             // Extend checkout from the later of current checkout or now
             $base = $stay->checkOut && $stay->checkOut->isFuture() ? $stay->checkOut : now();
@@ -364,7 +404,24 @@ class StayController extends Controller
             DB::beginTransaction();
             
             $stay = Stay::findOrFail($id);
+            if (!$stay) {
+                throw new \Exception('Stay not found');
+            }
+
+            if (!in_array($stay->status, Stay::getValidStatuses())) {
+                throw new \Exception('Stay is not active and cannot be checked out');
+            }
+
             $room = $stay->room;
+            if (!$room) {
+                throw new \Exception('Room information not found');
+            }
+
+            // Log the business operation
+            $this->logBusinessOperation('Checking out guest', [
+                'stay_id' => $stay->id,
+                'room_id' => $room->id
+            ]);
             
             // Soft delete the stay
             $stay->delete();
@@ -405,6 +462,11 @@ class StayController extends Controller
             // Handle date filtering
             $toCarbon = $request->filled('to') ? Carbon::parse($request->query('to'))->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $request->filled('from') ? Carbon::parse($request->query('from'))->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+            
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
             
             // Get archived stays with all related data including receipts and users - filtered by current user
             $stays = Stay::onlyTrashed()
@@ -561,6 +623,17 @@ class StayController extends Controller
             // Defaults: last 30 days
             $toCarbon = $to ? Carbon::parse($to)->endOfDay() : Carbon::now()->endOfDay();
             $fromCarbon = $from ? Carbon::parse($from)->startOfDay() : $toCarbon->copy()->subDays(29)->startOfDay();
+
+            // Validate date range - from date should not be later than to date
+            if ($fromCarbon->isAfter($toCarbon)) {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The "From" date cannot be later than the "To" date. Please adjust your date range.'
+                    ], 400);
+                }
+                return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
 
             // Get current logged-in user ID
             $currentUserId = Auth::id();

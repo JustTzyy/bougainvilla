@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             Roleseeder::class,
+            BougainvillaHistoricalSeeder::class,
         ]);
     }
 }
