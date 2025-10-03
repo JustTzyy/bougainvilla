@@ -33,26 +33,58 @@
       box-shadow: 0 4px 14px rgba(184,134,11,.25);
     }
 
-    #pagination { display: flex; justify-content: center; margin-top: 12px; }
-    #pagination ul.pagination { display: flex; gap: 6px; list-style: none; padding: 0; margin: 0; }
+    #pagination { 
+      display: flex; 
+      justify-content: center; 
+      margin-top: 12px; 
+      max-width: 100%;
+      overflow-x: auto;
+      padding: 8px 0;
+    }
+    #pagination ul.pagination { 
+      display: flex; 
+      gap: 4px; 
+      list-style: none; 
+      padding: 0; 
+      margin: 0; 
+      flex-wrap: nowrap;
+      min-width: max-content;
+    }
     #pagination .page-link {
       background: linear-gradient(135deg, #ffffff, #f8f9ff);
       border: 1px solid rgba(184,134,11,.2);
       color: var(--text-primary);
       padding: 8px 12px;
-      border-radius: 10px;
-      font-weight: 700;
-      box-shadow: 0 3px 10px rgba(184,134,11,.08);
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(184,134,11,.08);
       transition: all .2s ease;
+      white-space: nowrap;
+      min-width: 40px;
+      text-align: center;
     }
-    #pagination .page-link:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(184,134,11,.15); border-color: rgba(184,134,11,.35); }
+    #pagination .page-link:hover { 
+      transform: translateY(-1px); 
+      box-shadow: 0 4px 12px rgba(184,134,11,.15); 
+      border-color: rgba(184,134,11,.35); 
+    }
     #pagination li.active .page-link {
       background: linear-gradient(135deg, var(--purple-primary), #DAA520);
       color: #fff;
       border-color: transparent;
-      box-shadow: 0 8px 22px rgba(184,134,11,.35);
+      box-shadow: 0 4px 16px rgba(184,134,11,.35);
     }
-    #pagination .page-link.disabled { opacity: .5; cursor: not-allowed; }
+    #pagination .page-link.disabled { 
+      opacity: .5; 
+      cursor: not-allowed; 
+      background: #f8f9fa;
+      color: #6c757d;
+    }
+    #pagination .page-item.disabled .page-link {
+      background: #f8f9fa;
+      color: #6c757d;
+      cursor: not-allowed;
+    }
 
     /* Print Styles */
     @media print {
@@ -284,16 +316,49 @@
     var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
     if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
     container.style.display = '';
+    
+    // Calculate the range of pages to show (max 10 pages)
+    var maxVisiblePages = 10;
+    var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust startPage if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
     var html = '<ul class="pagination">';
     function pageItem(p, label, disabled, active){
       var liCls = active ? 'active' : '';
       var btnCls = 'page-link' + (disabled ? ' disabled' : '');
       return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
     }
+    
+    // Previous button
     html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
-    for (var p=1; p<=totalPages; p++){
+    
+    // First page if not in range
+    if (startPage > 1) {
+      html += pageItem(1, '1', false, false);
+      if (startPage > 2) {
+        html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+      }
+    }
+    
+    // Page numbers in range
+    for (var p = startPage; p <= endPage; p++){
       html += pageItem(p, p, false, p===currentPage);
     }
+    
+    // Last page if not in range
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+      }
+      html += pageItem(totalPages, totalPages, false, false);
+    }
+    
+    // Next button
     html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
     html += '</ul>';
     container.innerHTML = html;

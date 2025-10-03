@@ -671,16 +671,49 @@
       var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
       if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
       container.style.display = '';
+      
+      // Calculate the range of pages to show (max 10 pages)
+      var maxVisiblePages = 10;
+      var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // Adjust startPage if we're near the end
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
       var html = '<ul class="pagination">';
       function pageItem(p, label, disabled, active){
         var liCls = active ? 'active' : '';
         var btnCls = 'page-link' + (disabled ? ' disabled' : '');
         return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
       }
+      
+      // Previous button
       html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
-      for (var p=1; p<=totalPages; p++){
+      
+      // First page if not in range
+      if (startPage > 1) {
+        html += pageItem(1, '1', false, false);
+        if (startPage > 2) {
+          html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+        }
+      }
+      
+      // Page numbers in range
+      for (var p = startPage; p <= endPage; p++){
         html += pageItem(p, p, false, p===currentPage);
       }
+      
+      // Last page if not in range
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+        }
+        html += pageItem(totalPages, totalPages, false, false);
+      }
+      
+      // Next button
       html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
       html += '</ul>';
       container.innerHTML = html;

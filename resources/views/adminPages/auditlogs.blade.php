@@ -397,6 +397,16 @@
       document.getElementById('paginationWrapper').style.display = 'flex';
       paginationContainer.innerHTML = '';
       
+      // Calculate the range of pages to show (max 10 pages)
+      var maxVisiblePages = 10;
+      var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      // Adjust startPage if we're near the end
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
       // Previous button
       var prevLi = document.createElement('li');
       var prevLink = document.createElement('a');
@@ -414,8 +424,35 @@
       prevLi.appendChild(prevLink);
       paginationContainer.appendChild(prevLi);
       
-      // Page numbers
-      for (var i = 1; i <= totalPages; i++) {
+      // First page if not in range
+      if (startPage > 1) {
+        var firstLi = document.createElement('li');
+        var firstLink = document.createElement('a');
+        firstLink.href = '#';
+        firstLink.className = 'page-link';
+        firstLink.textContent = '1';
+        firstLink.onclick = function(e) {
+          e.preventDefault();
+          currentPage = 1;
+          renderTable();
+          updatePagination();
+        };
+        firstLi.appendChild(firstLink);
+        paginationContainer.appendChild(firstLi);
+        
+        if (startPage > 2) {
+          var ellipsisLi = document.createElement('li');
+          ellipsisLi.className = 'disabled';
+          var ellipsisLink = document.createElement('span');
+          ellipsisLink.className = 'page-link disabled';
+          ellipsisLink.textContent = '...';
+          ellipsisLi.appendChild(ellipsisLink);
+          paginationContainer.appendChild(ellipsisLi);
+        }
+      }
+      
+      // Page numbers in range
+      for (var i = startPage; i <= endPage; i++) {
         var li = document.createElement('li');
         if (i === currentPage) {
           li.className = 'active';
@@ -436,6 +473,33 @@
         
         li.appendChild(link);
         paginationContainer.appendChild(li);
+      }
+      
+      // Last page if not in range
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          var ellipsisLi = document.createElement('li');
+          ellipsisLi.className = 'disabled';
+          var ellipsisLink = document.createElement('span');
+          ellipsisLink.className = 'page-link disabled';
+          ellipsisLink.textContent = '...';
+          ellipsisLi.appendChild(ellipsisLink);
+          paginationContainer.appendChild(ellipsisLi);
+        }
+        
+        var lastLi = document.createElement('li');
+        var lastLink = document.createElement('a');
+        lastLink.href = '#';
+        lastLink.className = 'page-link';
+        lastLink.textContent = totalPages;
+        lastLink.onclick = function(e) {
+          e.preventDefault();
+          currentPage = totalPages;
+          renderTable();
+          updatePagination();
+        };
+        lastLi.appendChild(lastLink);
+        paginationContainer.appendChild(lastLi);
       }
       
       // Next button

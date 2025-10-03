@@ -165,13 +165,43 @@
             @endif
 
             {{-- Pagination Elements --}}
-            @foreach ($accommodations->getUrlRange(1, $accommodations->lastPage()) as $page => $url)
-                @if ($page == $accommodations->currentPage())
-                    <li class="page-item active"><span>{{ $page }}</span></li>
-                @else
-                    <li class="page-item"><a href="{{ $url }}">{{ $page }}</a></li>
+            @php
+                $currentPage = $accommodations->currentPage();
+                $lastPage = $accommodations->lastPage();
+                $maxVisiblePages = 10;
+                $startPage = max(1, $currentPage - floor($maxVisiblePages / 2));
+                $endPage = min($lastPage, $startPage + $maxVisiblePages - 1);
+                
+                // Adjust startPage if we're near the end
+                if ($endPage - $startPage + 1 < $maxVisiblePages) {
+                    $startPage = max(1, $endPage - $maxVisiblePages + 1);
+                }
+            @endphp
+            
+            {{-- First page if not in range --}}
+            @if($startPage > 1)
+                <li class="page-item"><a href="{{ $accommodations->url(1) }}">1</a></li>
+                @if($startPage > 2)
+                    <li class="page-item disabled"><span class="page-link disabled">...</span></li>
                 @endif
-            @endforeach
+            @endif
+            
+            {{-- Page numbers in range --}}
+            @for($i = $startPage; $i <= $endPage; $i++)
+                @if($i == $currentPage)
+                    <li class="page-item active"><span>{{ $i }}</span></li>
+                @else
+                    <li class="page-item"><a href="{{ $accommodations->url($i) }}">{{ $i }}</a></li>
+                @endif
+            @endfor
+            
+            {{-- Last page if not in range --}}
+            @if($endPage < $lastPage)
+                @if($endPage < $lastPage - 1)
+                    <li class="page-item disabled"><span class="page-link disabled">...</span></li>
+                @endif
+                <li class="page-item"><a href="{{ $accommodations->url($lastPage) }}">{{ $lastPage }}</a></li>
+            @endif
 
             {{-- Next Page Link --}}
             @if ($accommodations->hasMorePages())

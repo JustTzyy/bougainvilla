@@ -533,6 +533,16 @@ function hardDeleteGuest(guestId) {
         var paginationList = document.getElementById(paginationListId);
         if (!paginationList) return;
         
+        // Calculate the range of pages to show (max 10 pages)
+        var maxVisiblePages = 10;
+        var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+        var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        // Adjust startPage if we're near the end
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+        
         var html = '';
         
         // Previous button
@@ -540,15 +550,28 @@ function hardDeleteGuest(guestId) {
         html += '<a class="page-link" href="#" data-page="' + Math.max(1, currentPage - 1) + '">&laquo;</a>';
         html += '</li>';
         
-        // Page numbers
-        var startPage = Math.max(1, currentPage - 2);
-        var endPage = Math.min(totalPages, currentPage + 2);
+        // First page if not in range
+        if (startPage > 1) {
+            html += '<li class="page-item"><a class="page-link" href="#" data-page="1">1</a></li>';
+            if (startPage > 2) {
+                html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+            }
+        }
         
+        // Page numbers in range
         for (var i = startPage; i <= endPage; i++) {
             var activeClass = i === currentPage ? 'active' : '';
             html += '<li class="page-item ' + activeClass + '">';
             html += '<a class="page-link" href="#" data-page="' + i + '">' + i + '</a>';
             html += '</li>';
+        }
+        
+        // Last page if not in range
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+            }
+            html += '<li class="page-item"><a class="page-link" href="#" data-page="' + totalPages + '">' + totalPages + '</a></li>';
         }
         
         // Next button

@@ -48,6 +48,60 @@
       .quick-filter:hover { background:linear-gradient(135deg,rgba(184,134,11,.08),rgba(184,134,11,.03)); }
       .panel { background:white; border:1px solid #eee; border-radius:12px; padding:12px; }
 
+      /* Pagination Styles */
+      #pagination { 
+        display: flex; 
+        justify-content: center; 
+        margin-top: 12px; 
+        max-width: 100%;
+        overflow-x: auto;
+        padding: 8px 0;
+      }
+      #pagination ul.pagination { 
+        display: flex; 
+        gap: 4px; 
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        flex-wrap: nowrap;
+        min-width: max-content;
+      }
+      #pagination .page-link {
+        background: linear-gradient(135deg, #ffffff, #f8f9ff);
+        border: 1px solid rgba(184,134,11,.2);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(184,134,11,.08);
+        transition: all .2s ease;
+        white-space: nowrap;
+        min-width: 40px;
+        text-align: center;
+      }
+      #pagination .page-link:hover { 
+        transform: translateY(-1px); 
+        box-shadow: 0 4px 12px rgba(184,134,11,.15); 
+        border-color: rgba(184,134,11,.35); 
+      }
+      #pagination li.active .page-link {
+        background: linear-gradient(135deg, var(--purple-primary), #DAA520);
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 16px rgba(184,134,11,.35);
+      }
+      #pagination .page-link.disabled { 
+        opacity: .5; 
+        cursor: not-allowed; 
+        background: #f8f9fa;
+        color: #6c757d;
+      }
+      #pagination .page-item.disabled .page-link {
+        background: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+      }
+
       /* Print Styles */
       @media print {
         body * {
@@ -191,6 +245,8 @@
           </thead>
           <tbody id="dailyRows"></tbody>
         </table>
+        <!-- Client-side pagination -->
+        <nav class="pagination no-print" aria-label="Table pagination" id="pagination" style="display:none;"></nav>
       </div>
     </div>
 
@@ -218,6 +274,12 @@
     try { return '₱' + Number(n).toFixed(2); } catch(e){ return '₱0.00'; }
   }
   var dailyChart, pieChart;
+  
+  // Pagination variables
+  var currentPage = 1;
+  var pageSize = 10;
+  var filteredRows = [];
+  var allDailyData = [];
   function render(data){
     if(!data || !data.success) return;
     document.getElementById('sumSubtotal').textContent = peso(data.totals.subtotal);
@@ -225,16 +287,20 @@
     document.getElementById('sumAmount').textContent = peso(data.totals.amount);
     document.getElementById('sumCount').textContent = String(data.totals.count);
     document.getElementById('sumAvg').textContent = peso(data.totals.avg_amount);
-    var tbody = document.getElementById('dailyRows');
-    tbody.innerHTML = '';
-    (data.daily || []).forEach(function(row){
+    // Store all daily data for pagination
+    allDailyData = data.daily || [];
+    filteredRows = allDailyData.map(function(row) {
       var tr = document.createElement('tr');
       tr.innerHTML = '<td>'+row.day+'</td>'+
                      '<td>'+peso(row.subtotal)+'</td>'+
                      '<td>'+peso(row.tax)+'</td>'+
                      '<td>'+peso(row.amount)+'</td>';
-      tbody.appendChild(tr);
+      return { element: tr, data: row };
     });
+    
+    // Render table with pagination
+    renderTable();
+    renderPagination();
 
     // Ops line chart (checkins, checkouts, guests per day)
     var opsCtx = document.getElementById('opsLine').getContext('2d');
@@ -305,6 +371,84 @@
       }
     });
   }
+
+  function renderTable(){
+    var tbody = document.getElementById('dailyRows');
+    tbody.innerHTML = '';
+    var start = (currentPage - 1) * pageSize;
+    var pageItems = filteredRows.slice(start, start + pageSize);
+    pageItems.forEach(function(r){
+      tbody.appendChild(r.element);
+    });
+  }
+
+  function renderPagination(){
+    var container = document.getElementById('pagination');
+    var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+    if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
+    container.style.display = '';
+    
+    // Calculate the range of pages to show (max 10 pages)
+    var maxVisiblePages = 10;
+    var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust startPage if we're near the end
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    var html = '<ul class="pagination">';
+    function pageItem(p, label, disabled, active){
+      var liCls = active ? 'active' : '';
+      var btnCls = 'page-link' + (disabled ? ' disabled' : '');
+      return '<li class="'+liCls+'"><button type="button" class="'+btnCls+'" data-page="'+p+'">'+label+'</button></li>';
+    }
+    
+    // Previous button
+    html += pageItem(Math.max(1, currentPage-1), '&laquo;', currentPage===1, false);
+    
+    // First page if not in range
+    if (startPage > 1) {
+      html += pageItem(1, '1', false, false);
+      if (startPage > 2) {
+        html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+      }
+    }
+    
+    // Page numbers in range
+    for (var p = startPage; p <= endPage; p++){
+      html += pageItem(p, p, false, p===currentPage);
+    }
+    
+    // Last page if not in range
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        html += '<li class="page-item disabled"><span class="page-link disabled">...</span></li>';
+      }
+      html += pageItem(totalPages, totalPages, false, false);
+    }
+    
+    // Next button
+    html += pageItem(Math.min(totalPages, currentPage+1), '&raquo;', currentPage===totalPages, false);
+    html += '</ul>';
+    container.innerHTML = html;
+  }
+
+  function attachPaginationHandler(){
+    var container = document.getElementById('pagination');
+    container.addEventListener('click', function(e){
+      var btn = e.target.closest('button[data-page]');
+      if (!btn || btn.classList.contains('disabled')) return;
+      var page = parseInt(btn.getAttribute('data-page'));
+      if (page && page !== currentPage) {
+        currentPage = page;
+        renderTable();
+        renderPagination();
+      }
+    });
+  }
+
   async function load(){
     var from = document.getElementById('from').value;
     var to = document.getElementById('to').value;
@@ -363,19 +507,41 @@
       card.style.display = isVisible ? 'block' : 'none';
     });
     
-    // Search through daily revenue table rows
-    dailyRows.forEach(function(row) {
-      var cells = row.querySelectorAll('td');
-      var rowText = Array.from(cells).map(function(cell) {
-        return cell.textContent.toLowerCase();
-      }).join(' ');
-      var isVisible = !searchTerm || rowText.includes(searchTerm);
-      row.style.display = isVisible ? '' : 'none';
-    });
+    // Search through daily revenue table rows with pagination
+    if (searchTerm) {
+      filteredRows = allDailyData.filter(function(row) {
+        var rowText = (row.day + ' ' + peso(row.subtotal) + ' ' + peso(row.tax) + ' ' + peso(row.amount)).toLowerCase();
+        return rowText.includes(searchTerm);
+      }).map(function(row) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>'+row.day+'</td>'+
+                       '<td>'+peso(row.subtotal)+'</td>'+
+                       '<td>'+peso(row.tax)+'</td>'+
+                       '<td>'+peso(row.amount)+'</td>';
+        return { element: tr, data: row };
+      });
+    } else {
+      filteredRows = allDailyData.map(function(row) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>'+row.day+'</td>'+
+                       '<td>'+peso(row.subtotal)+'</td>'+
+                       '<td>'+peso(row.tax)+'</td>'+
+                       '<td>'+peso(row.amount)+'</td>';
+        return { element: tr, data: row };
+      });
+    }
+    
+    // Reset to first page and re-render
+    currentPage = 1;
+    renderTable();
+    renderPagination();
   }
 
   // Add search event listener
   document.getElementById('dashboardSearch').addEventListener('input', applySearch);
+  
+  // Initialize pagination handler
+  attachPaginationHandler();
 })();
 </script>
 @endsection
