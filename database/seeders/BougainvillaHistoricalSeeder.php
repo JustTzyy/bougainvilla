@@ -43,6 +43,7 @@ class BougainvillaHistoricalSeeder extends Seeder
         $this->seedHistoricalData($startDate);
         $this->seedArchivedData($startDate);
         $this->seedCleanupGuests($startDate);
+        $this->seedCurrentGuests();
         
         echo "\n✅ Bougainvilla Lodge Historical Data Seeding Complete!\n";
     }
@@ -183,9 +184,12 @@ class BougainvillaHistoricalSeeder extends Seeder
         $rates = Rate::all();
         $totalStays = 0;
         
-        // Create 200 historical bookings over the past year
+        // Create 200 historical bookings with 5-day gaps (today backwards)
+        $currentDate = Carbon::now()->copy();
         for ($i = 0; $i < 200; $i++) {
-            $bookingDate = $startDate->copy()->addDays(rand(0, 365));
+            // Go backwards with 5-day gaps from today
+            $bookingDate = $currentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            $currentDate = $bookingDate->copy(); // Update current date for next iteration
             
             // Create guest
             $guestData = $this->generateGuestData();
@@ -312,8 +316,12 @@ class BougainvillaHistoricalSeeder extends Seeder
         $rates = Rate::all();
         $archivedCount = 0;
         
-        // Create 80 archived stays (stays that were checked out and then archived)
+        // Create 80 archived stays (stays that were checked out and then archived) with date gaps
+        $archivedCurrentDate = Carbon::now()->copy();
         for ($i = 0; $i < 80; $i++) {
+            // Go backwards with 5-day gaps from today
+            $stayDate = $archivedCurrentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            $archivedCurrentDate = $stayDate->copy(); // Update current date for next iteration
             $archiveDate = Carbon::now(); // Archive date is current timestamp
             
             // Create guest for archived stay
@@ -335,7 +343,7 @@ class BougainvillaHistoricalSeeder extends Seeder
             // Create the stay
             $room = $rooms->random();
             $rate = $rates->random();
-            $checkIn = $archiveDate->copy()->subDays(rand(1, 3))->setHour(rand(10, 20));
+            $checkIn = $stayDate->copy()->setHour(rand(10, 20));
             $checkOut = $checkIn->copy()->addHours($this->parseDurationToHours($rate->duration));
             
             $stay = Stay::create([
@@ -485,9 +493,12 @@ class BougainvillaHistoricalSeeder extends Seeder
             \DB::table('guests')->where('id', $guest->id)->update(['deleted_at' => $deletedDate]);
         }
 
-        // 3. Create recent guests (safe from cleanup)
+        // 3. Create recent guests (safe from cleanup) - dates from today backwards with gaps
+        $recentCurrentDate = $now->copy();
         for ($i = 0; $i < 20; $i++) {
-            $recentDate = $now->copy()->subDays(rand(1, 60)); // 1-60 days old
+            // Go backwards with 5-day gaps from today
+            $recentDate = $recentCurrentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            $recentCurrentDate = $recentDate->copy(); // Update current date for next iteration
             
             $guestData = $this->generateGuestData();
             $address = Address::create([
@@ -512,5 +523,99 @@ class BougainvillaHistoricalSeeder extends Seeder
         }
         
         echo "   ✓ 60 cleanup test guests created (15 ready for soft delete, 25 ready for hard delete, 20 recent)\n";
+    }
+
+    private function seedCurrentGuests()
+    {
+        echo "👥 Creating Current Guests (Today and Future)...\n";
+        
+        $users = User::where('roleID', 2)->get();
+        $rooms = Room::all();
+        $rates = Rate::all();
+        $now = Carbon::now();
+        
+        // Create 50 current guests with dates from today backwards with 5-day gaps
+        $currentDate = $now->copy();
+        for ($i = 0; $i < 50; $i++) {
+            // Go backwards with 5-day gaps from today
+            $guestDate = $currentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            $currentDate = $guestDate->copy(); // Update current date for next iteration
+            
+            $guestData = $this->generateGuestData();
+            $address = Address::create([
+                'street' => $guestData['street'], 
+                'city' => $guestData['city'],
+                'province' => $guestData['province'], 
+                'zipcode' => $guestData['zipcode'],
+                'userID' => $users->random()->id,
+                'created_at' => $guestDate,
+                'updated_at' => $guestDate,
+            ]);
+
+            $guest = Guest::create([
+                'firstName' => $guestData['firstName'],
+                'middleName' => $guestData['middleName'] ?? null,
+                'lastName' => $guestData['lastName'],
+                'number' => $guestData['number'],
+                'addressID' => $address->id,
+                'created_at' => $guestDate,
+                'updated_at' => $guestDate,
+                'last_cleanup_check' => null,
+                'cleanup_notified' => false,
+            ]);
+
+            // Create some stays for current guests (past bookings only)
+            if (rand(1, 3) == 1) { // 1/3 chance to create a stay
+                $room = $rooms->random();
+                $rate = $rates->random();
+                
+                // Stay dates: from guest date backwards (no future dates)
+                $checkIn = $guestDate->copy()->subDays(rand(0, 5))->setHour(rand(10, 20));
+                $checkOut = $checkIn->copy()->addHours($this->parseDurationToHours($rate->duration));
+                
+                $stay = Stay::create([
+                    'checkIn' => $checkIn,
+                    'checkOut' => $checkOut,
+                    'status' => 'Standard',
+                    'rateID' => $rate->id,
+                    'roomID' => $room->id,
+                    'created_at' => $guestDate,
+                    'updated_at' => $guestDate,
+                ]);
+
+                GuestStay::create([
+                    'guestID' => $guest->id,
+                    'stayID' => $stay->id,
+                    'created_at' => $guestDate,
+                    'updated_at' => $guestDate,
+                ]);
+
+                // Create payment for the stay
+                $subtotal = $rate->price;
+                $tax = $subtotal * 0.12;
+                $total = $subtotal + $tax;
+
+                $payment = Payment::create([
+                    'stayID' => $stay->id,
+                    'subtotal' => $subtotal,
+                    'tax' => $tax,
+                    'amount' => $total,
+                    'change' => 0,
+                    'status' => 'Completed',
+                    'created_at' => $guestDate,
+                    'updated_at' => $guestDate,
+                ]);
+
+                Receipt::create([
+                    'paymentID' => $payment->id,
+                    'userID' => $users->random()->id,
+                    'status_type' => 'Standard',
+                    'created_at' => $guestDate,
+                    'updated_at' => $guestDate,
+                ]);
+            }
+        }
+        
+        echo "   ✓ 50 current guests created with dates from today onwards\n";
     }
 }

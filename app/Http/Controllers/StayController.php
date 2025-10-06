@@ -598,7 +598,7 @@ class StayController extends Controller
                 ->where('status', 'Completed')
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('stay', function($query) {
-                    $query->whereNull('deleted_at'); // Only include payments from non-deleted stays
+                    $query->withTrashed(); // Include payments from soft-deleted stays
                 });
 
             $totals = $paymentsQuery->clone()
@@ -614,7 +614,7 @@ class StayController extends Controller
                 ->where('status', 'Completed')
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('stay', function($query) {
-                    $query->whereNull('deleted_at'); // Only include payments from non-deleted stays
+                    $query->withTrashed(); // Include payments from soft-deleted stays
                 })
                 ->selectRaw('DATE(created_at) as day')
                 ->selectRaw('SUM(amount) as amount')
@@ -631,25 +631,32 @@ class StayController extends Controller
             $roomsMaintenance = Room::where('status', 'Under Maintenance')->count();
             $occupancyRate = $roomsTotal > 0 ? round(($roomsOccupied / $roomsTotal) * 100, 2) : 0;
 
-            // Date-range check-ins/outs for filters
-            $checkinsRange = Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+            // Current operational data (not historical)
+            // Current check-ins = guests currently checked in (not checked out)
+            $currentCheckins = Stay::whereIn('status', Stay::getValidStatuses())
+                ->where('checkOut', '>', Carbon::now())
+                ->withTrashed()
                 ->count();
-            $checkoutsRange = Stay::whereBetween('checkOut', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+            
+            // Current guests = guests currently in-house
+            $currentGuests = GuestStay::whereIn('stayID', Stay::whereIn('status', Stay::getValidStatuses())
+                ->where('checkOut', '>', Carbon::now())
+                ->withTrashed()
+                ->pluck('id'))
                 ->count();
 
-            // Revenue shortcuts
-            // Guests involved within date range (unique guest-stay rows for stays that started in range)
-            $guestsRange = GuestStay::whereIn('stayID', Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
-                ->pluck('id'))
+            // Historical data for date range (for other purposes)
+            $checkinsRange = Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
+                ->withTrashed()
+                ->count();
+            $checkoutsRange = Stay::whereBetween('checkOut', [$fromCarbon, $toCarbon])
+                ->withTrashed()
                 ->count();
 
             // Recent Active Stays (Guests & Stays list) — no reservations
             $activeStays = Stay::with(['room', 'guests'])
                 ->whereIn('status', Stay::getValidStatuses())
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->orderByDesc('checkIn')
                 ->limit(12)
                 ->get()
@@ -668,13 +675,17 @@ class StayController extends Controller
 
             // Guest counts - based on date range
             $guestsInRange = GuestStay::whereIn('stayID', Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->pluck('id'))->count();
             $guestsTotal = Guest::withTrashed()->count();
             $activeStayIds = Stay::whereIn('status', Stay::getValidStatuses())
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->pluck('id');
             $guestsInHouse = GuestStay::whereIn('stayID', $activeStayIds)->count();
+            
+            // Overall totals (not date-range specific)
+            $totalCheckins = Stay::withTrashed()->count(); // All check-ins ever
+            $totalGuests = Guest::withTrashed()->count(); // All guests ever
             
 
             if ($request->wantsJson()) {
@@ -698,9 +709,9 @@ class StayController extends Controller
                         'rooms_occupied' => (int) $roomsOccupied,
                         'rooms_maintenance' => (int) $roomsMaintenance,
                         'occupancy_rate' => (float) $occupancyRate,
-                        'checkins' => (int) $checkinsRange,
+                        'checkins' => (int) $totalCheckins, // Overall total check-ins
                         'checkouts' => (int) $checkoutsRange,
-                        'guests' => (int) $guestsInRange,
+                        'guests' => (int) $totalGuests, // Overall total guests
                         'guests_total' => (int) $guestsTotal,
                         'guests_inhouse' => (int) $guestsInHouse,
                     ],

@@ -643,7 +643,7 @@ class StayController extends Controller
                 ->where('status', 'Completed')
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('stay', function($query) {
-                    $query->whereNull('deleted_at'); // Only include payments from non-deleted stays
+                    $query->withTrashed(); // Include payments from soft-deleted stays
                 })
                 ->whereHas('receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include payments with receipts from current user
@@ -662,7 +662,7 @@ class StayController extends Controller
                 ->where('status', 'Completed')
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('stay', function($query) {
-                    $query->whereNull('deleted_at'); // Only include payments from non-deleted stays
+                    $query->withTrashed(); // Include payments from soft-deleted stays
                 })
                 ->whereHas('receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include payments with receipts from current user
@@ -681,7 +681,7 @@ class StayController extends Controller
             
             // Count rooms occupied by stays that have payments with receipts from current user
             $roomsOccupiedByUser = Stay::whereIn('status', Stay::getValidStatuses())
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId);
                 })
@@ -694,13 +694,13 @@ class StayController extends Controller
 
             // Date-range check-ins/outs for filters - filtered by user
             $checkinsRange = Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
                 })
                 ->count();
             $checkoutsRange = Stay::whereBetween('checkOut', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
                 })
@@ -709,7 +709,7 @@ class StayController extends Controller
             // Revenue shortcuts
             // Guests involved within date range (unique guest-stay rows for stays that started in range) - filtered by user
             $guestsRange = GuestStay::whereIn('stayID', Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
                 })
@@ -719,7 +719,7 @@ class StayController extends Controller
             // Recent Active Stays (Guests & Stays list) — no reservations - filtered by user
             $activeStays = Stay::with(['room', 'guests'])
                 ->whereIn('status', Stay::getValidStatuses())
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
                 })
@@ -741,20 +741,27 @@ class StayController extends Controller
 
             // Guest counts - based on date range - filtered by user
             $guestsInRange = GuestStay::whereIn('stayID', Stay::whereBetween('checkIn', [$fromCarbon, $toCarbon])
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
                 })
                 ->pluck('id'))->count();
             $guestsTotal = Guest::withTrashed()->count();
             $activeStayIds = Stay::whereIn('status', Stay::getValidStatuses())
-                ->whereNull('deleted_at')
+                ->withTrashed()
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
                 })
                 ->pluck('id');
             $guestsInHouse = GuestStay::whereIn('stayID', $activeStayIds)->count();
             
+            // Overall totals (not date-range specific) - filtered by user
+            $totalCheckins = Stay::withTrashed()
+                ->whereHas('payments.receipts', function($query) use ($currentUserId) {
+                    $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
+                })
+                ->count(); // All check-ins ever by this user
+            $totalGuests = Guest::withTrashed()->count(); // All guests ever (not user-specific)
 
             if ($request->wantsJson()) {
                 $response = [
@@ -777,9 +784,9 @@ class StayController extends Controller
                         'rooms_occupied' => (int) $roomsOccupiedByUser, // User-specific occupied rooms
                         'rooms_maintenance' => (int) $roomsMaintenance,
                         'occupancy_rate' => (float) $occupancyRate,
-                        'checkins' => (int) $checkinsRange,
+                        'checkins' => (int) $totalCheckins, // Overall total check-ins by user
                         'checkouts' => (int) $checkoutsRange,
-                        'guests' => (int) $guestsInRange,
+                        'guests' => (int) $totalGuests, // Overall total guests
                         'guests_total' => (int) $guestsTotal,
                         'guests_inhouse' => (int) $guestsInHouse,
                     ],

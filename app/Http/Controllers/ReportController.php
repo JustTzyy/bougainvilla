@@ -67,12 +67,29 @@ class ReportController extends Controller
             }
             
             // Get ALL transactions for the logged-in user with all related data (no pagination)
-            // Exclude transactions from soft-deleted stays
-            $transactions = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
+            // Include transactions from soft-deleted stays, rooms, and users
+            $transactions = Receipt::with([
+                    'payment' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'payment.stay' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'payment.stay.room' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'payment.stay.rate.accommodations' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'user' => function($query) {
+                        $query->withTrashed();
+                    }
+                ])
                 ->where('userID', auth()->id())
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
+                ->withTrashed() // Include soft-deleted receipts
                 ->whereHas('payment.stay', function($query) {
-                    $query->whereNull('deleted_at'); // Only include stays that are not soft-deleted
+                    $query->withTrashed(); // Include soft-deleted stays
                 })
                 ->orderByDesc('created_at')
                 ->get(); // Changed from paginate() to get() to load all records
@@ -132,11 +149,28 @@ class ReportController extends Controller
             }
 
             // Get ALL transactions from ALL users with all related data (no pagination)
-            // Exclude transactions from soft-deleted stays
-            $transactions = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
+            // Include transactions from soft-deleted stays, rooms, and users
+            $transactions = Receipt::with([
+                    'payment' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'payment.stay' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'payment.stay.room' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'payment.stay.rate.accommodations' => function($query) {
+                        $query->withTrashed();
+                    },
+                    'user' => function($query) {
+                        $query->withTrashed();
+                    }
+                ])
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
+                ->withTrashed() // Include soft-deleted receipts
                 ->whereHas('payment.stay', function($query) {
-                    $query->whereNull('deleted_at'); // Only include stays that are not soft-deleted
+                    $query->withTrashed(); // Include soft-deleted stays
                 })
                 ->orderByDesc('created_at')
                 ->get(); // Changed from paginate() to get() to load all records
@@ -287,10 +321,27 @@ class ReportController extends Controller
 
         switch ($type) {
             case 'payments':
-                $rows = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
+                $rows = Receipt::with([
+                        'payment' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'payment.stay' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'payment.stay.room' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'payment.stay.rate.accommodations' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'user' => function($query) {
+                            $query->withTrashed();
+                        }
+                    ])
                     ->whereBetween('created_at', [$fromCarbon, $toCarbon])
+                    ->withTrashed() // Include soft-deleted receipts
                     ->whereHas('payment.stay', function($query) {
-                        $query->whereNull('deleted_at'); // Only include stays that are not soft-deleted
+                        $query->withTrashed(); // Include soft-deleted stays
                     })
                     ->orderByDesc('created_at')
                     ->get()
@@ -351,10 +402,25 @@ class ReportController extends Controller
                     ->get(['id','roomID','checkOut','status']);
                 return response()->json(['success'=>true,'rows'=>$rows]);
             case 'guests':
-                $rows = GuestStay::with(['guest.address', 'stay.room', 'stay.rate.accommodations'])
+                $rows = GuestStay::with([
+                        'guest.address' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'stay' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'stay.room' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'stay.rate.accommodations' => function($query) {
+                            $query->withTrashed();
+                        }
+                    ])
                     ->whereHas('stay', function($query) use ($fromCarbon, $toCarbon) {
-                        $query->whereBetween('checkIn', [$fromCarbon, $toCarbon]);
+                        $query->whereBetween('checkIn', [$fromCarbon, $toCarbon])
+                              ->withTrashed();
                     })
+                    ->withTrashed() // Include soft-deleted guest stays
                     ->orderByDesc('stayID')
                     ->get()
                     ->map(function($guestStay) {
