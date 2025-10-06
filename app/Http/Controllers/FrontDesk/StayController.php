@@ -93,17 +93,14 @@ class StayController extends Controller
             ]);
 
             $rate = Rate::findOrFail($request->rate_id);
-            $subtotal = $rate->price * $request->guest_count;
-            $taxRate = 0.12; // 12% tax
-            $tax = $subtotal * $taxRate;
-            $total = $subtotal + $tax;
+            // Transaction total should be the same as rate price (no tax added here)
+            $total = $rate->price * $request->guest_count;
 
             return response()->json([
                 'success' => true,
-                'subtotal' => number_format($subtotal, 2),
-                'tax' => number_format($tax, 2),
                 'total' => number_format($total, 2),
-                'tax_rate' => $taxRate
+                'rate_price' => number_format($rate->price, 2),
+                'guest_count' => $request->guest_count
             ]);
         } catch (Exception $e) {
             return response()->json([
@@ -142,7 +139,7 @@ class StayController extends Controller
             }
 
             $room = Room::findOrFail($request->room_id);
-            if (!$room || $room->status !== 'Available') {
+            if (!$room || !in_array($room->status, ['Available'])) {
                 throw new \Exception('Room is not available for booking. Current status: ' . ($room->status ?? 'Unknown'));
             }
 
@@ -163,11 +160,8 @@ class StayController extends Controller
                 'guest_count' => count($request->guests)
             ]);
             
-            // Calculate amounts
-            $subtotal = $rate->price * count($request->guests);
-            $taxRate = 0.12;
-            $tax = $subtotal * $taxRate;
-            $total = $subtotal + $tax;
+            // Calculate amounts - transaction total should be the same as rate price
+            $total = $rate->price * count($request->guests);
 
             // Debug: Log the rate being used
             \Log::info('FrontDesk - Creating stay with rate:', [
@@ -218,11 +212,11 @@ class StayController extends Controller
                 ]);
             }
 
-            // Create payment
+            // Create payment - amount is the rate price (no tax calculation here)
             $payment = Payment::create([
                 'amount' => $total,
-                'tax' => $tax,
-                'subtotal' => $subtotal,
+                'tax' => 0, // Tax will be calculated in receipt
+                'subtotal' => $total, // Subtotal is the same as amount for now
                 'status' => 'Completed',
                 'change' => $request->payment_change,
                 'stayID' => $stay->id
@@ -235,6 +229,9 @@ class StayController extends Controller
                 'paymentID' => $payment->id,
                 'userID' => Auth::id()
             ]);
+
+            // Update payment with tax calculation (this is where tax deduction happens)
+            $payment->updateWithTaxCalculation();
 
             // Update room status
             $room->update(['status' => 'In Use']);
@@ -283,8 +280,8 @@ class StayController extends Controller
                 'checkOut' => now()
             ]);
 
-            // Update room status
-            $room->update(['status' => 'Available']);
+            // Update room status to Cleaning (needs cleaning after checkout)
+            $room->update(['status' => 'Cleaning']);
 
             // Log history
             History::create([
@@ -304,6 +301,46 @@ class StayController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to end stay: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function markRoomReady(Request $request, $roomId)
+    {
+        try {
+            $room = Room::findOrFail($roomId);
+
+            // Only allow marking as ready if room is currently in Cleaning status
+            if ($room->status !== 'Cleaning') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Room is not in cleaning status'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Update room status to Available
+            $room->update(['status' => 'Available']);
+
+            // Log history
+            History::create([
+                'userID' => Auth::id(),
+                'status' => 'Marked room ' . $room->room . ' as ready (cleaning completed)'
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Room marked as ready!'
+            ]);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to mark room as ready: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -348,18 +385,15 @@ class StayController extends Controller
                 'status' => Stay::STATUS_EXTEND
             ]);
 
-            // Calculate amounts using previous guest count
+            // Calculate amounts using previous guest count - transaction total should be the same as rate price
             $guestCount = GuestStay::where('stayID', $stay->id)->count();
             if ($guestCount <= 0) { $guestCount = 1; }
-            $subtotal = $rate->price * $guestCount;
-            $taxRate = 0.12;
-            $tax = $subtotal * $taxRate;
-            $total = $subtotal + $tax;
+            $total = $rate->price * $guestCount;
 
             $payment = Payment::create([
                 'amount' => $total,
-                'tax' => $tax,
-                'subtotal' => $subtotal,
+                'tax' => 0, // Tax will be calculated in receipt
+                'subtotal' => $total, // Subtotal is the same as amount for now
                 'status' => 'Completed',
                 'change' => $request->payment_change,
                 'stayID' => $stay->id,
@@ -371,6 +405,9 @@ class StayController extends Controller
                 'paymentID' => $payment->id,
                 'userID' => Auth::id()
             ]);
+
+            // Update payment with tax calculation (this is where tax deduction happens)
+            $payment->updateWithTaxCalculation();
 
             History::create([
                 'userID' => Auth::id(),
@@ -385,8 +422,6 @@ class StayController extends Controller
                 'checkout_time' => $newCheckout->format('Y-m-d H:i:s'),
                 'receipt_id' => $receipt->id,
                 'guest_count' => $guestCount,
-                'subtotal' => number_format($subtotal, 2),
-                'tax' => number_format($tax, 2),
                 'total' => number_format($total, 2),
             ]);
         } catch (QueryException $e) {
@@ -468,9 +503,14 @@ class StayController extends Controller
                 return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
             }
             
+            // Validate that from date is not in the future
+            if ($fromCarbon->isFuture()) {
+                return redirect()->back()->with('error', 'The "From" date cannot be in the future. Please select a past or current date.');
+            }
+            
             // Get archived stays with all related data including receipts and users - filtered by current user
             $stays = Stay::onlyTrashed()
-                ->with(['room.level', 'rate.accommodations', 'guests', 'payments.receipts.user'])
+                ->with(['room' => function($query) { $query->withTrashed(); }, 'room.level', 'rate' => function($query) { $query->withTrashed(); }, 'rate.accommodationsWithTrashed', 'guests', 'payments.receipts.user'])
                 ->whereBetween('deleted_at', [$fromCarbon, $toCarbon])
                 ->whereHas('payments.receipts', function($query) use ($currentUserId) {
                     $query->where('userID', $currentUserId); // Only include stays with payments that have receipts from current user
@@ -495,9 +535,7 @@ class StayController extends Controller
                     $roomNumber = $stay->room->room;
                 }
                 
-                if ($stay->rate && $stay->rate->accommodations && $stay->rate->accommodations->count() > 0) {
-                    $accommodationName = $stay->rate->accommodations->first()->name;
-                }
+                $accommodationName = $this->getAccommodationNameWithTrashed($stay->rate);
                 
                 $status = Stay::STATUS_STANDARD; // Default status
                 if ($stay->payments && $stay->payments->count() > 0) {
@@ -550,7 +588,7 @@ class StayController extends Controller
             $room = $stay->room;
             
             // Check if room is available before restoring
-            if ($room->status !== 'Available') {
+            if (!in_array($room->status, ['Available'])) {
                 return redirect()->back()->with('error', 'Cannot restore stay: Room ' . $room->room . ' is currently ' . $room->status);
             }
             
@@ -588,8 +626,8 @@ class StayController extends Controller
             // Map accommodation id used for the rate (first of rate->accommodations) if available
             $staysTransformed = $stays->map(function ($stay) {
                 $accommodationId = null;
-                if ($stay->rate && $stay->rate->accommodations && $stay->rate->accommodations->count() > 0) {
-                    $accommodationId = $stay->rate->accommodations->first()->id;
+                if ($stay->rate && $stay->rate->accommodationsWithTrashed && $stay->rate->accommodationsWithTrashed->count() > 0) {
+                    $accommodationId = $stay->rate->accommodationsWithTrashed->first()->id;
                 }
                 $guestCount = GuestStay::where('stayID', $stay->id)->count();
                 return [
@@ -633,6 +671,17 @@ class StayController extends Controller
                     ], 400);
                 }
                 return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
+            }
+            
+            // Validate that from date is not in the future
+            if ($fromCarbon->isFuture()) {
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'The "From" date cannot be in the future. Please select a past or current date.'
+                    ], 400);
+                }
+                return redirect()->back()->with('error', 'The "From" date cannot be in the future. Please select a past or current date.');
             }
 
             // Get current logged-in user ID
@@ -851,16 +900,14 @@ class StayController extends Controller
             
             // First try to find as a Stay (for archived transactions)
             $stay = Stay::withTrashed()
-                ->with(['guests.address', 'room', 'rate.accommodations', 'payments.receipts'])
+                ->with(['guests.address', 'room' => function($query) { $query->withTrashed(); }, 'rate' => function($query) { $query->withTrashed(); }, 'rate.accommodationsWithTrashed', 'payments.receipts'])
                 ->find($id);
 
             if ($stay) {
                 // This is a Stay record (archived transactions)
                 $transaction = [
                     'room' => $stay->room ? $stay->room->room : 'N/A',
-                    'accommodation' => $stay->rate && $stay->rate->accommodations->count() > 0
-                        ? $stay->rate->accommodations->first()->name
-                        : 'N/A',
+                    'accommodation' => $this->getAccommodationNameWithTrashed($stay->rate),
                     'amount' => $stay->payments->sum('amount')
                 ];
 
@@ -922,9 +969,7 @@ class StayController extends Controller
                 'room' => $receipt->payment && $receipt->payment->stay && $receipt->payment->stay->room 
                     ? $receipt->payment->stay->room->room 
                     : 'N/A',
-                'accommodation' => $receipt->payment && $receipt->payment->stay && $receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0
-                    ? $receipt->payment->stay->rate->accommodations->first()->name
-                    : 'N/A',
+                'accommodation' => $this->getAccommodationNameWithTrashed($receipt->payment->stay->rate),
                 'amount' => $receipt->payment ? $receipt->payment->amount : 0
             ];
 

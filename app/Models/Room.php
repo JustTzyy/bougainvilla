@@ -27,7 +27,16 @@ class Room extends Model
     {
         return $this->belongsToMany(Accommodation::class, 'room_accommodations')
                     ->withTimestamps()
-                    ->withPivot('id');
+                    ->withPivot('id')
+                    ->whereNull('room_accommodations.deleted_at');
+    }
+
+    public function accommodationsWithTrashed()
+    {
+        return $this->belongsToMany(Accommodation::class, 'room_accommodations')
+                    ->withTimestamps()
+                    ->withPivot('id')
+                    ->withTrashed();
     }
 
     public function roomAccommodations()

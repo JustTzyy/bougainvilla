@@ -171,6 +171,53 @@
       color: #666;
     }
   }
+
+  /* Guest Details Modal Styling */
+  .modal {
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .modal-content {
+    animation: slideIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  .close:hover {
+    opacity: 1 !important;
+  }
+  
+  .guest-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .guest-detail-item:last-child {
+    border-bottom: none;
+  }
+  
+  .guest-detail-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 120px;
+  }
+  
+  .guest-detail-value {
+    color: var(--text-primary);
+    text-align: right;
+    flex: 1;
+  }
 </style>
 <div class="dashboard-page">
   <div class="page-header"><h1 class="page-title">Guests</h1></div>
@@ -219,59 +266,15 @@
 </div>
 
 <!-- Guest Details Modal -->
-<div id="guestModal" class="modal" style="display: none;">
-  <div class="modal-content" style="background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%); border-radius: 20px; box-shadow: 0 20px 60px rgba(184,134,11,.3); max-width: 600px; width: 90%;">
-    <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); color: white; padding: 20px; border-radius: 20px 20px 0 0; display: flex; justify-content: space-between; align-items: center;">
-      <h2 style="margin: 0; font-size: 24px; font-weight: 700;">
-        <i class="fas fa-user" style="margin-right: 10px;"></i>Guest Details
-      </h2>
-      <button id="closeModal" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 5px;">
-        <i class="fas fa-times"></i>
-      </button>
+<div id="guestModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px);">
+  <div class="modal-content" style="background-color: #fefefe; margin: 2% auto; padding: 0; border: none; border-radius: 16px; width: 90%; max-width: 800px; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+    <div class="modal-header" style="background: linear-gradient(135deg, var(--purple-primary), #DAA520); color: white; padding: 20px 24px; border-radius: 16px 16px 0 0;">
+      <h2 class="modal-title" style="margin: 0; font-size: 20px; font-weight: 700;">Guest Details</h2>
+      <span class="close" id="closeModal" style="color: white; float: right; font-size: 28px; font-weight: bold; cursor: pointer; line-height: 1; opacity: 0.8; transition: opacity 0.2s;">&times;</span>
     </div>
-    <div class="modal-body" style="padding: 30px;">
-      <div class="guest-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
-        <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 20px;">
-          <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Full Name</div>
-          <div class="info-value" id="modalGuestName" style="font-size: 18px; font-weight: 700; color: var(--text-primary);"></div>
-        </div>
-        <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 20px;">
-          <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; font-size: 14px;">Contact Number</div>
-          <div class="info-value" id="modalGuestNumber" style="font-size: 18px; font-weight: 700; color: var(--text-primary);"></div>
-        </div>
-      </div>
-      
-      <div class="stay-info-section" style="margin-bottom: 25px;">
-        <h3 style="color: var(--purple-primary); margin-bottom: 15px; font-size: 18px; font-weight: 700;">
-          <i class="fas fa-bed" style="margin-right: 8px;"></i>Stay Information
-        </h3>
-        <div class="stay-info-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
-            <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Room</div>
-            <div class="info-value" id="modalRoom" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
-          </div>
-          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
-            <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Accommodation</div>
-            <div class="info-value" id="modalAccommodation" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
-          </div>
-          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
-            <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Check-in</div>
-            <div class="info-value" id="modalCheckIn" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
-          </div>
-          <div class="info-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 15px;">
-            <div class="info-label" style="font-weight: 600; color: var(--text-secondary); margin-bottom: 5px; font-size: 12px;">Check-out</div>
-            <div class="info-value" id="modalCheckOut" style="font-size: 16px; font-weight: 700; color: var(--text-primary);"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="address-section">
-        <h3 style="color: var(--purple-primary); margin-bottom: 15px; font-size: 18px; font-weight: 700;">
-          <i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>Address Information
-        </h3>
-        <div class="address-card" style="background: rgba(184,134,11,.08); border: 1px solid rgba(184,134,11,.2); border-radius: 15px; padding: 20px;">
-          <div id="modalAddress" style="font-size: 16px; line-height: 1.6; color: var(--text-primary);"></div>
-        </div>
+    <div class="modal-body" style="padding: 24px; max-height: calc(90vh - 80px); overflow-y: auto;">
+      <div id="guestDetailsContent">
+        <!-- Guest details will be loaded here -->
       </div>
     </div>
   </div>
@@ -305,7 +308,6 @@
     if (pageItems.length === 0) {
       var tr = document.createElement('tr');
       tr.innerHTML = '<td colspan="6" class="text-center" style="padding:40px; color:#6c757d;">' +
-                     '<i class="fas fa-users" style="font-size:48px; margin-bottom:16px; display:block;"></i>' +
                      '<p style="margin:0; font-size:16px;">No guests found</p>' +
                      '<p style="margin:8px 0 0 0; font-size:14px; color:#adb5bd;">All guest history will appear here</p>' +
                      '</td>';
@@ -328,22 +330,20 @@
   }
 
   function showGuestModal(guestData) {
-    document.getElementById('modalGuestName').textContent = guestData.guest_name;
-    document.getElementById('modalGuestNumber').textContent = guestData.guest_number;
-    document.getElementById('modalRoom').textContent = guestData.room_number;
-    document.getElementById('modalAccommodation').textContent = guestData.accommodation_name;
-    document.getElementById('modalCheckIn').textContent = guestData.check_in;
-    document.getElementById('modalCheckOut').textContent = guestData.check_out;
-    document.getElementById('modalAddress').textContent = guestData.address;
-    
+    var html = '<div class="guests-section">';
+    html += '<h4 style="margin: 0 0 16px 0; color: var(--text-primary);">Guest Information</h4>';
+    html += '<div class="guest-card" style="background: #fff; border: 1px solid #e9ecef; border-radius: 10px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">';
+    html += '<h5 style="margin: 0 0 12px 0; color: var(--purple-primary);">Guest 1</h5>';
+    html += '<div class="guest-detail-item"><span class="guest-detail-label">Name:</span><span class="guest-detail-value">' + (guestData.guest_name || 'N/A') + '</span></div>';
+    html += '<div class="guest-detail-item"><span class="guest-detail-label">Phone:</span><span class="guest-detail-value">' + (guestData.guest_number || 'N/A') + '</span></div>';
+    html += '<div class="guest-detail-item"><span class="guest-detail-label">Address:</span><span class="guest-detail-value">' + (guestData.address || 'N/A') + '</span></div>';
+    html += '</div>';
+    html += '</div>';
+
+    document.getElementById('guestDetailsContent').innerHTML = html;
     document.getElementById('guestModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
   }
 
-  function hideGuestModal() {
-    document.getElementById('guestModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-  }
 
   function renderPagination(){
     var container = document.getElementById('pagination');
@@ -440,17 +440,20 @@
   });
 
   // Modal event listeners
-  document.getElementById('closeModal').addEventListener('click', hideGuestModal);
-  document.getElementById('guestModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-      hideGuestModal();
+  document.getElementById('closeModal').addEventListener('click', function() {
+    document.getElementById('guestModal').style.display = 'none';
+  });
+
+  window.addEventListener('click', function(event) {
+    if (event.target === document.getElementById('guestModal')) {
+      document.getElementById('guestModal').style.display = 'none';
     }
   });
 
   // Close modal with Escape key
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && document.getElementById('guestModal').style.display === 'flex') {
-      hideGuestModal();
+      document.getElementById('guestModal').style.display = 'none';
     }
   });
 

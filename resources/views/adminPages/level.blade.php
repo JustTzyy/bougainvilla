@@ -215,7 +215,7 @@
       <div class="form-grid">
         <div class="form-group span-2">
           <label>Description</label>
-          <input type="text" name="description" class="form-input" placeholder="e.g., Ground Floor" required>
+          <input type="text" name="description" class="form-input" placeholder="e.g., Ground Floor" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
         </div>
         <div class="form-group">
           <label>Status</label>
@@ -249,7 +249,7 @@
       <div class="form-grid">
         <div class="form-group span-2">
           <label>Description</label>
-          <input name="description" id="u_description" class="form-input" placeholder="e.g., Ground Floor" required>
+          <input name="description" id="u_description" class="form-input" placeholder="e.g., Ground Floor" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
         </div>
         <div class="form-group">
           <label>Status</label>
@@ -394,6 +394,9 @@
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      
+      // Re-attach event listeners for edit and delete buttons after rendering
+      attachButtonEventListeners();
     }
 
     function renderPagination(){
@@ -466,6 +469,9 @@
 
     attachPaginationHandler();
     applySearch();
+    
+    // Attach initial event listeners
+    attachButtonEventListeners();
 
     var modal = document.getElementById('levelModal');
     var openBtn = document.getElementById('openAddAdmin');
@@ -530,25 +536,63 @@
     if (closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
     if (cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
 
-    // Hook update buttons
-    document.querySelectorAll('[data-update]').forEach(function(btn){
-      btn.addEventListener('click', function(e){
-        e.stopPropagation();
-        var row = this.closest('tr');
-        var d = row ? row.dataset : {};
-
-        // Pre-fill fields
-        document.getElementById('u_description').value = d.description || '';
-        document.getElementById('u_status').value = d.status || '';
-
-        // Point form action to update route
-        var updateForm = document.getElementById('updateForm');
-        var levelId = this.getAttribute('data-level-id');
-        updateForm.setAttribute('action', '/adminPages/levels/update/' + levelId);
-
-        openUpdateModal();
+    // Function to attach event listeners for edit and delete buttons
+    function attachButtonEventListeners() {
+      // Hook update buttons
+      document.querySelectorAll('[data-update]').forEach(function(btn){
+        // Remove existing listeners to prevent duplicates
+        btn.removeEventListener('click', handleUpdateClick);
+        btn.addEventListener('click', handleUpdateClick);
       });
-    });
+      
+      // Hook archive buttons
+      document.querySelectorAll('[data-archive]').forEach(function(btn){
+        // Remove existing listeners to prevent duplicates
+        btn.removeEventListener('click', handleArchiveClick);
+        btn.addEventListener('click', handleArchiveClick);
+      });
+    }
+    
+    // Update button click handler
+    function handleUpdateClick(e) {
+      e.stopPropagation();
+      var row = this.closest('tr');
+      var d = row ? row.dataset : {};
+
+      // Pre-fill fields
+      document.getElementById('u_description').value = d.description || '';
+      document.getElementById('u_status').value = d.status || '';
+
+      // Point form action to update route
+      var updateForm = document.getElementById('updateForm');
+      var levelId = this.getAttribute('data-level-id');
+      updateForm.setAttribute('action', '/adminPages/levels/update/' + levelId);
+
+      openUpdateModal();
+    }
+    
+    // Archive button click handler
+    function handleArchiveClick(e) {
+      e.stopPropagation();
+      var levelId = this.getAttribute('data-level-id');
+      var levelDescription = this.closest('tr').querySelector('td[data-label="Description"]').textContent;
+      
+      if (confirm('Are you sure you want to archive level "' + levelDescription + '"?')) {
+        // Create and submit form for archiving
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/adminPages/levels/archive/' + levelId;
+        
+        var csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
 
     // Level details modal functionality
     var levelDetailsModal = document.getElementById('levelDetailsModal');
@@ -729,7 +773,20 @@ document.querySelectorAll('[data-archive]').forEach(function(btn){
 });
 
   })();
-</script>
+  </script>
+
+  <script>
+    // Input validation functions
+    function validateTextInput(input) {
+      // Remove any numbers or special characters (keep only letters and spaces)
+      input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+    }
+
+    function validateNumberInput(input) {
+      // Remove any non-numeric characters
+      input.value = input.value.replace(/[^0-9]/g, '');
+    }
+  </script>
 
 @endsection
 

@@ -15,6 +15,31 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+// Debug route for testing accommodation restoration
+Route::get('/debug-accommodations/{rateId}', function($rateId) {
+    $rate = \App\Models\Rate::with(['accommodationsWithTrashed'])->find($rateId);
+    if (!$rate) {
+        return response()->json(['error' => 'Rate not found']);
+    }
+    
+    $accommodations = $rate->accommodationsWithTrashed;
+    $data = [];
+    
+    foreach ($accommodations as $acc) {
+        $data[] = [
+            'id' => $acc->id,
+            'name' => $acc->name,
+            'deleted_at' => $acc->pivot->deleted_at,
+            'is_soft_deleted' => $acc->pivot->deleted_at !== null
+        ];
+    }
+    
+    return response()->json([
+        'rate_id' => $rateId,
+        'accommodations' => $data
+    ]);
+});
+
 //views
 Route::get('/Authentication/login', [AuthController::class, 'loginInterface'])->name('login');
 
@@ -110,6 +135,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::post('/stays/process', [StayController::class, 'processStay'])->name('stays.process');
     Route::post('/stays/end/{id}', [StayController::class, 'endStay'])->name('stays.end');
     Route::post('/stays/extend/{id}', [StayController::class, 'extend'])->name('stays.extend');
+    Route::post('/rooms/mark-ready/{roomId}', [StayController::class, 'markRoomReady'])->name('rooms.mark-ready');
     Route::post('/stays/delete/{id}', [StayController::class, 'delete'])->name('stays.delete');
     Route::post('/stays/restore/{id}', [StayController::class, 'restore'])->name('stays.restore');
     Route::get('/stays/active', [StayController::class, 'getActiveStays'])->name('stays.active');
@@ -173,6 +199,7 @@ Route::prefix('frontdesk')->middleware('auth')->group(function () {
     Route::post('/stays/process', [App\Http\Controllers\FrontDesk\StayController::class, 'processStay'])->name('frontdesk.stays.process');
     Route::post('/stays/end/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'endStay'])->name('frontdesk.stays.end');
     Route::post('/stays/extend/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'extend'])->name('frontdesk.stays.extend');
+    Route::post('/rooms/mark-ready/{roomId}', [App\Http\Controllers\FrontDesk\StayController::class, 'markRoomReady'])->name('frontdesk.rooms.mark-ready');
     Route::post('/stays/delete/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'delete'])->name('frontdesk.stays.delete');
     Route::post('/stays/restore/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'restore'])->name('frontdesk.stays.restore');
     Route::get('/stays/active', [App\Http\Controllers\FrontDesk\StayController::class, 'getActiveStays'])->name('frontdesk.stays.active');

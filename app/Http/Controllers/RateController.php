@@ -9,14 +9,16 @@ use Illuminate\Http\Request;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\RateAccommodation;
 
 class RateController extends Controller
 {
     public function index()
     {
         try {
-            $rates = Rate::with('accommodations')->orderBy('id')->get();
-            $accommodations = Accommodation::all();
+            $rates = Rate::with(['accommodations', 'accommodationsWithTrashed'])->orderBy('id')->get();
+            $accommodations = Accommodation::whereNull('deleted_at')->get();
             return view('adminPages.rate', compact('rates', 'accommodations'));
         } catch (Exception $e) {
             return back()->with('error', 'Failed to load rates: ' . $e->getMessage());
@@ -30,12 +32,12 @@ class RateController extends Controller
                 'duration' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'status' => 'required|in:Standard,Extending,Extending/Standard',
-                'accommodation_ids' => 'required|array|min:1',
+                'accommodation_ids' => 'sometimes|array',
                 'accommodation_ids.*' => 'exists:accommodations,id',
             ]);
 
             $rate = Rate::create($request->only(['duration','price','status']));
-            $rate->accommodations()->sync($request->accommodation_ids);
+            $rate->accommodations()->sync($request->accommodation_ids ?? []);
 
             // Log history
             History::create([
@@ -58,13 +60,50 @@ class RateController extends Controller
                 'duration' => 'required|string|max:255',
                 'price' => 'required|numeric|min:0',
                 'status' => 'required|in:Standard,Extending,Extending/Standard',
-                'accommodation_ids' => 'required|array|min:1',
+                'accommodation_ids' => 'sometimes|array',
                 'accommodation_ids.*' => 'exists:accommodations,id',
             ]);
 
             $rate = Rate::findOrFail($id);
             $rate->update($request->only(['duration','price','status']));
-            $rate->accommodations()->sync($request->accommodation_ids);
+            
+            // Handle accommodations with soft-delete support
+            $accommodationIds = $request->accommodation_ids ?? [];
+            
+            // Get all accommodations to check against
+            $allAccommodations = Accommodation::all();
+            
+            foreach ($allAccommodations as $accommodation) {
+                $isChecked = in_array($accommodation->id, $accommodationIds);
+                
+                $rateAccommodation = RateAccommodation::withTrashed()
+                    ->where('rate_id', $rate->id)
+                    ->where('accommodation_id', $accommodation->id)
+                    ->first();
+                
+                if ($isChecked) {
+                    // If checked
+                    if ($rateAccommodation) {
+                        if ($rateAccommodation->trashed()) {
+                            // Restore if it was soft deleted
+                            $rateAccommodation->restore();
+                        }
+                        // else do nothing (already active)
+                    } else {
+                        // Create new record
+                        RateAccommodation::create([
+                            'rate_id' => $rate->id,
+                            'accommodation_id' => $accommodation->id,
+                        ]);
+                    }
+                } else {
+                    // If unchecked
+                    if ($rateAccommodation && !$rateAccommodation->trashed()) {
+                        // Soft delete the record
+                        $rateAccommodation->delete();
+                    }
+                }
+            }
 
             // Log history
             History::create([

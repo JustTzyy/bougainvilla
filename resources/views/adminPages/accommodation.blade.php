@@ -206,7 +206,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Name</label>
-          <input type="text" name="name" class="form-input" placeholder="e.g., Deluxe Room" required>
+          <input type="text" name="name" class="form-input" placeholder="e.g., Deluxe Room" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
         </div>
         <div class="form-group">
           <label>Capacity</label>
@@ -242,7 +242,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Name</label>
-          <input name="name" id="u_name" class="form-input" required>
+          <input name="name" id="u_name" class="form-input" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
         </div>
         <div class="form-group">
           <label>Capacity</label>
@@ -401,6 +401,9 @@
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      
+      // Re-attach event listeners for edit and delete buttons after rendering
+      attachButtonEventListeners();
     }
 
     function renderPagination(){
@@ -473,6 +476,9 @@
 
     attachPaginationHandler();
     applySearch();
+    
+    // Attach initial event listeners
+    attachButtonEventListeners();
 
     var modal = document.getElementById('accommodationModal');
     var openBtn = document.getElementById('openAddAdmin');
@@ -533,26 +539,64 @@
     if (closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
     if (cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
 
-    // Hook update buttons
-    document.querySelectorAll('[data-update]').forEach(function(btn){
-      btn.addEventListener('click', function(e){
-        e.stopPropagation();
-        var row = this.closest('tr');
-        var d = row ? row.dataset : {};
-
-        // Pre-fill fields
-        document.getElementById('u_name').value = d.name || '';
-        document.getElementById('u_capacity').value = d.capacity || '';
-        document.getElementById('u_description').value = d.description || '';
-
-        // Point form action
-        var updateForm = document.getElementById('updateForm');
-        var accId = this.getAttribute('data-accommodation-id');
-        updateForm.setAttribute('action', '/adminPages/accommodations/update/' + accId);
-
-        openUpdateModal();
+    // Function to attach event listeners for edit and delete buttons
+    function attachButtonEventListeners() {
+      // Hook update buttons
+      document.querySelectorAll('[data-update]').forEach(function(btn){
+        // Remove existing listeners to prevent duplicates
+        btn.removeEventListener('click', handleUpdateClick);
+        btn.addEventListener('click', handleUpdateClick);
       });
-    });
+      
+      // Hook archive buttons
+      document.querySelectorAll('[data-archive]').forEach(function(btn){
+        // Remove existing listeners to prevent duplicates
+        btn.removeEventListener('click', handleArchiveClick);
+        btn.addEventListener('click', handleArchiveClick);
+      });
+    }
+    
+    // Update button click handler
+    function handleUpdateClick(e) {
+      e.stopPropagation();
+      var row = this.closest('tr');
+      var d = row ? row.dataset : {};
+
+      // Pre-fill fields
+      document.getElementById('u_name').value = d.name || '';
+      document.getElementById('u_capacity').value = d.capacity || '';
+      document.getElementById('u_description').value = d.description || '';
+
+      // Point form action
+      var updateForm = document.getElementById('updateForm');
+      var accId = this.getAttribute('data-accommodation-id');
+      updateForm.setAttribute('action', '/adminPages/accommodations/update/' + accId);
+
+      openUpdateModal();
+    }
+    
+    // Archive button click handler
+    function handleArchiveClick(e) {
+      e.stopPropagation();
+      var accId = this.getAttribute('data-accommodation-id');
+      var accName = this.closest('tr').querySelector('td[data-label="Name"]').textContent;
+      
+      if (confirm('Are you sure you want to archive accommodation "' + accName + '"?')) {
+        // Create and submit form for archiving
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/adminPages/accommodations/archive/' + accId;
+        
+        var csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
 
     // Accommodation details modal functionality
     var accommodationDetailsModal = document.getElementById('accommodationDetailsModal');
@@ -748,6 +792,19 @@
       });
     });
   })();
-</script>
+  </script>
+
+  <script>
+    // Input validation functions
+    function validateTextInput(input) {
+      // Remove any numbers or special characters (keep only letters and spaces)
+      input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+    }
+
+    function validateNumberInput(input) {
+      // Remove any non-numeric characters
+      input.value = input.value.replace(/[^0-9]/g, '');
+    }
+  </script>
 
 @endsection

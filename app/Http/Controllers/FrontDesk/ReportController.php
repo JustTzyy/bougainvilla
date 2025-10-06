@@ -38,6 +38,11 @@ class ReportController extends Controller
                 return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
             }
             
+            // Validate that from date is not in the future
+            if ($fromCarbon->isFuture()) {
+                return redirect()->back()->with('error', 'The "From" date cannot be in the future. Please select a past or current date.');
+            }
+            
             // Get all activity logs for the currently logged-in user
             $histories = History::with('user')
                 ->where('userID', auth()->id())
@@ -68,6 +73,11 @@ class ReportController extends Controller
                 return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
             }
             
+            // Validate that from date is not in the future
+            if ($fromCarbon->isFuture()) {
+                return redirect()->back()->with('error', 'The "From" date cannot be in the future. Please select a past or current date.');
+            }
+            
             // Get ALL transactions for the logged-in user with all related data (no pagination)
             // Include transactions from soft-deleted stays, rooms, and users
             $transactions = Receipt::with([
@@ -80,9 +90,12 @@ class ReportController extends Controller
                     'payment.stay.room' => function($query) {
                         $query->withTrashed();
                     },
-                    'payment.stay.rate.accommodations' => function($query) {
+                    'payment.stay.rate' => function($query) {
                         $query->withTrashed();
                     },
+                     'payment.stay.rate.accommodationsWithTrashed' => function($query) {
+                         $query->withTrashed();
+                     },
                     'user' => function($query) {
                         $query->withTrashed();
                     }
@@ -112,9 +125,7 @@ class ReportController extends Controller
                         ? $receipt->status_type 
                         : Receipt::STATUS_TYPE_STANDARD;
                     
-                    if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
-                        $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
-                    }
+                    $accommodationName = $this->getAccommodationNameWithTrashed($receipt->payment->stay->rate);
                 }
                 
                 return (object) [
@@ -149,6 +160,11 @@ class ReportController extends Controller
             if ($fromCarbon->isAfter($toCarbon)) {
                 return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
             }
+            
+            // Validate that from date is not in the future
+            if ($fromCarbon->isFuture()) {
+                return redirect()->back()->with('error', 'The "From" date cannot be in the future. Please select a past or current date.');
+            }
 
             // Get ALL transactions from ALL users with all related data (no pagination)
             // Include transactions from soft-deleted stays, rooms, and users
@@ -162,9 +178,12 @@ class ReportController extends Controller
                     'payment.stay.room' => function($query) {
                         $query->withTrashed();
                     },
-                    'payment.stay.rate.accommodations' => function($query) {
+                    'payment.stay.rate' => function($query) {
                         $query->withTrashed();
                     },
+                     'payment.stay.rate.accommodationsWithTrashed' => function($query) {
+                         $query->withTrashed();
+                     },
                     'user' => function($query) {
                         $query->withTrashed();
                     }
@@ -193,9 +212,7 @@ class ReportController extends Controller
                         ? $receipt->status_type 
                         : Receipt::STATUS_TYPE_STANDARD;
 
-                    if ($receipt->payment->stay->rate && $receipt->payment->stay->rate->accommodations->count() > 0) {
-                        $accommodationName = $receipt->payment->stay->rate->accommodations->first()->name;
-                    }
+                    $accommodationName = $this->getAccommodationNameWithTrashed($receipt->payment->stay->rate);
                 }
 
                 return (object) [
@@ -230,6 +247,11 @@ class ReportController extends Controller
             if ($fromCarbon->isAfter($toCarbon)) {
                 return redirect()->back()->with('error', 'The "From" date cannot be later than the "To" date. Please adjust your date range.');
             }
+            
+            // Validate that from date is not in the future
+            if ($fromCarbon->isFuture()) {
+                return redirect()->back()->with('error', 'The "From" date cannot be in the future. Please select a past or current date.');
+            }
 
             // Debug: Check if there are any soft-deleted stays
             $softDeletedStays = Stay::onlyTrashed()->count();
@@ -247,7 +269,7 @@ class ReportController extends Controller
 
                 // Get ALL transactions from ALL users with all related data (no pagination)
             // ONLY include transactions from soft-deleted stays
-            $archivedTransactions = Receipt::with(['payment.stay.room', 'payment.stay.rate.accommodations', 'user'])
+             $archivedTransactions = Receipt::with(['payment.stay.room' => function($query) { $query->withTrashed(); }, 'payment.stay.rate' => function($query) { $query->withTrashed(); }, 'payment.stay.rate.accommodationsWithTrashed', 'user'])
                 ->whereBetween('created_at', [$fromCarbon, $toCarbon])
                 ->whereHas('payment', function($query) use ($softDeletedStayIds) {
                     $query->whereIn('stayID', $softDeletedStayIds);
@@ -268,7 +290,7 @@ class ReportController extends Controller
 
                 if ($receipt->payment) {
                     // Get the stay with trashed included
-                    $stay = Stay::withTrashed()->with(['room', 'rate.accommodations'])->find($receipt->payment->stayID);
+                    $stay = Stay::withTrashed()->with(['room', 'rate.accommodationsWithTrashed'])->find($receipt->payment->stayID);
                     
                     if ($stay) {
                         $roomNumber = $stay->room ? $stay->room->room : 'N/A';
@@ -278,9 +300,7 @@ class ReportController extends Controller
                             ? $receipt->status_type 
                             : Receipt::STATUS_TYPE_STANDARD;
 
-                        if ($stay->rate && $stay->rate->accommodations->count() > 0) {
-                            $accommodationName = $stay->rate->accommodations->first()->name;
-                        }
+                        $accommodationName = $this->getAccommodationNameWithTrashed($stay->rate);
                     }
                 }
 
@@ -338,9 +358,9 @@ class ReportController extends Controller
                         'payment.stay.room' => function($query) {
                             $query->withTrashed();
                         },
-                        'payment.stay.rate.accommodations' => function($query) {
-                            $query->withTrashed();
-                        },
+                     'payment.stay.rate.accommodationsWithTrashed' => function($query) {
+                         $query->withTrashed();
+                     },
                         'user' => function($query) {
                             $query->withTrashed();
                         }
@@ -359,7 +379,7 @@ class ReportController extends Controller
                         if ($receipt->payment && $receipt->payment->stay) {
                             $roomNumber = $this->getRoomNumber($receipt->payment->stay->room);
                             
-                            $accommodationName = $this->getAccommodationName($receipt->payment->stay->rate);
+                            $accommodationName = $this->getAccommodationNameWithTrashed($receipt->payment->stay->rate);
                         }
                         
                         return [
@@ -418,7 +438,10 @@ class ReportController extends Controller
                         'stay.room' => function($query) {
                             $query->withTrashed();
                         },
-                        'stay.rate.accommodations' => function($query) {
+                        'stay.rate' => function($query) {
+                            $query->withTrashed();
+                        },
+                        'stay.rate.accommodationsWithTrashed' => function($query) {
                             $query->withTrashed();
                         }
                     ])
@@ -455,9 +478,7 @@ class ReportController extends Controller
                             $checkOut = $guestStay->stay->checkOut ? $guestStay->stay->checkOut->format('M d, Y H:i') : 'N/A';
                             $date = $guestStay->stay->created_at ? $guestStay->stay->created_at->format('M d, Y H:i') : 'N/A';
                             
-                            if ($guestStay->stay->rate && $guestStay->stay->rate->accommodations->count() > 0) {
-                                $accommodationName = $guestStay->stay->rate->accommodations->first()->name;
-                            }
+                            $accommodationName = $this->getAccommodationNameWithTrashed($guestStay->stay->rate);
                         }
                         
                         return [

@@ -51,6 +51,32 @@ trait SafeDataAccessTrait
     }
 
     /**
+     * Safely get accommodation name from rate relationship including soft-deleted (for reports)
+     */
+    protected function getAccommodationNameWithTrashed($rate, $fallback = 'N/A')
+    {
+        if (!$rate) {
+            return $fallback;
+        }
+        
+        // First try to use the already loaded accommodationsWithTrashed relationship
+        if ($rate->relationLoaded('accommodationsWithTrashed') && $rate->accommodationsWithTrashed->count() > 0) {
+            $accommodation = $rate->accommodationsWithTrashed->first();
+            return $accommodation ? $accommodation->name : $fallback;
+        }
+        
+        // If not loaded, load accommodations with trashed for reports
+        $accommodations = $rate->accommodationsWithTrashed;
+        
+        if (!$accommodations || $accommodations->count() === 0) {
+            return $fallback;
+        }
+        
+        $accommodation = $accommodations->first();
+        return $accommodation ? $accommodation->name : $fallback;
+    }
+
+    /**
      * Safely get room number
      */
     protected function getRoomNumber($room, $fallback = 'N/A')

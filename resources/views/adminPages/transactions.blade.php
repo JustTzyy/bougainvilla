@@ -461,6 +461,7 @@
       <button class="status-btn active" data-status="all">All Rooms</button>
       <button class="status-btn" data-status="Available">Available</button>
       <button class="status-btn" data-status="In Use">In Use</button>
+      <button class="status-btn" data-status="Cleaning">Cleaning</button>
     </div>
 
     <!-- Rooms Grid -->
@@ -478,6 +479,11 @@
             @php($__status = strtolower(trim($room->status ?? '')))
             @if(strpos($__status, 'use') !== false)
               <div class="room-timer" id="timer-{{ $room->id }}">--:--:--</div>
+            @endif
+            @if($room->status === 'Cleaning')
+              <button class="mark-ready-btn" data-room-id="{{ $room->id }}" style="margin-top: 8px; padding: 4px 8px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" title="Mark as Ready">
+                <i class="fas fa-check"></i> Ready
+              </button>
             @endif
           </div>
         @endforeach
@@ -549,14 +555,6 @@
 
             <div id="paymentSummary" class="payment-summary hidden">
                 <h3 class="section-title">Payment Summary</h3>
-                <div class="summary-row">
-                    <span>Subtotal:</span>
-                    <span id="subtotalAmount">₱0.00</span>
-      </div>
-                <div class="summary-row">
-                    <span>Tax (12%):</span>
-                    <span id="taxAmount">₱0.00</span>
-  </div>
                 <div class="summary-row summary-total">
                     <span>Total:</span>
                     <span id="totalAmount">₱0.00</span>
@@ -740,7 +738,12 @@ function initializeEventListeners() {
 
     // Room box clicks
     document.querySelectorAll('.room-box').forEach(box => {
-        box.addEventListener('click', function() {
+        box.addEventListener('click', function(e) {
+            // Don't trigger if clicking on mark ready button
+            if (e.target.closest('.mark-ready-btn')) {
+                return;
+            }
+            
             const status = (this.dataset.status || '').toLowerCase();
             if (status === 'available' || status === 'active') {
                 extensionMode = false;
@@ -748,6 +751,40 @@ function initializeEventListeners() {
             } else if (status === 'in use') {
                 extensionMode = true;
                 openAccommodationModal(this.dataset.roomId);
+            }
+        });
+    });
+
+    // Mark ready button clicks
+    document.querySelectorAll('.mark-ready-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const roomId = this.dataset.roomId;
+            const roomNumber = this.closest('.room-box').querySelector('.room-number').textContent;
+            
+            if (confirm('Mark room ' + roomNumber + ' as ready? (Cleaning completed)')) {
+                // Make AJAX request to mark room as ready
+                fetch('/adminPages/rooms/mark-ready/' + roomId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Room marked as ready!');
+                        // Reload the page to update the room status
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to mark room as ready. Please try again.');
+                });
             }
         });
     });
@@ -1315,12 +1352,9 @@ function calculateTotal() {
         guestCount = 1;
     }
     
-    const subtotal = selectedRate.price * guestCount;
-    const tax = subtotal * 0.12;
-    const total = subtotal + tax;
+    // Transaction total should be the same as rate price (no tax calculation here)
+    const total = selectedRate.price * guestCount;
     
-    document.getElementById('subtotalAmount').textContent = `₱${subtotal.toFixed(2)}`;
-    document.getElementById('taxAmount').textContent = `₱${tax.toFixed(2)}`;
     document.getElementById('totalAmount').textContent = `₱${total.toFixed(2)}`;
     
     // Show payment summary and process button for both new stays and extensions
@@ -1416,10 +1450,10 @@ function processPayment() {
         
         if (data.success) {
             // Show receipt instead of alert
-            // Calculate the actual total (subtotal + tax)
-            const actualSubtotal = selectedRate ? selectedRate.price * guestCount : 0;
-            const actualTax = actualSubtotal * 0.12;
-            const actualTotal = actualSubtotal + actualTax;
+            // Calculate tax for receipt display (this is where tax calculation happens)
+            const ratePrice = selectedRate ? selectedRate.price * guestCount : 0;
+            const tax = ratePrice * 0.12;
+            const subtotal = ratePrice - tax;
             
             showReceipt(data.receipt_data || {
                 receipt_id: data.receipt_id,
@@ -1428,9 +1462,9 @@ function processPayment() {
                 accommodation: selectedAccommodation ? selectedAccommodation.name : '-',
                 duration: selectedRate ? formatDurationDisplay(selectedRate.duration) : '-',
                 guest_count: guestCount,
-                subtotal: actualSubtotal,
-                tax: actualTax,
-                total: actualTotal,
+                subtotal: subtotal,
+                tax: tax,
+                total: ratePrice,
                 amount_paid: amountPaid,
                 change: computedChange,
                 cashier: '{{ Auth::user()->name ?? "Staff" }}',
@@ -1488,11 +1522,11 @@ function processExtension() {
         document.getElementById('loading').style.display = 'none';
         if (data.success) {
             // Show receipt for extension
-            // Calculate the actual total for extension (subtotal + tax)
+            // Calculate the actual total for extension
             const extensionGuestCount = roomIdToGuestCount[String(currentRoom.id)] || 1;
-            const extensionSubtotal = selectedRate ? selectedRate.price * extensionGuestCount : 0;
-            const extensionTax = extensionSubtotal * 0.12;
-            const extensionTotal = extensionSubtotal + extensionTax;
+            const extensionRatePrice = selectedRate ? selectedRate.price * extensionGuestCount : 0;
+            const extensionTax = extensionRatePrice * 0.12;
+            const extensionSubtotal = extensionRatePrice - extensionTax;
             
             showReceipt(data.receipt_data || {
                 receipt_id: data.receipt_id,
@@ -1503,7 +1537,7 @@ function processExtension() {
                 guest_count: extensionGuestCount,
                 subtotal: extensionSubtotal,
                 tax: extensionTax,
-                total: extensionTotal,
+                total: extensionRatePrice,
                 amount_paid: amountPaid,
                 change: change,
                 cashier: '{{ Auth::user()->name ?? "Staff" }}',

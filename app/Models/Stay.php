@@ -26,11 +26,13 @@ class Stay extends Model
     // Status constants
     const STATUS_STANDARD = 'Standard';
     const STATUS_EXTEND = 'Extend';
+    const STATUS_CLEANING = 'Cleaning';
+    const STATUS_READY = 'Ready';
 
     // Get valid status values
     public static function getValidStatuses()
     {
-        return [self::STATUS_STANDARD, self::STATUS_EXTEND];
+        return [self::STATUS_STANDARD, self::STATUS_EXTEND, self::STATUS_CLEANING, self::STATUS_READY];
     }
 
     // Relationships

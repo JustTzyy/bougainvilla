@@ -5,6 +5,55 @@
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
 <script src="{{ asset('js/ph-complete-address.js') }}"></script>
+<style>
+/* Form validation error styles */
+.error-highlight {
+  border: 2px solid #dc3545 !important;
+  background-color: #f8d7da !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.error-highlight:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.tab-btn.error-tab {
+  background-color: #f8d7da !important;
+  border-color: #dc3545 !important;
+  color: #721c24 !important;
+  position: relative;
+}
+
+.tab-btn.error-tab::after {
+  content: "!";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #dc3545;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.tab-btn.error-tab:hover {
+  background-color: #f5c6cb !important;
+  border-color: #dc3545 !important;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+</style>
 @endpush
 
 @section('content')
@@ -201,24 +250,39 @@
         <div class="form-grid">
           <div class="form-group">
             <label>First Name</label>
-            <input name="firstName" class="form-input" placeholder="Enter first name" required>
+            <input name="firstName" class="form-input @error('firstName') error-highlight @enderror" placeholder="Enter first name" value="{{ old('firstName') }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
+            @error('firstName')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Middle Name</label>
-            <input name="middleName" class="form-input" placeholder="Enter middle name (optional)">
+            <input name="middleName" class="form-input @error('middleName') error-highlight @enderror" placeholder="Enter middle name (optional)" value="{{ old('middleName') }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)">
+            @error('middleName')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Last Name</label>
-            <input name="lastName" class="form-input" placeholder="Enter last name" required>
+            <input name="lastName" class="form-input @error('lastName') error-highlight @enderror" placeholder="Enter last name" value="{{ old('lastName') }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
+            @error('lastName')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
  
           <div class="form-group span-2">
             <label>Email</label>
-            <input type="email" name="email" class="form-input" placeholder="FrontDesk@example.com" required>
+            <input type="email" name="email" class="form-input @error('email') error-highlight @enderror" placeholder="FrontDesk@example.com" value="{{ old('email') }}" required>
+            @error('email')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Birthday</label>
-            <input type="date" name="birthday" id="birthday" class="form-input" required>
+            <input type="date" name="birthday" id="birthday" class="form-input @error('birthday') error-highlight @enderror" value="{{ old('birthday') }}" required>
+            @error('birthday')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Age</label>
@@ -226,15 +290,21 @@
           </div>
           <div class="form-group">
             <label>Sex</label>
-            <select name="sex" class="form-input" required>
+            <select name="sex" class="form-input @error('sex') error-highlight @enderror" required>
               <option value="">Select Sex</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="Male" {{ old('sex') == 'Male' ? 'selected' : '' }}>Male</option>
+              <option value="Female" {{ old('sex') == 'Female' ? 'selected' : '' }}>Female</option>
             </select>
+            @error('sex')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Contact Number</label>
-            <input type="tel" name="contactNumber" class="form-input" placeholder="+63 912 345 6789" required>
+            <input type="tel" name="contactNumber" class="form-input @error('contactNumber') error-highlight @enderror" placeholder="+63 912 345 6789" value="{{ old('contactNumber') }}" required>
+            @error('contactNumber')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           
          
@@ -246,19 +316,28 @@
         <div class="form-grid">
           <div class="form-group span-2">
             <label>Street Address</label>
-            <input name="street" class="form-input" placeholder="123 Main Street, Barangay Name" required>
+            <input name="street" class="form-input @error('street') error-highlight @enderror" placeholder="123 Main Street, Barangay Name" value="{{ old('street') }}" required>
+            @error('street')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Province</label>
-            <select name="province" id="province" class="form-input" required>
+            <select name="province" id="province" class="form-input @error('province') error-highlight @enderror" required>
               <option value="">Select Province</option>
             </select>
+            @error('province')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>City</label>
-            <select name="city" id="city" class="form-input" required>
+            <select name="city" id="city" class="form-input @error('city') error-highlight @enderror" required>
               <option value="">Select City</option>
             </select>
+            @error('city')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Zip Code</label>
@@ -377,23 +456,38 @@
         <div class="form-grid">
           <div class="form-group">
             <label>First Name</label>
-            <input name="firstName" id="u_firstName" class="form-input" required>
+            <input name="firstName" id="u_firstName" class="form-input @error('firstName') error-highlight @enderror" value="{{ old('firstName') }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
+            @error('firstName')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Middle Name</label>
-            <input name="middleName" id="u_middleName" class="form-input">
+            <input name="middleName" id="u_middleName" class="form-input @error('middleName') error-highlight @enderror" value="{{ old('middleName') }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)">
+            @error('middleName')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Last Name</label>
-            <input name="lastName" id="u_lastName" class="form-input" required>
+            <input name="lastName" id="u_lastName" class="form-input @error('lastName') error-highlight @enderror" value="{{ old('lastName') }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
+            @error('lastName')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group span-2">
             <label>Email</label>
-            <input type="email" name="email" id="u_email" class="form-input" required>
+            <input type="email" name="email" id="u_email" class="form-input @error('email') error-highlight @enderror" value="{{ old('email') }}" required>
+            @error('email')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Birthday</label>
-            <input type="date" name="birthday" id="u_birthday" class="form-input" required>
+            <input type="date" name="birthday" id="u_birthday" class="form-input @error('birthday') error-highlight @enderror" value="{{ old('birthday') }}" required>
+            @error('birthday')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Age</label>
@@ -401,15 +495,21 @@
           </div>
           <div class="form-group">
             <label>Sex</label>
-            <select name="sex" id="u_sex" class="form-input" required>
+            <select name="sex" id="u_sex" class="form-input @error('sex') error-highlight @enderror" required>
               <option value="">Select Sex</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
+              <option value="Male" {{ old('sex') == 'Male' ? 'selected' : '' }}>Male</option>
+              <option value="Female" {{ old('sex') == 'Female' ? 'selected' : '' }}>Female</option>
             </select>
+            @error('sex')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Contact Number</label>
-            <input type="tel" name="contactNumber" id="u_contactNumber" class="form-input" required>
+            <input type="tel" name="contactNumber" id="u_contactNumber" class="form-input @error('contactNumber') error-highlight @enderror" value="{{ old('contactNumber') }}" required>
+            @error('contactNumber')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
         </div>
       </div>
@@ -418,19 +518,28 @@
         <div class="form-grid">
           <div class="form-group span-2">
             <label>Street Address</label>
-            <input name="street" id="u_street" class="form-input" required>
+            <input name="street" id="u_street" class="form-input @error('street') error-highlight @enderror" value="{{ old('street') }}" required>
+            @error('street')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Province</label>
-            <select name="province" id="u_province" class="form-input" required>
+            <select name="province" id="u_province" class="form-input @error('province') error-highlight @enderror" required>
               <option value="">Select Province</option>
             </select>
+            @error('province')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>City</label>
-            <select name="city" id="u_city" class="form-input" required>
+            <select name="city" id="u_city" class="form-input @error('city') error-highlight @enderror" required>
               <option value="">Select City</option>
             </select>
+            @error('city')
+              <div class="error-message">{{ $message }}</div>
+            @enderror
           </div>
           <div class="form-group">
             <label>Zip Code</label>
@@ -1065,6 +1174,19 @@
       });
     });
   })();
+</script>
+
+<script>
+  // Input validation functions
+  function validateTextInput(input) {
+    // Remove any numbers or special characters (keep only letters and spaces)
+    input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+  }
+
+  function validateNumberInput(input) {
+    // Remove any non-numeric characters
+    input.value = input.value.replace(/[^0-9]/g, '');
+  }
 </script>
 @endsection
 

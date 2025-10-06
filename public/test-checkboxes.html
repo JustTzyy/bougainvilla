@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkbox Test</title>
+    <style>
+        .accommodation-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, rgba(255,255,255,.8), rgba(248,249,255,.6));
+            border: 1px solid rgba(184,134,11,.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: visible;
+            min-height: 60px;
+        }
+
+        .accommodation-checkbox {
+            width: 24px;
+            height: 24px;
+            margin: 0;
+            cursor: pointer;
+            border: 2px solid rgba(184,134,11,.3);
+            border-radius: 8px;
+            background: #fff;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            position: relative;
+            appearance: auto;
+            -webkit-appearance: checkbox;
+            -moz-appearance: checkbox;
+        }
+
+        .accommodation-checkbox:checked {
+            background: linear-gradient(135deg, #8B5CF6, #DAA520);
+            border-color: #8B5CF6;
+            box-shadow: 0 4px 12px rgba(184,134,11,.3);
+        }
+
+        .accommodation-text {
+            flex: 1;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .test-results {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Checkbox Functionality Test</h1>
+    
+    <div id="updateAccommodations">
+        <label class="accommodation-item">
+            <input type="checkbox" class="accommodation-checkbox" value="1">
+            <span class="accommodation-text">Single Room (Capacity: 1)</span>
+        </label>
+        
+        <label class="accommodation-item">
+            <input type="checkbox" class="accommodation-checkbox" value="2">
+            <span class="accommodation-text">Double Room (Capacity: 2)</span>
+        </label>
+        
+        <label class="accommodation-item">
+            <input type="checkbox" class="accommodation-checkbox" value="3">
+            <span class="accommodation-text">Triple Room (Capacity: 3)</span>
+        </label>
+    </div>
+
+    <div class="test-results">
+        <h3>Test Results:</h3>
+        <div id="results"></div>
+        <button onclick="testCheckboxes()">Test Checkbox Functionality</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+
+    <script>
+        function fixAccommodationCheckboxes() {
+            console.log('Setting up native checkboxes...');
+            
+            var checkboxes = document.querySelectorAll('#updateAccommodations .accommodation-checkbox');
+            console.log('Found', checkboxes.length, 'accommodation checkboxes');
+            
+            checkboxes.forEach(function(checkbox, index) {
+                console.log('Setup checkbox', index + 1, 'of', checkboxes.length, '- value:', checkbox.value);
+                
+                checkbox.removeEventListener('click', checkbox._clickHandler);
+                checkbox.removeEventListener('change', checkbox._changeHandler);
+                
+                checkbox._clickHandler = function(e) {
+                    console.log('Checkbox clicked:', this.value, 'New state:', this.checked);
+                    e.stopPropagation();
+                    updateResults();
+                };
+                
+                checkbox._changeHandler = function(e) {
+                    console.log('Checkbox changed:', this.value, 'New state:', this.checked);
+                    updateResults();
+                };
+                
+                checkbox.addEventListener('click', checkbox._clickHandler);
+                checkbox.addEventListener('change', checkbox._changeHandler);
+                
+                checkbox.style.pointerEvents = 'auto';
+                checkbox.style.zIndex = '10';
+                checkbox.style.position = 'relative';
+                checkbox.style.opacity = '1';
+                checkbox.style.visibility = 'visible';
+                checkbox.style.display = 'inline-block';
+            });
+            
+            console.log('All accommodation checkboxes setup complete!');
+        }
+
+        function updateResults() {
+            var results = document.getElementById('results');
+            var checkboxes = document.querySelectorAll('#updateAccommodations .accommodation-checkbox');
+            var checked = [];
+            var unchecked = [];
+            
+            checkboxes.forEach(function(cb) {
+                if (cb.checked) {
+                    checked.push(cb.value);
+                } else {
+                    unchecked.push(cb.value);
+                }
+            });
+            
+            results.innerHTML = `
+                <p><strong>Checked:</strong> [${checked.join(', ')}]</p>
+                <p><strong>Unchecked:</strong> [${unchecked.join(', ')}]</p>
+                <p><strong>Total Checked:</strong> ${checked.length}</p>
+            `;
+        }
+
+        function testCheckboxes() {
+            var checkboxes = document.querySelectorAll('#updateAccommodations .accommodation-checkbox');
+            var results = document.getElementById('results');
+            
+            results.innerHTML = '<p>Testing checkbox functionality...</p>';
+            
+            // Test 1: Check all
+            setTimeout(() => {
+                checkboxes.forEach(cb => cb.checked = true);
+                results.innerHTML += '<p>✓ Test 1: All checkboxes checked</p>';
+                updateResults();
+            }, 500);
+            
+            // Test 2: Uncheck all
+            setTimeout(() => {
+                checkboxes.forEach(cb => cb.checked = false);
+                results.innerHTML += '<p>✓ Test 2: All checkboxes unchecked</p>';
+                updateResults();
+            }, 1000);
+            
+            // Test 3: Check first one
+            setTimeout(() => {
+                checkboxes[0].checked = true;
+                results.innerHTML += '<p>✓ Test 3: First checkbox checked</p>';
+                updateResults();
+            }, 1500);
+            
+            // Test 4: Check second one
+            setTimeout(() => {
+                checkboxes[1].checked = true;
+                results.innerHTML += '<p>✓ Test 4: Second checkbox checked</p>';
+                updateResults();
+            }, 2000);
+            
+            // Test 5: Uncheck first one
+            setTimeout(() => {
+                checkboxes[0].checked = false;
+                results.innerHTML += '<p>✓ Test 5: First checkbox unchecked</p>';
+                updateResults();
+            }, 2500);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            fixAccommodationCheckboxes();
+            updateResults();
+        });
+    </script>
+</body>
+</html>

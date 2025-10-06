@@ -21,7 +21,7 @@ class RoomController extends Controller
     public function index(Request $request)
     {
         try {
-            $rooms = Room::with(['level', 'accommodations'])
+            $rooms = Room::with(['level', 'accommodations', 'accommodationsWithTrashed'])
                         ->orderBy('room')
                         ->get();
             
@@ -105,11 +105,42 @@ class RoomController extends Controller
                 'level_id' => $request->level_id,
             ]);
 
-            // Sync accommodations
-            if ($request->has('accommodations')) {
-                $room->accommodations()->sync($request->accommodations);
-            } else {
-                $room->accommodations()->detach();
+            // Handle accommodations with soft-delete support
+            $accommodationIds = $request->accommodations ?? [];
+            
+            // Get all accommodations to check against
+            $allAccommodations = Accommodation::all();
+            
+            foreach ($allAccommodations as $accommodation) {
+                $isChecked = in_array($accommodation->id, $accommodationIds);
+                
+                $roomAccommodation = RoomAccommodation::withTrashed()
+                    ->where('room_id', $room->id)
+                    ->where('accommodation_id', $accommodation->id)
+                    ->first();
+                
+                if ($isChecked) {
+                    // If checked
+                    if ($roomAccommodation) {
+                        if ($roomAccommodation->trashed()) {
+                            // Restore if it was soft deleted
+                            $roomAccommodation->restore();
+                        }
+                        // else do nothing (already active)
+                    } else {
+                        // Create new record
+                        RoomAccommodation::create([
+                            'room_id' => $room->id,
+                            'accommodation_id' => $accommodation->id,
+                        ]);
+                    }
+                } else {
+                    // If unchecked
+                    if ($roomAccommodation && !$roomAccommodation->trashed()) {
+                        // Soft delete the record
+                        $roomAccommodation->delete();
+                    }
+                }
             }
 
             // Handle automatic archiving/restoration based on status

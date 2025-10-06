@@ -36,6 +36,19 @@ class Payment extends Model
     {
         return $this->hasMany(Receipt::class, 'paymentID');
     }
+
+    /**
+     * Update payment with tax calculation from receipt
+     * This method should be called when a receipt is created to update the payment with proper tax and subtotal
+     */
+    public function updateWithTaxCalculation($taxRate = 0.12)
+    {
+        $tax = $this->amount * $taxRate;
+        $this->update([
+            'tax' => $tax,
+            'subtotal' => $this->amount
+        ]);
+    }
 }
 
 

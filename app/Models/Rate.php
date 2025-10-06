@@ -22,7 +22,20 @@ class Rate extends Model
         return $this->belongsToMany(Accommodation::class, 'rate_accommodations')
                     ->withTimestamps()
                     ->withPivot('id')
-                    ->using(\App\Models\RateAccommodation::class);
+                    ->using(\App\Models\RateAccommodation::class)
+                    ->whereNull('rate_accommodations.deleted_at');
+    }
+
+    /**
+     * Get accommodations including soft-deleted ones (for reports)
+     */
+    public function accommodationsWithTrashed()
+    {
+        return $this->belongsToMany(Accommodation::class, 'rate_accommodations')
+                    ->withTimestamps()
+                    ->withPivot('id')
+                    ->using(\App\Models\RateAccommodation::class)
+                    ->withTrashed();
     }
 
     /**

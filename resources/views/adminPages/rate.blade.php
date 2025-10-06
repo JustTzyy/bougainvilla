@@ -80,20 +80,117 @@
         margin-bottom: 0;
       }
 
-      /* Custom Checkbox Styling */
-      .checkbox-label input[type="checkbox"] {
-        display: none;
+      /* Enhanced Accommodation Selection Styling - RESTORED */
+      .accommodation-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, rgba(255,255,255,.8), rgba(248,249,255,.6));
+        border: 1px solid rgba(184,134,11,.1);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: visible;
+        min-height: 60px;
       }
 
-      .checkmark {
+      .accommodation-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--purple-primary), #DAA520);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      .accommodation-item:hover {
+        background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02));
+        border-color: rgba(184,134,11,.2);
+        transform: translateX(4px);
+        box-shadow: 0 4px 12px rgba(184,134,11,.1);
+      }
+
+      .accommodation-item:hover::before {
+        opacity: 1;
+      }
+
+      .accommodation-checkbox {
         width: 24px;
         height: 24px;
+        margin: 0;
+        cursor: pointer;
         border: 2px solid rgba(184,134,11,.3);
         border-radius: 8px;
         background: #fff;
-        position: relative;
         transition: all 0.3s ease;
         flex-shrink: 0;
+        position: relative;
+        /* Keep native checkbox behavior for better functionality */
+        appearance: auto;
+        -webkit-appearance: checkbox;
+        -moz-appearance: checkbox;
+      }
+
+      .accommodation-item:hover .accommodation-checkbox {
+        border-color: var(--purple-primary);
+        box-shadow: 0 2px 8px rgba(184,134,11,.2);
+      }
+
+      .accommodation-checkbox:checked {
+        background: linear-gradient(135deg, var(--purple-primary), #DAA520);
+        border-color: var(--purple-primary);
+        box-shadow: 0 4px 12px rgba(184,134,11,.3);
+      }
+
+      .accommodation-text {
+        flex: 1;
+        color: var(--text-primary);
+        font-weight: 500;
+        line-height: 1.4;
+      }
+
+      .accommodation-text strong {
+        display: block;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        line-height: 1.3;
+      }
+
+      .accommodation-text small {
+        display: block;
+        font-size: 13px;
+        color: #6c757d;
+        font-style: italic;
+        line-height: 1.2;
+      }
+
+      /* Selected State Enhancement */
+      .accommodation-checkbox:checked ~ .accommodation-text {
+        color: var(--purple-primary);
+      }
+
+      .accommodation-checkbox:checked ~ .accommodation-text strong {
+        color: var(--purple-primary);
+        font-weight: 700;
+      }
+
+      /* Focus States */
+      .accommodation-item:focus-within {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(184,134,11,.15);
+        border-color: var(--purple-primary);
+      }
+
+      .checkmark {
+        display: none !important; /* Hide custom checkmark to avoid interference */
       }
 
       .checkbox-label:hover .checkmark {
@@ -117,6 +214,17 @@
         font-size: 14px;
         font-weight: bold;
         text-shadow: 0 1px 2px rgba(0,0,0,.2);
+      }
+
+      /* Unchecked state - ensure it's visible */
+      .checkbox-label input[type="checkbox"]:not(:checked) + .checkmark {
+        background: #fff;
+        border: 2px solid rgba(184,134,11,.3);
+        box-shadow: none;
+      }
+
+      .checkbox-label input[type="checkbox"]:not(:checked) + .checkmark::after {
+        content: '';
       }
 
       /* Accommodation Text Styling */
@@ -490,7 +598,8 @@
                             @foreach($rates as $rate)
                                 <tr class="rate-row" data-rate-id="{{ $rate->id }}" data-duration="{{ $rate->duration }}"
                                     data-price="{{ $rate->price }}" data-status="{{ $rate->status }}"
-                                    data-accommodation-ids="{{ $rate->accommodations->pluck('id')->implode(',') }}"
+                                    data-accommodation-ids="{{ $rate->accommodationsWithTrashed()->whereNull('rate_accommodations.deleted_at')->pluck('accommodations.id')->implode(',') }}"
+                                    data-all-accommodation-ids="{{ $rate->accommodationsWithTrashed->pluck('accommodations.id')->implode(',') }}"
                                     data-accommodations="{{ $rate->accommodations->pluck('name')->implode(', ') }}"
                                     data-created="{{ $rate->created_at }}">
                                     <td data-label="ID">{{ $rate->id }}</td>
@@ -616,9 +725,8 @@
                         <label>Accommodations</label>
                         <div class="accommodation-selection">
                             @foreach($accommodations as $accommodation)
-                              <label class="checkbox-label">
-                                <input type="checkbox" name="accommodation_ids[]" value="{{ $accommodation->id }}">
-                                <span class="checkmark"></span>
+                              <label class="accommodation-item" style="display: block; margin-bottom: 12px; cursor: pointer;">
+                                <input type="checkbox" name="accommodation_ids[]" value="{{ $accommodation->id }}" class="accommodation-checkbox" style="margin-right: 10px;">
                                 <span class="accommodation-text">
                                   {{ $accommodation->name }}
                                   @if($accommodation->capacity)
@@ -673,9 +781,8 @@
                         <label>Accommodations</label>
                         <div class="accommodation-selection" id="updateAccommodations">
                             @foreach($accommodations as $accommodation)
-                              <label class="checkbox-label">
-                                <input type="checkbox" name="accommodation_ids[]" value="{{ $accommodation->id }}" class="accommodation-checkbox">
-                                <span class="checkmark"></span>
+                              <label class="accommodation-item" style="display: block; margin-bottom: 12px; cursor: pointer;">
+                                <input type="checkbox" name="accommodation_ids[]" value="{{ $accommodation->id }}" class="accommodation-checkbox" style="margin-right: 10px;">
                                 <span class="accommodation-text">
                                   {{ $accommodation->name }}
                                   @if($accommodation->capacity)
@@ -745,6 +852,9 @@
               pageItems.forEach(function(r){
                 tbody.appendChild(r.element);
               });
+              
+              // Re-attach event listeners for edit and delete buttons after rendering
+              attachButtonEventListeners();
             }
 
             function renderPagination(){
@@ -817,6 +927,13 @@
 
             attachPaginationHandler();
             applySearch();
+            
+            // Attach initial event listeners
+            attachButtonEventListeners();
+            
+            // Fix accommodation checkbox functionality
+            fixAccommodationCheckboxes();
+            console.log('Initial accommodation checkboxes setup completed');
 
             var modal = document.getElementById('rateModal');
             var openBtn = document.getElementById('openAddAdmin');
@@ -834,8 +951,27 @@
                     var duration = document.querySelector('input[name="duration"]').value;
                     var price = document.querySelector('input[name="price"]').value;
                     var status = document.querySelector('select[name="status"]').value;
-                    if (confirm('Add rate "' + duration + '" at ₱' + price + ' (' + status + ')?')) {
+                    
+                    // Get selected accommodations
+                    var selectedAccommodations = [];
+                    document.querySelectorAll('.accommodation-selection input[type="checkbox"]:checked').forEach(function(cb) {
+                        selectedAccommodations.push(cb.value);
+                    });
+                    
+                    console.log('Selected accommodations for add:', selectedAccommodations);
+                    
+                    // Remove unchecked checkboxes from form data to prevent empty values
+                    document.querySelectorAll('.accommodation-selection input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+                        cb.disabled = true;
+                    });
+                    
+                    if (confirm('Add rate "' + duration + '" at ₱' + price + ' (' + status + ') with ' + selectedAccommodations.length + ' accommodations?')) {
                         this.submit();
+                    } else {
+                        // Re-enable checkboxes if user cancels
+                        document.querySelectorAll('.accommodation-selection input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+                            cb.disabled = false;
+                        });
                     }
                 });
             }
@@ -868,8 +1004,26 @@
                     var duration = document.getElementById('u_duration').value;
                     var price = document.getElementById('u_price').value;
                     var status = document.getElementById('u_status').value;
-                    if (confirm('Update rate to "' + duration + '" ₱' + price + ' with status ' + status + '?')) {
+                    
+                    // Get selected accommodations
+                    var selectedAccommodations = [];
+                    document.querySelectorAll('#updateAccommodations input[type="checkbox"]:checked').forEach(function(cb) {
+                        selectedAccommodations.push(cb.value);
+                    });
+                    
+                    
+                    // Remove unchecked checkboxes from form data to prevent empty values
+                    document.querySelectorAll('#updateAccommodations input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+                        cb.disabled = true;
+                    });
+                    
+                    if (confirm('Update rate to "' + duration + '" ₱' + price + ' with status ' + status + ' and ' + selectedAccommodations.length + ' accommodations?')) {
                         this.submit();
+                    } else {
+                        // Re-enable checkboxes if user cancels
+                        document.querySelectorAll('#updateAccommodations input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+                            cb.disabled = false;
+                        });
                     }
                 });
             }
@@ -879,62 +1033,111 @@
             if (closeUpdateModalBtn) closeUpdateModalBtn.addEventListener('click', closeUpdateModal);
             if (cancelUpdateBtn) cancelUpdateBtn.addEventListener('click', closeUpdateModal);
 
-            // Hook update buttons
-            document.querySelectorAll('[data-update]').forEach(function (btn) {
-                btn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    var row = this.closest('tr');
-                    var d = row ? row.dataset : {};
+            // Function to attach event listeners for edit and delete buttons
+            function attachButtonEventListeners() {
+              // Hook update buttons
+              document.querySelectorAll('[data-update]').forEach(function(btn){
+                // Remove existing listeners to prevent duplicates
+                btn.removeEventListener('click', handleUpdateClick);
+                btn.addEventListener('click', handleUpdateClick);
+              });
+              
+              // Hook archive buttons
+              document.querySelectorAll('[data-archive]').forEach(function(btn){
+                // Remove existing listeners to prevent duplicates
+                btn.removeEventListener('click', handleArchiveClick);
+                btn.addEventListener('click', handleArchiveClick);
+              });
+            }
+            
+            // Update button click handler
+            function handleUpdateClick(e) {
+              e.stopPropagation();
+              var row = this.closest('tr');
+              var d = row ? row.dataset : {};
 
-                    // Pre-fill fields
-                    // set accommodations multi-select
-                    var selectedAccIds = (d.accommodationIds || '').split(',').filter(Boolean);
-                    document.querySelectorAll('#updateAccommodations input[type="checkbox"]').forEach(function(cb){
-                        cb.checked = selectedAccIds.includes(cb.value);
-                    });
-                    document.getElementById('u_duration').value = d.duration || '';
-                    document.getElementById('u_price').value = d.price || '';
-                    document.getElementById('u_status').value = d.status || 'Standard';
+              // Pre-fill fields
+              // set accommodations multi-select
+              var activeAccIds = (d.accommodationIds || '').split(',').filter(Boolean);
+              var allAccIds = (d.allAccommodationIds || '').split(',').filter(Boolean);
+              
+              document.querySelectorAll('#updateAccommodations input[type="checkbox"]').forEach(function(cb){
+                var isChecked = activeAccIds.includes(cb.value);
+                var isInAllList = allAccIds.includes(cb.value);
+                
+                // Only set checked if it's in the active list
+                cb.checked = isChecked;
+                
+                
+                // Ensure checkbox is visible and clickable
+                cb.style.opacity = '1';
+                cb.style.visibility = 'visible';
+                cb.style.display = 'inline-block';
+                cb.style.pointerEvents = 'auto';
+              });
+              document.getElementById('u_duration').value = d.duration || '';
+              document.getElementById('u_price').value = d.price || '';
+              document.getElementById('u_status').value = d.status || 'Standard';
 
-                    // Point form action
-                    var updateForm = document.getElementById('updateForm');
-                    var rateId = this.getAttribute('data-rate-id');
-                    updateForm.setAttribute('action', '/adminPages/rates/update/' + rateId);
+              // Point form action
+              var updateForm = document.getElementById('updateForm');
+              var rateId = this.getAttribute('data-rate-id');
+              updateForm.setAttribute('action', '/adminPages/rates/update/' + rateId);
 
-                    openUpdateModal();
-                });
-            });
+              openUpdateModal();
+              
+              // Fix checkbox functionality in update modal
+              setTimeout(function() {
+                fixAccommodationCheckboxes();
+                console.log('Accommodation checkboxes fixed for update modal');
+              }, 100);
+            }
+            
+            // Archive button click handler
+            function handleArchiveClick(e) {
+              e.stopPropagation();
+              var rateId = this.getAttribute('data-rate-id');
+              var rateName = this.closest('tr').querySelector('.rate-duration').textContent;
 
-            // Archive functionality
-            document.querySelectorAll('[data-archive]').forEach(function (btn) {
-                btn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    var rateId = this.getAttribute('data-rate-id');
-                    var rateName = this.closest('tr').querySelector('.rate-duration').textContent;
+              if (confirm('Are you sure you want to archive "' + rateName + '"?')) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/adminPages/rates/delete/' + rateId;
 
-                    if (confirm('Are you sure you want to archive "' + rateName + '"?')) {
-                        var form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = '/adminPages/rates/delete/' + rateId;
+                var csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                  document.querySelector('input[name="_token"]')?.value;
 
-                        var csrfToken = document.createElement('input');
-                        csrfToken.type = 'hidden';
-                        csrfToken.name = '_token';
-                        csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
-                            document.querySelector('input[name="_token"]')?.value;
+                var methodField = document.createElement('input');
+                methodField.type = 'hidden';
+                methodField.name = '_method';
+                methodField.value = 'DELETE';
 
-                        var methodField = document.createElement('input');
-                        methodField.type = 'hidden';
-                        methodField.name = '_method';
-                        methodField.value = 'DELETE';
-
-                        form.appendChild(csrfToken);
-                        form.appendChild(methodField);
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                });
-            });
+                form.appendChild(csrfToken);
+                form.appendChild(methodField);
+                document.body.appendChild(form);
+                form.submit();
+              }
+            }
+            
+            // Fix accommodation checkbox functionality - SIMPLE APPROACH
+            function fixAccommodationCheckboxes() {
+              // Get all accommodation checkboxes
+              var checkboxes = document.querySelectorAll('#updateAccommodations .accommodation-checkbox');
+              
+              // Ensure checkboxes are clickable
+              checkboxes.forEach(function(checkbox, index) {
+                // Ensure maximum clickability
+                checkbox.style.pointerEvents = 'auto';
+                checkbox.style.cursor = 'pointer';
+                checkbox.style.opacity = '1';
+                checkbox.style.visibility = 'visible';
+                checkbox.style.display = 'inline-block';
+              });
+              
+            }
 
             // Rate details modal functionality
             var rateDetailsModal = document.getElementById('rateDetailsModal');
@@ -996,6 +1199,8 @@
 
             // Initialize row click handlers
             addRowClickHandlers();
+            
+            
         })();
     </script>
 

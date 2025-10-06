@@ -36,6 +36,40 @@ class Receipt extends Model
     {
         return $this->belongsTo(User::class, 'userID');
     }
+
+    /**
+     * Calculate tax for this receipt
+     * This is where tax deduction calculation is performed
+     */
+    public function calculateTax($taxRate = 0.12)
+    {
+        if (!$this->payment) {
+            return 0;
+        }
+        
+        // Tax is calculated on the payment amount (which is the rate price)
+        return $this->payment->amount * $taxRate;
+    }
+
+    /**
+     * Get the total amount including tax
+     */
+    public function getTotalWithTax($taxRate = 0.12)
+    {
+        if (!$this->payment) {
+            return 0;
+        }
+        
+        return $this->payment->amount + $this->calculateTax($taxRate);
+    }
+
+    /**
+     * Get the subtotal (amount before tax)
+     */
+    public function getSubtotal()
+    {
+        return $this->payment ? $this->payment->amount : 0;
+    }
 }
 
 

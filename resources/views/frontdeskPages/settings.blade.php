@@ -33,6 +33,25 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* Form validation error styles */
+.error-highlight {
+  border: 2px solid #dc3545 !important;
+  background-color: #f8d7da !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.error-highlight:focus {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
 </style>
 @endpush
 
@@ -113,27 +132,42 @@
             <div class="form-grid">
               <div class="form-group">
                 <label for="firstName">First Name</label>
-                <input type="text" id="firstName" name="firstName" value="{{ old('firstName', Auth::user()->firstName) }}" required>
+                <input type="text" id="firstName" name="firstName" class="@error('firstName') error-highlight @enderror" value="{{ old('firstName', Auth::user()->firstName) }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
+                @error('firstName')
+                  <div class="error-message">{{ $message }}</div>
+                @enderror
               </div>
               
               <div class="form-group">
                 <label for="middleName">Middle Name</label>
-                <input type="text" id="middleName" name="middleName" value="{{ old('middleName', Auth::user()->middleName) }}">
+                <input type="text" id="middleName" name="middleName" class="@error('middleName') error-highlight @enderror" value="{{ old('middleName', Auth::user()->middleName) }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)">
+                @error('middleName')
+                  <div class="error-message">{{ $message }}</div>
+                @enderror
               </div>
               
               <div class="form-group">
                 <label for="lastName">Last Name</label>
-                <input type="text" id="lastName" name="lastName" value="{{ old('lastName', Auth::user()->lastName) }}" required>
+                <input type="text" id="lastName" name="lastName" class="@error('lastName') error-highlight @enderror" value="{{ old('lastName', Auth::user()->lastName) }}" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
+                @error('lastName')
+                  <div class="error-message">{{ $message }}</div>
+                @enderror
               </div>
               
               <div class="form-group">
                 <label for="contactNumber">Contact Number</label>
-                <input type="text" id="contactNumber" name="contactNumber" value="{{ old('contactNumber', Auth::user()->contactNumber) }}" required>
+                <input type="text" id="contactNumber" name="contactNumber" class="@error('contactNumber') error-highlight @enderror" value="{{ old('contactNumber', Auth::user()->contactNumber) }}" required>
+              @error('contactNumber')
+                <div class="error-message">{{ $message }}</div>
+              @enderror
               </div>
               
               <div class="form-group">
                 <label for="birthday">Birthday</label>
-                <input type="date" id="birthday" name="birthday" value="{{ old('birthday', Auth::user()->birthday) }}" required onchange="calculateAge()">
+                <input type="date" id="birthday" name="birthday" class="@error('birthday') error-highlight @enderror" value="{{ old('birthday', Auth::user()->birthday) }}" required onchange="calculateAge()">
+                @error('birthday')
+                  <div class="error-message">{{ $message }}</div>
+                @enderror
               </div>
               
               <div class="form-group">
@@ -143,7 +177,10 @@
               
               <div class="form-group">
                 <label for="sex">Sex</label>
-                <select id="sex" name="sex" required>
+                <select id="sex" name="sex" class="@error('sex') error-highlight @enderror" required>
+                @error('sex')
+                  <div class="error-message">{{ $message }}</div>
+                @enderror
                   <option value="">Select Sex</option>
                   <option value="Male" {{ old('sex', Auth::user()->sex) == 'Male' ? 'selected' : '' }}>Male</option>
                   <option value="Female" {{ old('sex', Auth::user()->sex) == 'Female' ? 'selected' : '' }}>Female</option>
@@ -224,12 +261,18 @@
             
             <div class="form-group">
               <label for="new_email">New Email</label>
-              <input type="email" id="new_email" name="email" value="{{ old('email') }}" required>
+              <input type="email" id="new_email" name="email" class="@error('email') error-highlight @enderror" value="{{ old('email') }}" required>
+              @error('email')
+                <div class="error-message">{{ $message }}</div>
+              @enderror
             </div>
             
             <div class="form-group">
               <label for="confirm_email">Confirm New Email</label>
-              <input type="email" id="confirm_email" name="email_confirmation" value="{{ old('email_confirmation') }}" required>
+              <input type="email" id="confirm_email" name="email_confirmation" class="@error('email_confirmation') error-highlight @enderror" value="{{ old('email_confirmation') }}" required>
+              @error('email_confirmation')
+                <div class="error-message">{{ $message }}</div>
+              @enderror
             </div>
             
             <div class="form-actions">
@@ -252,7 +295,10 @@
             
             <div class="form-group">
               <label for="current_password">Current Password</label>
-              <input type="password" id="current_password" name="current_password" required>
+              <input type="password" id="current_password" name="current_password" class="@error('current_password') error-highlight @enderror" required>
+              @error('current_password')
+                <div class="error-message">{{ $message }}</div>
+              @enderror
               <button type="button" class="toggle-password" onclick="togglePassword('current_password')">
                 <i class="fas fa-eye"></i>
               </button>
@@ -260,7 +306,10 @@
             
             <div class="form-group">
               <label for="new_password">New Password</label>
-              <input type="password" id="new_password" name="password" required>
+              <input type="password" id="new_password" name="password" class="@error('password') error-highlight @enderror" required>
+              @error('password')
+                <div class="error-message">{{ $message }}</div>
+              @enderror
               <button type="button" class="toggle-password" onclick="togglePassword('new_password')">
                 <i class="fas fa-eye"></i>
               </button>
@@ -268,7 +317,10 @@
             
             <div class="form-group">
               <label for="confirm_password">Confirm New Password</label>
-              <input type="password" id="confirm_password" name="password_confirmation" required>
+              <input type="password" id="confirm_password" name="password_confirmation" class="@error('password_confirmation') error-highlight @enderror" required>
+              @error('password_confirmation')
+                <div class="error-message">{{ $message }}</div>
+              @enderror
               <button type="button" class="toggle-password" onclick="togglePassword('confirm_password')">
                 <i class="fas fa-eye"></i>
               </button>
@@ -521,6 +573,19 @@
       });
     }
   });
+</script>
+
+<script>
+  // Input validation functions
+  function validateTextInput(input) {
+    // Remove any numbers or special characters (keep only letters and spaces)
+    input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+  }
+
+  function validateNumberInput(input) {
+    // Remove any non-numeric characters
+    input.value = input.value.replace(/[^0-9]/g, '');
+  }
 </script>
 @endsection
 

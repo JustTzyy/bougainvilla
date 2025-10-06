@@ -141,19 +141,117 @@
   }
 
   /* Custom Checkbox Styling */
-  .checkbox-label input[type="checkbox"] {
-    display: none;
+  /* Enhanced Accommodation Selection Styling - RESTORED */
+  .accommodation-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, rgba(255,255,255,.8), rgba(248,249,255,.6));
+    border: 1px solid rgba(184,134,11,.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+    min-height: 60px;
   }
 
-  .checkmark {
+  .accommodation-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--purple-primary), #DAA520);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .accommodation-item:hover {
+    background: linear-gradient(135deg, rgba(184,134,11,.05), rgba(184,134,11,.02));
+    border-color: rgba(184,134,11,.2);
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(184,134,11,.1);
+  }
+
+  .accommodation-item:hover::before {
+    opacity: 1;
+  }
+
+  .accommodation-checkbox {
     width: 24px;
     height: 24px;
+    margin: 0;
+    cursor: pointer;
     border: 2px solid rgba(184,134,11,.3);
     border-radius: 8px;
     background: #fff;
-    position: relative;
     transition: all 0.3s ease;
     flex-shrink: 0;
+    position: relative;
+    /* Keep native checkbox behavior for better functionality */
+    appearance: auto;
+    -webkit-appearance: checkbox;
+    -moz-appearance: checkbox;
+  }
+
+  .accommodation-item:hover .accommodation-checkbox {
+    border-color: var(--purple-primary);
+    box-shadow: 0 2px 8px rgba(184,134,11,.2);
+  }
+
+  .accommodation-checkbox:checked {
+    background: linear-gradient(135deg, var(--purple-primary), #DAA520);
+    border-color: var(--purple-primary);
+    box-shadow: 0 4px 12px rgba(184,134,11,.3);
+  }
+
+  .accommodation-text {
+    flex: 1;
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .accommodation-text strong {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .accommodation-text small {
+    display: block;
+    font-size: 13px;
+    color: #6c757d;
+    font-style: italic;
+    line-height: 1.2;
+  }
+
+  /* Selected State Enhancement */
+  .accommodation-checkbox:checked ~ .accommodation-text {
+    color: var(--purple-primary);
+  }
+
+  .accommodation-checkbox:checked ~ .accommodation-text strong {
+    color: var(--purple-primary);
+    font-weight: 700;
+  }
+
+  /* Focus States */
+  .accommodation-item:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(184,134,11,.15);
+    border-color: var(--purple-primary);
+  }
+
+  .checkmark {
+    display: none !important; /* Hide custom checkmark to avoid interference */
   }
 
   .checkbox-label:hover .checkmark {
@@ -177,6 +275,17 @@
     font-size: 14px;
     font-weight: bold;
     text-shadow: 0 1px 2px rgba(0,0,0,.2);
+  }
+
+  /* Unchecked state - ensure it's visible */
+  .checkbox-label input[type="checkbox"]:not(:checked) + .checkmark {
+    background: #fff;
+    border: 2px solid rgba(184,134,11,.3);
+    box-shadow: none;
+  }
+
+  .checkbox-label input[type="checkbox"]:not(:checked) + .checkmark::after {
+    content: '';
   }
 
   /* Accommodation Text Styling */
@@ -377,7 +486,8 @@
                   data-level-id="{{ $room->level_id }}"
                   data-status="{{ $room->status }}"
                   data-type="{{ $room->type }}"
-                  data-accommodations="{{ $room->accommodations->pluck('id')->implode(',') }}"
+                  data-accommodations="{{ $room->accommodationsWithTrashed()->whereNull('room_accommodations.deleted_at')->pluck('accommodations.id')->implode(',') }}"
+                  data-all-accommodations="{{ $room->accommodationsWithTrashed->pluck('accommodations.id')->implode(',') }}"
                   data-created="{{ $room->created_at }}">
                 <td data-label="Room No.">{{ $room->room }}</td>
                 <td data-label="Level">{{ $room->level->description }}</td>
@@ -421,7 +531,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Room Number</label>
-          <input type="text" name="room" class="form-input" placeholder="e.g., 101, A1, Suite 1" required>
+          <input type="text" name="room" class="form-input" placeholder="e.g., 101" pattern="[0-9]+" title="Only numbers are allowed" oninput="validateNumberInput(this)" required>
           <small id="roomDuplicateMsg" class="text-danger" style="display:none;">Room number already exists!</small>
         </div>
         <div class="form-group">
@@ -442,15 +552,14 @@
         </div>
         <div class="form-group">
           <label>Type</label>
-          <input type="text" name="type" class="form-input" placeholder="e.g., Senior, Student, etc." required>
+          <input type="text" name="type" class="form-input" placeholder="e.g., Senior, Student, etc." pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
         </div>
         <div class="form-group accommodation-field">
           <label>Accommodations</label>
           <div class="accommodation-selection">
             @foreach($accommodations as $accommodation)
-              <label class="checkbox-label">
-                <input type="checkbox" name="accommodations[]" value="{{ $accommodation->id }}">
-                <span class="checkmark"></span>
+              <label class="accommodation-item" style="display: block; margin-bottom: 12px; cursor: pointer;">
+                <input type="checkbox" name="accommodations[]" value="{{ $accommodation->id }}" class="accommodation-checkbox" style="margin-right: 10px;">
                 <span class="accommodation-text">
                   {{ $accommodation->name }}
                   @if($accommodation->capacity)
@@ -486,7 +595,7 @@
       <div class="form-grid">
         <div class="form-group">
           <label>Room Number</label>
-          <input name="room" id="u_room" class="form-input" required>
+          <input name="room" id="u_room" class="form-input" pattern="[0-9]+" title="Only numbers are allowed" oninput="validateNumberInput(this)" required>
         </div>
         <div class="form-group">
           <label>Level</label>
@@ -507,15 +616,14 @@
         </div>
         <div class="form-group">
           <label>Type</label>
-          <input type="text" name="type" id="u_type" class="form-input" required>
+          <input type="text" name="type" id="u_type" class="form-input" pattern="[A-Za-z\s]+" title="Only letters and spaces are allowed" oninput="validateTextInput(this)" required>
         </div>
         <div class="form-group accommodation-field">
           <label>Accommodations</label>
           <div class="accommodation-selection" id="updateAccommodations">
             @foreach($accommodations as $accommodation)
-              <label class="checkbox-label">
-                <input type="checkbox" name="accommodations[]" value="{{ $accommodation->id }}" class="accommodation-checkbox">
-                <span class="checkmark"></span>
+              <label class="accommodation-item" style="display: block; margin-bottom: 12px; cursor: pointer;">
+                <input type="checkbox" name="accommodations[]" value="{{ $accommodation->id }}" class="accommodation-checkbox" style="margin-right: 10px;">
                 <span class="accommodation-text">
                   {{ $accommodation->name }}
                   @if($accommodation->capacity)
@@ -664,6 +772,9 @@
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      
+      // Re-attach event listeners for edit and delete buttons after rendering
+      attachButtonEventListeners();
     }
 
     function renderPagination(){
@@ -736,6 +847,13 @@
 
     attachPaginationHandler();
     applySearch();
+    
+    // Attach initial event listeners
+    attachButtonEventListeners();
+    
+    // Fix accommodation checkbox functionality
+    fixAccommodationCheckboxes();
+    console.log('Initial accommodation checkboxes setup completed');
 
     var modal = document.getElementById('roomModal');
     var openBtn = document.getElementById('openAddAdmin');
@@ -775,8 +893,26 @@
           return;
         }
 
-        if (confirm('Are you sure you want to add Room "' + room + '" (status: ' + status + ', type: ' + type + ')?')) {
+        // Get selected accommodations
+        var selectedAccommodations = [];
+        document.querySelectorAll('.accommodation-selection input[type="checkbox"]:checked').forEach(function(cb) {
+          selectedAccommodations.push(cb.value);
+        });
+        
+        console.log('Selected accommodations for add room:', selectedAccommodations);
+
+        // Remove unchecked checkboxes from form data to prevent empty values
+        document.querySelectorAll('.accommodation-selection input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+          cb.disabled = true;
+        });
+
+        if (confirm('Are you sure you want to add Room "' + room + '" (status: ' + status + ', type: ' + type + ') with ' + selectedAccommodations.length + ' accommodations?')) {
           this.submit();
+        } else {
+          // Re-enable checkboxes if user cancels
+          document.querySelectorAll('.accommodation-selection input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+            cb.disabled = false;
+          });
         }
       });
     }
@@ -818,8 +954,27 @@
         var room = document.getElementById('u_room').value;
         var status = document.getElementById('u_status').value;
         var type = document.getElementById('u_type').value;
-        if (confirm('Update room to "' + room + '" with status ' + status + ' and type ' + type + '?')) {
+        
+        // Get selected accommodations
+        var selectedAccommodations = [];
+        document.querySelectorAll('#updateAccommodations input[type="checkbox"]:checked').forEach(function(cb) {
+          selectedAccommodations.push(cb.value);
+        });
+        
+        console.log('Selected accommodations for update room:', selectedAccommodations);
+        
+        // Remove unchecked checkboxes from form data to prevent empty values
+        document.querySelectorAll('#updateAccommodations input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+          cb.disabled = true;
+        });
+        
+        if (confirm('Update room to "' + room + '" with status ' + status + ' and type ' + type + ' with ' + selectedAccommodations.length + ' accommodations?')) {
           this.submit();
+        } else {
+          // Re-enable checkboxes if user cancels
+          document.querySelectorAll('#updateAccommodations input[type="checkbox"]:not(:checked)').forEach(function(cb) {
+            cb.disabled = false;
+          });
         }
       });
     }
@@ -836,33 +991,114 @@
       }
     });
 
-    // Hook update buttons
-    document.querySelectorAll('[data-update]').forEach(function(btn){
-      btn.addEventListener('click', function(e){
-        e.stopPropagation();
-        var row = this.closest('tr');
-        var d = row ? row.dataset : {};
-
-        // Pre-fill fields
-        document.getElementById('u_room').value = d.room || '';
-        document.getElementById('u_level_id').value = d.levelId || '';
-        document.getElementById('u_status').value = d.status || '';
-        document.getElementById('u_status_hidden').value = d.status || '';
-        document.getElementById('u_type').value = d.type || '';
-
-        // Handle accommodations
-        var accommodationIds = d.accommodations ? d.accommodations.split(',') : [];
-        document.querySelectorAll('#updateAccommodations input[type="checkbox"]').forEach(function(checkbox) {
-          checkbox.checked = accommodationIds.includes(checkbox.value);
-        });
-
-        // Point form action to update route
-        var roomId = this.getAttribute('data-room-id');
-        updateForm.setAttribute('action', '/adminPages/rooms/update/' + roomId);
-
-        openUpdateModal();
+    // Function to attach event listeners for edit and delete buttons
+    function attachButtonEventListeners() {
+      // Hook update buttons
+      document.querySelectorAll('[data-update]').forEach(function(btn){
+        // Remove existing listeners to prevent duplicates
+        btn.removeEventListener('click', handleUpdateClick);
+        btn.addEventListener('click', handleUpdateClick);
       });
-    });
+      
+      // Hook archive buttons
+      document.querySelectorAll('[data-archive]').forEach(function(btn){
+        // Remove existing listeners to prevent duplicates
+        btn.removeEventListener('click', handleArchiveClick);
+        btn.addEventListener('click', handleArchiveClick);
+      });
+    }
+    
+    // Update button click handler
+    function handleUpdateClick(e) {
+      e.stopPropagation();
+      var row = this.closest('tr');
+      var d = row ? row.dataset : {};
+
+      // Pre-fill fields
+      document.getElementById('u_room').value = d.room || '';
+      document.getElementById('u_level_id').value = d.levelId || '';
+      document.getElementById('u_status').value = d.status || '';
+      document.getElementById('u_status_hidden').value = d.status || '';
+      document.getElementById('u_type').value = d.type || '';
+
+      // Handle accommodations
+      var activeAccommodationIds = d.accommodations ? d.accommodations.split(',') : [];
+      var allAccommodationIds = d.allAccommodations ? d.allAccommodations.split(',') : [];
+      console.log('Active accommodation IDs:', activeAccommodationIds);
+      console.log('All accommodation IDs (including soft-deleted):', allAccommodationIds);
+      
+      document.querySelectorAll('#updateAccommodations input[type="checkbox"]').forEach(function(checkbox) {
+        var isChecked = activeAccommodationIds.includes(checkbox.value);
+        var isInAllList = allAccommodationIds.includes(checkbox.value);
+        
+        // Only set checked if it's in the active list
+        checkbox.checked = isChecked;
+        
+        console.log('Checkbox', checkbox.value, '- Active:', isChecked, '- In All List:', isInAllList, '- Final State:', checkbox.checked);
+        
+        // Ensure checkbox is visible and clickable
+        checkbox.style.opacity = '1';
+        checkbox.style.visibility = 'visible';
+        checkbox.style.display = 'inline-block';
+        checkbox.style.pointerEvents = 'auto';
+      });
+
+      // Point form action to update route
+      var roomId = this.getAttribute('data-room-id');
+      updateForm.setAttribute('action', '/adminPages/rooms/update/' + roomId);
+
+      openUpdateModal();
+      
+      // Fix checkbox functionality in update modal
+      setTimeout(function() {
+        fixAccommodationCheckboxes();
+        console.log('Accommodation checkboxes fixed for update modal');
+      }, 100);
+    }
+    
+    // Archive button click handler
+    function handleArchiveClick(e) {
+      e.stopPropagation();
+      var roomId = this.getAttribute('data-room-id');
+      var roomNumber = this.closest('tr').querySelector('td[data-label="Room No."]').textContent;
+      
+      if (confirm('Are you sure you want to archive room ' + roomNumber + '?')) {
+        // Create and submit form for archiving
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/adminPages/rooms/archive/' + roomId;
+        
+        var csrfToken = document.createElement('input');
+        csrfToken.type = 'hidden';
+        csrfToken.name = '_token';
+        csrfToken.value = '{{ csrf_token() }}';
+        
+        form.appendChild(csrfToken);
+        document.body.appendChild(form);
+        form.submit();
+      }
+    }
+    
+    // Fix accommodation checkbox functionality - SIMPLE APPROACH
+    function fixAccommodationCheckboxes() {
+      console.log('Setting up accommodation checkboxes...');
+      
+      // Get all accommodation checkboxes
+      var checkboxes = document.querySelectorAll('#updateAccommodations .accommodation-checkbox');
+      console.log('Found', checkboxes.length, 'accommodation checkboxes');
+      
+      // Ensure checkboxes are clickable
+      checkboxes.forEach(function(checkbox, index) {
+        // Ensure maximum clickability
+        checkbox.style.pointerEvents = 'auto';
+        checkbox.style.cursor = 'pointer';
+        checkbox.style.opacity = '1';
+        checkbox.style.visibility = 'visible';
+        checkbox.style.display = 'inline-block';
+      });
+      
+      console.log('Accommodation checkboxes setup complete!');
+    }
 
     // Room details modal functionality
     var roomDetailsModal = document.getElementById('roomDetailsModal');
@@ -989,7 +1225,20 @@
       });
     });
   })();
-</script>
+  </script>
+
+  <script>
+    // Input validation functions
+    function validateTextInput(input) {
+      // Remove any numbers or special characters (keep only letters and spaces)
+      input.value = input.value.replace(/[^A-Za-z\s]/g, '');
+    }
+
+    function validateNumberInput(input) {
+      // Remove any non-numeric characters
+      input.value = input.value.replace(/[^0-9]/g, '');
+    }
+  </script>
 
 @endsection
 

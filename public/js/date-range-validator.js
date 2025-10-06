@@ -5,6 +5,9 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Add CSS styles for date validation
+    addDateValidationStyles();
+    
     // Find all forms with date range inputs
     const forms = document.querySelectorAll('form');
     
@@ -17,6 +20,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+function addDateValidationStyles() {
+    // Add CSS styles for date validation if they don't exist
+    if (!document.getElementById('date-validation-styles')) {
+        const style = document.createElement('style');
+        style.id = 'date-validation-styles';
+        style.textContent = `
+            .date-error {
+                border-color: #dc3545 !important;
+                box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+            }
+            .date-error-message {
+                color: #dc3545;
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+                display: block;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
 
 function setupDateRangeValidation(fromInput, toInput) {
     // Set initial constraints
@@ -38,10 +62,17 @@ function setupDateRangeValidation(fromInput, toInput) {
 
 function updateDateConstraints(fromInput, toInput) {
     const fromValue = fromInput.value;
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
+    
+    // Set maximum date for "from" input to be today (no future dates)
+    fromInput.max = today;
     
     if (fromValue) {
         // Set minimum date for "to" input to be the selected "from" date
         toInput.min = fromValue;
+        
+        // Set maximum date for "to" input to be today (no future dates)
+        toInput.max = today;
         
         // If current "to" value is less than "from" value, clear it
         if (toInput.value && toInput.value < fromValue) {
@@ -50,12 +81,15 @@ function updateDateConstraints(fromInput, toInput) {
     } else {
         // Remove minimum constraint if no "from" date is selected
         toInput.removeAttribute('min');
+        // Set maximum date for "to" input to be today (no future dates)
+        toInput.max = today;
     }
 }
 
 function validateDateRange(fromInput, toInput) {
     const fromValue = fromInput.value;
     const toValue = toInput.value;
+    const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
     
     // Remove any existing error styling
     fromInput.classList.remove('date-error');
@@ -63,6 +97,21 @@ function validateDateRange(fromInput, toInput) {
     removeErrorMessage(fromInput.parentElement);
     removeErrorMessage(toInput.parentElement);
     
+    // Check if from date is in the future
+    if (fromValue && fromValue > today) {
+        fromInput.classList.add('date-error');
+        showErrorMessage(fromInput.parentElement, 'From date cannot be in the future');
+        return false;
+    }
+    
+    // Check if to date is in the future
+    if (toValue && toValue > today) {
+        toInput.classList.add('date-error');
+        showErrorMessage(toInput.parentElement, 'To date cannot be in the future');
+        return false;
+    }
+    
+    // Check if from date is after to date
     if (fromValue && toValue && fromValue > toValue) {
         // Add error styling
         fromInput.classList.add('date-error');
