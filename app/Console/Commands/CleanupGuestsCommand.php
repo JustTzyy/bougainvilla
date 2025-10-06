@@ -47,7 +47,7 @@ class CleanupGuestsCommand extends Command
                             $guest->id,
                             $guest->firstName . ' ' . $guest->lastName,
                             $guest->created_at->format('Y-m-d H:i:s'),
-                            $guest->created_at->diffInDays($now)
+                            round($guest->created_at->diffInDays($now))
                         ];
                     })
                 );
@@ -80,7 +80,7 @@ class CleanupGuestsCommand extends Command
                             $guest->firstName . ' ' . $guest->lastName,
                             $guest->created_at->format('Y-m-d H:i:s'),
                             $guest->deleted_at->format('Y-m-d H:i:s'),
-                            $guest->deleted_at->diffInDays($now)
+                            round($guest->deleted_at->diffInDays($now))
                         ];
                     })
                 );

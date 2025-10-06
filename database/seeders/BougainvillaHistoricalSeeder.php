@@ -29,9 +29,9 @@ class BougainvillaHistoricalSeeder extends Seeder
      */
     public function run(): void
     {
-        $startDate = Carbon::now()->subYear();
+        $startDate = Carbon::now()->subMonths(3); // Only 3 months of historical data
         
-        echo "🏨 Seeding Bougainvilla Lodge - 1 Year Historical Data\n";
+        echo "🏨 Seeding Bougainvilla Lodge - 3 Months Historical Data\n";
         echo "📅 Start Date: {$startDate->format('Y-m-d')}\n\n";
 
         $this->seedRoles();
@@ -184,11 +184,14 @@ class BougainvillaHistoricalSeeder extends Seeder
         $rates = Rate::all();
         $totalStays = 0;
         
-        // Create 200 historical bookings with 5-day gaps (today backwards)
+        // Create 200 historical bookings with 1-day gaps (today backwards, max 3 months)
         $currentDate = Carbon::now()->copy();
         for ($i = 0; $i < 200; $i++) {
-            // Go backwards with 5-day gaps from today
-            $bookingDate = $currentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            // Go backwards with 1-day gaps from today, but don't go beyond 3 months ago
+            $bookingDate = $currentDate->copy()->subDays(rand(1, 3)); // 1-3 days gap backwards
+            if ($bookingDate->lt($startDate)) {
+                break; // Stop if we've gone beyond 3 months ago
+            }
             $currentDate = $bookingDate->copy(); // Update current date for next iteration
             
             // Create guest
@@ -319,8 +322,11 @@ class BougainvillaHistoricalSeeder extends Seeder
         // Create 80 archived stays (stays that were checked out and then archived) with date gaps
         $archivedCurrentDate = Carbon::now()->copy();
         for ($i = 0; $i < 80; $i++) {
-            // Go backwards with 5-day gaps from today
-            $stayDate = $archivedCurrentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            // Go backwards with 1-day gaps from today, but don't go beyond 3 months ago
+            $stayDate = $archivedCurrentDate->copy()->subDays(rand(1, 3)); // 1-3 days gap backwards
+            if ($stayDate->lt($startDate)) {
+                break; // Stop if we've gone beyond 3 months ago
+            }
             $archivedCurrentDate = $stayDate->copy(); // Update current date for next iteration
             $archiveDate = Carbon::now(); // Archive date is current timestamp
             
@@ -436,9 +442,9 @@ class BougainvillaHistoricalSeeder extends Seeder
         $users = User::where('roleID', 2)->get();
         $now = Carbon::now();
         
-        // 1. Create guests ready for soft delete (4+ months old, not deleted)
-        for ($i = 0; $i < 15; $i++) {
-            $oldDate = $now->copy()->subMonths(rand(4, 8)); // 4-8 months old
+        // 1. Create guests ready for soft delete (2+ months old, not deleted)
+        for ($i = 0; $i < 20; $i++) {
+            $oldDate = $now->copy()->subMonths(rand(2, 3)); // 2-3 months old
             
             $guestData = $this->generateGuestData();
             $address = Address::create([
@@ -462,10 +468,10 @@ class BougainvillaHistoricalSeeder extends Seeder
             ]);
         }
 
-        // 2. Create guests ready for hard delete (soft deleted 4+ months ago)
+        // 2. Create guests ready for hard delete (soft deleted 2+ months ago)
         for ($i = 0; $i < 25; $i++) {
-            $createdDate = $now->copy()->subMonths(rand(8, 12)); // Created 8-12 months ago
-            $deletedDate = $now->copy()->subMonths(rand(4, 6));   // Soft deleted 4-6 months ago
+            $createdDate = $now->copy()->subMonths(rand(3, 4)); // Created 3-4 months ago
+            $deletedDate = $now->copy()->subMonths(rand(2, 3));   // Soft deleted 2-3 months ago
             
             $guestData = $this->generateGuestData();
             $address = Address::create([
@@ -496,8 +502,11 @@ class BougainvillaHistoricalSeeder extends Seeder
         // 3. Create recent guests (safe from cleanup) - dates from today backwards with gaps
         $recentCurrentDate = $now->copy();
         for ($i = 0; $i < 20; $i++) {
-            // Go backwards with 5-day gaps from today
-            $recentDate = $recentCurrentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            // Go backwards with 1-day gaps from today, but don't go beyond 3 months ago
+            $recentDate = $recentCurrentDate->copy()->subDays(rand(1, 3)); // 1-3 days gap backwards
+            if ($recentDate->lt($startDate)) {
+                break; // Stop if we've gone beyond 3 months ago
+            }
             $recentCurrentDate = $recentDate->copy(); // Update current date for next iteration
             
             $guestData = $this->generateGuestData();
@@ -522,7 +531,7 @@ class BougainvillaHistoricalSeeder extends Seeder
             ]);
         }
         
-        echo "   ✓ 60 cleanup test guests created (15 ready for soft delete, 25 ready for hard delete, 20 recent)\n";
+        echo "   ✓ 65 cleanup test guests created (20 ready for soft delete, 25 ready for hard delete, 20 recent)\n";
     }
 
     private function seedCurrentGuests()
@@ -534,11 +543,14 @@ class BougainvillaHistoricalSeeder extends Seeder
         $rates = Rate::all();
         $now = Carbon::now();
         
-        // Create 50 current guests with dates from today backwards with 5-day gaps
+        // Create 50 current guests with dates from today backwards with 1-day gaps
         $currentDate = $now->copy();
         for ($i = 0; $i < 50; $i++) {
-            // Go backwards with 5-day gaps from today
-            $guestDate = $currentDate->copy()->subDays(rand(5, 10)); // 5-10 days gap backwards
+            // Go backwards with 1-day gaps from today, but don't go beyond 3 months ago
+            $guestDate = $currentDate->copy()->subDays(rand(1, 3)); // 1-3 days gap backwards
+            if ($guestDate->lt($startDate)) {
+                break; // Stop if we've gone beyond 3 months ago
+            }
             $currentDate = $guestDate->copy(); // Update current date for next iteration
             
             $guestData = $this->generateGuestData();

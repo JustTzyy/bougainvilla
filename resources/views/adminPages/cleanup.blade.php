@@ -300,7 +300,7 @@
                             <td>{{ $guest->created_at->format('M d, Y') }}</td>
                             <td>
                                 <span class="age-badge warning">
-                                    {{ $guest->created_at->diffInDays(now()) }} days
+                                    {{ round($guest->created_at->diffInDays(now())) }} days
                                 </span>
                             </td>
                             <td>
@@ -357,7 +357,7 @@
                             <td>{{ $guest->deleted_at->format('M d, Y') }}</td>
                             <td>
                                 <span class="age-badge danger">
-                                    {{ $guest->deleted_at->diffInDays(now()) }} days
+                                    {{ round($guest->deleted_at->diffInDays(now())) }} days
                                 </span>
                             </td>
                             <td>
