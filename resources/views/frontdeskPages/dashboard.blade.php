@@ -380,6 +380,7 @@
     pageItems.forEach(function(r){
       tbody.appendChild(r.element);
     });
+    alignFrontdeskDailyTable();
   }
 
   function renderPagination(){
@@ -447,6 +448,26 @@
         renderPagination();
       }
     });
+  }
+
+  // Auto-align table cells: numbers right, text left
+  function isNumericValue(text){
+    if (text == null) return false;
+    var t = String(text).trim().replace(/[\s,]/g, '');
+    if (t === '') return false;
+    t = t.replace(/^[-₱$€¥£]/, '');
+    return !isNaN(t) && isFinite(t);
+  }
+  function alignFrontdeskDailyTable(){
+    try {
+      var tbody = document.getElementById('dailyRows');
+      Array.prototype.forEach.call(tbody.rows, function(row){
+        Array.prototype.forEach.call(row.cells, function(cell){
+          var text = (cell.textContent||'').trim();
+          cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+        });
+      });
+    } catch(e) { /* noop */ }
   }
 
   async function load(){

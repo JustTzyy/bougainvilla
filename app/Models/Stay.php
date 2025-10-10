@@ -14,6 +14,9 @@ class Stay extends Model
         'checkIn',
         'checkOut',
         'status',
+        'penalty_amount',
+        'penalty_reason',
+        'assigned_cleaner_id',
         'rateID',
         'roomID'
     ];
@@ -60,5 +63,10 @@ class Stay extends Model
     public function payments()
     {
         return $this->hasMany(Payment::class, 'stayID');
+    }
+
+    public function assignedCleaner()
+    {
+        return $this->belongsTo(User::class, 'assigned_cleaner_id');
     }
 }

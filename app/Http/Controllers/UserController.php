@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UserRequest;
 use App\Models\Address;
 use App\Models\History;
+use App\Models\PermissionRequest;
 use Exception;
 use Hash;
 use Illuminate\Database\QueryException;
@@ -41,6 +42,24 @@ class UserController extends Controller
 
             $users = $query->paginate(10);
             return view('adminPages.frontdeskrecords', compact('users'));
+
+
+        } catch (\Exception $e) {
+
+            return redirect()->back()->with('error', 'Failed to load users: ' . $e->getMessage());
+
+
+        }
+
+    }
+
+    public function cleaner(Request $request)
+    {
+        try {
+            $query = User::query()->where('roleID', 3);
+
+            $users = $query->paginate(10);
+            return view('adminPages.cleanerrecords', compact('users'));
 
 
         } catch (\Exception $e) {
@@ -97,7 +116,16 @@ class UserController extends Controller
 
             ]);
 
-            return redirect()->back()->with('success', 'User added successfully!');
+            // Redirect based on role
+            if ($request->roleID == 1) {
+                return redirect()->route('adminPages.adminrecords')->with('success', 'Admin created successfully!');
+            } elseif ($request->roleID == 2) {
+                return redirect()->route('adminPages.frontdeskrecords')->with('success', 'Front desk user created successfully!');
+            } elseif ($request->roleID == 3) {
+                return redirect()->route('adminPages.cleanerrecords')->with('success', 'Cleaner created successfully!');
+            } else {
+                return redirect()->back()->with('success', 'User added successfully!');
+            }
 
         } catch (QueryException $e) {
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
@@ -156,7 +184,16 @@ class UserController extends Controller
                 'userID' => $user->id,
 
             ]);
-            return redirect()->back()->with('success', 'User and address updated successfully!');
+            // Redirect based on user role
+            if ($user->roleID == 1) {
+                return redirect()->route('adminPages.adminrecords')->with('success', 'Admin updated successfully!');
+            } elseif ($user->roleID == 2) {
+                return redirect()->route('adminPages.frontdeskrecords')->with('success', 'Front desk user updated successfully!');
+            } elseif ($user->roleID == 3) {
+                return redirect()->route('adminPages.cleanerrecords')->with('success', 'Cleaner updated successfully!');
+            } else {
+                return redirect()->back()->with('success', 'User and address updated successfully!');
+            }
 
 
         } catch (QueryException $e) {
@@ -188,7 +225,16 @@ class UserController extends Controller
                 'userID' => $user->id,
             ]);
 
-            return redirect()->back()->with('success', 'User deleted successfully!');
+            // Redirect based on user role
+            if ($user->roleID == 1) {
+                return redirect()->route('adminPages.adminrecords')->with('success', 'Admin archived successfully!');
+            } elseif ($user->roleID == 2) {
+                return redirect()->route('adminPages.frontdeskrecords')->with('success', 'Front desk user archived successfully!');
+            } elseif ($user->roleID == 3) {
+                return redirect()->route('adminPages.cleanerrecords')->with('success', 'Cleaner archived successfully!');
+            } else {
+                return redirect()->back()->with('success', 'User deleted successfully!');
+            }
         } catch (QueryException $e) {
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
         } catch (Exception $e) {
@@ -219,7 +265,16 @@ class UserController extends Controller
                 'userID' => $user->id,
             ]);
 
-            return redirect()->back()->with('success', 'User restored successfully!');
+            // Redirect based on user role
+            if ($user->roleID == 1) {
+                return redirect()->route('adminPages.adminrecords')->with('success', 'Admin restored successfully!');
+            } elseif ($user->roleID == 2) {
+                return redirect()->route('adminPages.frontdeskrecords')->with('success', 'Front desk user restored successfully!');
+            } elseif ($user->roleID == 3) {
+                return redirect()->route('adminPages.cleanerrecords')->with('success', 'Cleaner restored successfully!');
+            } else {
+                return redirect()->back()->with('success', 'User restored successfully!');
+            }
         } catch (QueryException $e) {
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
         } catch (Exception $e) {
@@ -258,6 +313,41 @@ class UserController extends Controller
         }
     }
 
+    public function archivedCleaners(Request $request)
+    {
+        try {
+            $users = User::onlyTrashed()
+                ->where('roleID', 3)
+                ->orderByDesc('deleted_at')
+                ->get();
+
+            return view('adminPages.archivecleanerrecords', compact('users'));
+        } catch (Exception $e) {
+            return redirect()->back()->with('error', 'Failed to load archived users: ' . $e->getMessage());
+        }
+    }
+
+    public function getCleanersList(Request $request)
+    {
+        try {
+            $cleaners = User::where('roleID', 3)
+                ->where('status', 'Active')
+                ->select('id', 'name')
+                ->orderBy('name')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'cleaners' => $cleaners
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load cleaners: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     // Settings Methods
     public function updatePersonal(Request $request)
     {
@@ -293,7 +383,57 @@ class UserController extends Controller
 
             $user = Auth::user();
             
-            // Update personal information only if not address-only update
+            // Check if user is front desk (roleID = 2) and not address-only update
+            if ($user->roleID == 2 && !$isAddressOnly) {
+                // Create permission request for front desk users
+                $currentData = [
+                    'firstName' => $user->firstName,
+                    'lastName' => $user->lastName,
+                    'middleName' => $user->middleName,
+                    'contactNumber' => $user->contactNumber,
+                    'birthday' => $user->birthday,
+                    'sex' => $user->sex,
+                ];
+                
+                $requestData = [
+                    'firstName' => $request->firstName,
+                    'lastName' => $request->lastName,
+                    'middleName' => $request->middleName,
+                    'contactNumber' => $request->contactNumber,
+                    'birthday' => $request->birthday,
+                    'sex' => $request->sex,
+                ];
+                
+                // Add address data if provided
+                if ($request->has('street') && $request->has('province') && $request->has('city') && $request->has('zipcode')) {
+                    $address = Address::where('userID', $user->id)->first();
+                    $currentData['address'] = $address ? [
+                        'street' => $address->street,
+                        'city' => $address->city,
+                        'province' => $address->province,
+                        'zipcode' => $address->zipcode,
+                    ] : null;
+                    
+                    $requestData['address'] = [
+                        'street' => $request->street,
+                        'city' => $request->city,
+                        'province' => $request->province,
+                        'zipcode' => $request->zipcode,
+                    ];
+                }
+                
+                PermissionRequest::create([
+                    'user_id' => $user->id,
+                    'request_type' => PermissionRequest::TYPE_PERSONAL_INFO,
+                    'request_data' => $requestData,
+                    'current_data' => $currentData,
+                    'status' => PermissionRequest::STATUS_PENDING,
+                ]);
+                
+                return redirect()->route('frontdesk.settings')->with('success', 'Your request has been submitted for admin approval.');
+            }
+            
+            // For admin users or address-only updates, proceed with direct update
             if (!$isAddressOnly) {
                 // Calculate age from birthday
                 $birthday = new \DateTime($request->birthday);
@@ -347,7 +487,13 @@ class UserController extends Controller
             ]);
 
             $message = $isAddressOnly ? 'Address updated successfully!' : 'Information updated successfully!';
-            return redirect()->route('adminPages.settings')->with('success', $message);
+            
+            // Redirect based on user role
+            if ($user->roleID == 1) {
+                return redirect()->route('adminPages.settings')->with('success', $message);
+            } else {
+                return redirect()->route('frontdesk.settings')->with('success', $message);
+            }
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to update information: ' . $e->getMessage())->withInput();
         }
@@ -362,6 +508,22 @@ class UserController extends Controller
             ]);
 
             $user = Auth::user();
+            
+            // Check if user is front desk (roleID = 2)
+            if ($user->roleID == 2) {
+                // Create permission request for front desk users
+                PermissionRequest::create([
+                    'user_id' => $user->id,
+                    'request_type' => PermissionRequest::TYPE_EMAIL,
+                    'request_data' => ['email' => $request->email],
+                    'current_data' => ['email' => $user->email],
+                    'status' => PermissionRequest::STATUS_PENDING,
+                ]);
+                
+                return redirect()->route('frontdesk.settings')->with('success', 'Your email change request has been submitted for admin approval.');
+            }
+            
+            // For admin users, proceed with direct update
             $user->update([
                 'email' => $request->email,
             ]);
@@ -372,7 +534,12 @@ class UserController extends Controller
                 'userID' => Auth::id(),
             ]);
 
-            return redirect()->route('adminPages.settings')->with('success', 'Email updated successfully!');
+            // Redirect based on user role
+            if ($user->roleID == 1) {
+                return redirect()->route('adminPages.settings')->with('success', 'Email updated successfully!');
+            } else {
+                return redirect()->route('frontdesk.settings')->with('success', 'Email updated successfully!');
+            }
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to update email: ' . $e->getMessage())->withInput();
         }
@@ -411,7 +578,13 @@ class UserController extends Controller
                 'userID' => Auth::id(),
             ]);
 
-            return redirect()->route('adminPages.settings')->with('success', 'Password updated successfully!');
+            // Redirect based on user role
+            $user = Auth::user();
+            if ($user->roleID == 1) {
+                return redirect()->route('adminPages.settings')->with('success', 'Password updated successfully!');
+            } else {
+                return redirect()->route('frontdesk.settings')->with('success', 'Password updated successfully!');
+            }
         } catch (Exception $e) {
             return redirect()->back()->with('error', 'Failed to update password: ' . $e->getMessage())->withInput();
         }

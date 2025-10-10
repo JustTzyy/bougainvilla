@@ -107,6 +107,7 @@
         border-collapse: collapse;
         width: 100%;
         font-size: 12px;
+        margin-top: 20px;
       }
       .table th, .table td {
         border: 1px solid #ddd;
@@ -117,10 +118,28 @@
         background-color: #f5f5f5;
         font-weight: bold;
       }
+      .report-header {
+        page-break-after: avoid;
+      }
+      .sales-summary {
+        page-break-after: avoid;
+        background: #f8f9fa !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .sales-summary h3 {
+        color: #333 !important;
+      }
+      .sales-summary > div > div {
+        background: white !important;
+        border: 1px solid #e9ecef !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
     }
   </style>
 
-  <div class="kpi-grid no-print" style="display:grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:12px;">
+  <div class="kpi-grid no-print" style="display:none; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:12px;">
     <div class="chart-card" style="padding:12px; border-left:3px solid var(--purple-primary);">
       <div class="section-header-pad" style="padding:0 0 6px 0; display:flex; align-items:center; gap:8px;">
         <i class="fas fa-receipt" style="color:var(--purple-primary);"></i>
@@ -158,7 +177,7 @@
     </div>
   </div>
 
-  <div class="chart-card card-tight no-print" style="margin-bottom:12px;">
+  <div class="chart-card card-tight no-print" style="margin-bottom:12px; display:none;">
     <div class="section-header-pad" style="display:flex; align-items:center; gap:8px;">
       <i class="fas fa-chart-area" style="color:var(--purple-primary);"></i>
       <h3 class="chart-title" style="margin:0;">Daily Payments Total</h3>
@@ -169,6 +188,41 @@
   </div>
 
   <div class="printable-content">
+    <!-- Report Header for Print -->
+    <div class="report-header" style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+      <h1 style="margin: 0; font-size: 24px; color: #333;">Payments Report</h1>
+      <p style="margin: 5px 0; color: #666; font-size: 14px;">
+        Generated on: <span id="reportDate"></span> | 
+        Period: <span id="reportPeriod"></span>
+      </p>
+    </div>
+
+    <!-- Total Sales Summary for Print -->
+    <div class="sales-summary" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+      <h3 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">Sales Summary</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Payments</div>
+          <div id="printTotalCount" style="font-size: 20px; font-weight: bold; color: #333;">0</div>
+        </div>
+        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Subtotal</div>
+          <div id="printTotalSubtotal" style="font-size: 20px; font-weight: bold; color: #333;">₱0.00</div>
+        </div>
+        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Tax</div>
+          <div id="printTotalTax" style="font-size: 20px; font-weight: bold; color: #333;">₱0.00</div>
+        </div>
+        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Amount</div>
+          <div id="printTotalAmount" style="font-size: 20px; font-weight: bold; color: #27ae60;">₱0.00</div>
+        </div>
+        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+          <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Average per Payment</div>
+          <div id="printAverage" style="font-size: 20px; font-weight: bold; color: #333;">₱0.00</div>
+        </div>
+      </div>
+    </div>
 
   <div class="records-toolbar" style="margin-bottom: 12px;">
     <div class="search-container admin-search">
@@ -262,7 +316,28 @@
                        '<td>'+fmtDate(r.created_at)+'</td>';
         tbody.appendChild(tr);
       });
+      alignPaymentsTable();
     }
+  }
+
+  // Auto-align table cells: numbers right, text left
+  function isNumericValue(text){
+    if (text == null) return false;
+    var t = String(text).trim().replace(/[\s,]/g, '');
+    if (t === '') return false;
+    t = t.replace(/^[-₱$€¥£]/, '');
+    return !isNaN(t) && isFinite(t);
+  }
+  function alignPaymentsTable(){
+    try {
+      var tbody = document.getElementById('paymentsTable').getElementsByTagName('tbody')[0];
+      Array.prototype.forEach.call(tbody.rows, function(row){
+        Array.prototype.forEach.call(row.cells, function(cell){
+          var text = (cell.textContent||'').trim();
+          cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+        });
+      });
+    } catch(e) { /* noop */ }
   }
 
   function renderKpis(){
@@ -276,6 +351,23 @@
     document.getElementById('kpiTax').textContent = peso(tax);
     document.getElementById('kpiTotal').textContent = peso(total);
     document.getElementById('kpiAvg').textContent = peso(avg);
+    
+    // Update print summary
+    updatePrintSummary(count, subtotal, tax, total, avg);
+  }
+
+  function updatePrintSummary(count, subtotal, tax, total, avg) {
+    document.getElementById('printTotalCount').textContent = count.toLocaleString();
+    document.getElementById('printTotalSubtotal').textContent = peso(subtotal);
+    document.getElementById('printTotalTax').textContent = peso(tax);
+    document.getElementById('printTotalAmount').textContent = peso(total);
+    document.getElementById('printAverage').textContent = peso(avg);
+    
+    // Update report date and period
+    document.getElementById('reportDate').textContent = new Date().toLocaleDateString();
+    var from = document.getElementById('from').value;
+    var to = document.getElementById('to').value;
+    document.getElementById('reportPeriod').textContent = from + ' to ' + to;
   }
 
   function renderDailyChart(){

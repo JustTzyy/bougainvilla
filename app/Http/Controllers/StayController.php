@@ -128,7 +128,10 @@ class StayController extends Controller
                 'guests.*.address.province' => 'required|string|max:255',
                 'guests.*.address.zipcode' => 'required|string|max:10',
                 'payment_amount' => 'required|numeric|min:0|max:999999.99',
-                'payment_change' => 'required|numeric|min:0|max:999999.99'
+                'payment_change' => 'required|numeric|min:0|max:999999.99',
+                'penalty_amount' => 'nullable|numeric|min:0|max:999999.99',
+                'penalty_reason' => 'nullable|string|max:1000',
+                'assigned_cleaner_id' => 'nullable|exists:users,id'
             ]);
 
             DB::beginTransaction();
@@ -156,9 +159,8 @@ class StayController extends Controller
             
             // Calculate amounts
             $subtotal = $rate->price * count($request->guests);
-            $taxRate = 0.12;
-            $tax = $subtotal * $taxRate;
-            $total = $subtotal + $tax;
+            $penaltyAmount = $request->penalty_amount ?? 0;
+            $total = $subtotal + $penaltyAmount;
 
             // Debug: Log the rate being used
             \Log::info('Creating stay with rate:', [
@@ -174,6 +176,9 @@ class StayController extends Controller
                 'checkIn' => now(),
                 'checkOut' => now()->addHours($this->parseDurationToHours($rate->duration)),
                 'status' => Stay::STATUS_STANDARD,
+                'penalty_amount' => $request->penalty_amount,
+                'penalty_reason' => $request->penalty_reason,
+                'assigned_cleaner_id' => $request->assigned_cleaner_id,
                 'rateID' => $rate->id,
                 'roomID' => $room->id
             ]);
@@ -212,7 +217,7 @@ class StayController extends Controller
             // Create payment
             $payment = Payment::create([
                 'amount' => $total,
-                'tax' => $tax,
+                'tax' => 0, // No tax calculation for penalty system
                 'subtotal' => $subtotal,
                 'status' => 'Completed',
                 'change' => $request->payment_change,
@@ -264,14 +269,23 @@ class StayController extends Controller
     public function endStay(Request $request, $id)
     {
         try {
+            // Accept optional cleaner and penalty info when timing out
+            $request->validate([
+                'assigned_cleaner_id' => 'nullable|exists:users,id',
+                'penalty_amount' => 'nullable|numeric|min:0|max:999999.99',
+                'penalty_reason' => 'nullable|string|max:1000',
+            ]);
             $stay = Stay::findOrFail($id);
             $room = $stay->room;
 
             DB::beginTransaction();
 
-            // Update stay status - keep current status but update checkout time
+            // Update stay checkout and optional fields
             $stay->update([
-                'checkOut' => now()
+                'checkOut' => now(),
+                'assigned_cleaner_id' => $request->assigned_cleaner_id,
+                'penalty_amount' => $request->penalty_amount,
+                'penalty_reason' => $request->penalty_reason,
             ]);
 
             // Update room status to Cleaning (needs cleaning after checkout)
@@ -834,10 +848,20 @@ class StayController extends Controller
 
             if ($stay) {
                 // This is a Stay record (archived transactions)
+                $cleanerName = null;
+                if ($stay->assigned_cleaner_id) {
+                    $cleaner = \App\Models\User::withTrashed()->find($stay->assigned_cleaner_id);
+                    if ($cleaner) {
+                        $cleanerName = $cleaner->name ?? trim(($cleaner->firstName.' '.($cleaner->middleName ? $cleaner->middleName.' ' : '').$cleaner->lastName));
+                    }
+                }
                 $transaction = [
                     'room' => $stay->room ? $stay->room->room : 'N/A',
                     'accommodation' => $this->getAccommodationNameWithTrashed($stay->rate),
-                    'amount' => $stay->payments->sum('amount')
+                    'amount' => $stay->payments->sum('amount'),
+                    'cleaner_name' => $cleanerName,
+                    'penalty_amount' => $stay->penalty_amount,
+                    'penalty_reason' => $stay->penalty_reason
                 ];
 
                 // Get guest details - include soft-deleted guests through pivot table
@@ -894,12 +918,21 @@ class StayController extends Controller
             }
 
             // Get transaction details from Receipt
+            $txStay = $receipt->payment ? $receipt->payment->stay : null;
+            $cleanerName = null;
+            if ($txStay && $txStay->assigned_cleaner_id) {
+                $cleaner = \App\Models\User::withTrashed()->find($txStay->assigned_cleaner_id);
+                if ($cleaner) {
+                    $cleanerName = $cleaner->name ?? trim(($cleaner->firstName.' '.($cleaner->middleName ? $cleaner->middleName.' ' : '').$cleaner->lastName));
+                }
+            }
             $transaction = [
-                'room' => $receipt->payment && $receipt->payment->stay && $receipt->payment->stay->room 
-                    ? $receipt->payment->stay->room->room 
-                    : 'N/A',
-                'accommodation' => $this->getAccommodationNameWithTrashed($receipt->payment->stay->rate),
-                'amount' => $receipt->payment ? $receipt->payment->amount : 0
+                'room' => $txStay && $txStay->room ? $txStay->room->room : 'N/A',
+                'accommodation' => $txStay ? $this->getAccommodationNameWithTrashed($txStay->rate) : 'N/A',
+                'amount' => $receipt->payment ? $receipt->payment->amount : 0,
+                'cleaner_name' => $cleanerName,
+                'penalty_amount' => $txStay ? $txStay->penalty_amount : null,
+                'penalty_reason' => $txStay ? $txStay->penalty_reason : null
             ];
 
                 // Get guest details - include soft-deleted guests through pivot table

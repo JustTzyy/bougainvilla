@@ -544,6 +544,7 @@
       currentPage = 1;
       renderTable();
       renderPagination();
+      alignTableCells();
     }
 
     function renderTable(){
@@ -555,6 +556,7 @@
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      alignTableCells();
     }
 
     function renderPagination(){
@@ -616,7 +618,7 @@
         var btn = e.target.closest('button[data-page]');
         if (!btn) return;
         var p = parseInt(btn.getAttribute('data-page'));
-        if (p && p !== currentPage) { currentPage = p; renderTable(); renderPagination(); }
+        if (p && p !== currentPage) { currentPage = p; renderTable(); renderPagination(); alignTableCells(); }
       });
     }
 
@@ -627,6 +629,26 @@
     var search = document.getElementById('archiveSearch');
     if (search) search.addEventListener('input', applySearch);
 
+    // Auto-align table cells: numbers right, text left
+    function isNumericValue(text){
+      if (text == null) return false;
+      var t = String(text).trim().replace(/[,\s]/g, '');
+      if (t === '') return false;
+      t = t.replace(/^[-₱$€¥£]/, '');
+      return !isNaN(t) && isFinite(t);
+    }
+    function alignTableCells(){
+      try {
+        var tbody = document.getElementById('archivedTable').getElementsByTagName('tbody')[0];
+        Array.prototype.forEach.call(tbody.rows, function(row){
+          Array.prototype.forEach.call(row.cells, function(cell){
+            var text = cell.textContent || '';
+            cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+          });
+        });
+      } catch(e) {}
+    }
+
     // Checkbox/restoreSelected UI removed
 
     // User details modal functionality
@@ -635,11 +657,9 @@
     var closeUserDetailsModalBtn = document.getElementById('closeUserDetailsModal');
     
     function openUserDetailsModal() { 
-      console.log('Opening modal...');
       userDetailsModal.style.display = 'flex'; 
     }
     function closeUserDetailsModal() { 
-      console.log('Closing modal...');
       userDetailsModal.style.display = 'none'; 
     }
     
@@ -648,13 +668,10 @@
 
     // User row click handler (no network; populate from data-* attributes)
     var userRows = document.querySelectorAll('.user-row');
-    console.log('Found user rows:', userRows.length);
     userRows.forEach(function(row) {
       row.addEventListener('click', function(e) {
-        console.log('Row clicked!');
         // Don't trigger if clicking on action buttons
         if (e.target.closest('button')) {
-          console.log('Clicked on button, ignoring...');
           return;
         }
         var u = this.dataset;

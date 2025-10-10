@@ -6,6 +6,11 @@
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
 <script src="{{ asset('js/ph-complete-address.js') }}"></script>
 <style>
+  /* Status color utilities */
+  .status-ok { color: #28a745; font-weight: 700; }
+  .status-warn { color: #ffc107; font-weight: 700; }
+  .status-bad { color: #dc3545; font-weight: 700; }
+  .status-info { color: #7c3aed; font-weight: 700; }
   /* Enhanced Level Details Modal Styles */
   #levelDetailsModal .modal-card {
     max-width: 600px;
@@ -384,6 +389,7 @@
       currentPage = 1;
       renderTable();
       renderPagination();
+      alignLevelsTable();
     }
 
     function renderTable(){
@@ -397,6 +403,7 @@
       
       // Re-attach event listeners for edit and delete buttons after rendering
       attachButtonEventListeners();
+      alignLevelsTable();
     }
 
     function renderPagination(){
@@ -460,6 +467,7 @@
         currentPage = parseInt(btn.getAttribute('data-page')) || 1;
         renderTable();
         renderPagination();
+        alignLevelsTable();
       });
     }
 
@@ -472,6 +480,7 @@
     
     // Attach initial event listeners
     attachButtonEventListeners();
+    alignLevelsTable();
 
     var modal = document.getElementById('levelModal');
     var openBtn = document.getElementById('openAddAdmin');
@@ -551,6 +560,34 @@
         btn.removeEventListener('click', handleArchiveClick);
         btn.addEventListener('click', handleArchiveClick);
       });
+    }
+
+    // Auto-align table cells: numbers right, text left
+    function isNumericValue(text){
+      if (text == null) return false;
+      var t = String(text).trim().replace(/[,\s]/g, '');
+      if (t === '') return false;
+      t = t.replace(/^[-₱$€¥£]/, '');
+      return !isNaN(t) && isFinite(t);
+    }
+    function alignLevelsTable(){
+      try {
+        var tbody = document.getElementById('levelsTable').getElementsByTagName('tbody')[0];
+        Array.prototype.forEach.call(tbody.rows, function(row){
+          Array.prototype.forEach.call(row.cells, function(cell){
+            var text = cell.textContent || '';
+            cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+          });
+          // Color status text (Status is column index 2)
+          var statusCell = row.cells[2];
+          if (statusCell) {
+            var v = (statusCell.textContent || '').trim().toLowerCase();
+            statusCell.classList.remove('status-ok','status-warn','status-bad','status-info');
+            if (v === 'active') statusCell.classList.add('status-ok');
+            else if (v === 'inactive') statusCell.classList.add('status-bad');
+          }
+        });
+      } catch(e) {}
     }
     
     // Update button click handler
@@ -715,7 +752,6 @@
           }
         })
         .catch(error => {
-          console.error('Error loading rooms:', error);
           roomsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(220,53,69,.1), rgba(220,53,69,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;"></i></div><h4 style="color: #dc3545; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">Error</h4><p style="font-style: italic; margin: 0; color: #dc3545; font-size: 10px;">Failed to load</p></div>';
         });
     }

@@ -366,6 +366,17 @@
   color: #6c757d;
 }
 
+  /* Selection style for Assign Cleaner modal */
+  #assignCleanerModal #cleanerList .action-btn {
+    border: 1px solid var(--border-color);
+    background: #fff;
+  }
+  #assignCleanerModal #cleanerList .action-btn.selected {
+    border: 2px solid var(--purple-primary);
+    background: rgba(237,192,1,.08);
+    box-shadow: 0 0 0 3px rgba(237,192,1,.18);
+  }
+
 /* Print Styles for Receipt */
 @media print {
   .receipt-actions {
@@ -518,32 +529,53 @@
 
             <div id="paymentSummary" class="payment-summary hidden">
                 <h3 class="section-title">Payment Summary</h3>
+                
+                <!-- Cleaner assignment moved to timeout flow -->
+
+                <!-- Penalty UI removed from payment step; penalties are handled after checkout when reported by cleaners. -->
+
+                <div class="summary-row summary-total">
+                    <span>Subtotal:</span>
+                    <span id="subtotalAmount">₱0.00</span>
+                </div>
+                <!-- No penalty line in initial transaction -->
                 <div class="summary-row summary-total">
                     <span>Total:</span>
                     <span id="totalAmount">₱0.00</span>
-</div>
+                </div>
+            </div>
 
-                <div class="payment-inputs">
+            <div class="payment-inputs hidden">
                     <div class="form-group">
                         <label class="form-label">Amount Paid</label>
                         <input type="number" class="form-input" id="amountPaid" step="0.01" min="0" max="999999.99"
                                onblur="TransactionValidator.validatePayment()" 
                                oninput="calculateChange()"
                                placeholder="Enter amount paid">
-    </div>
+                    </div>
                     <div class="form-group">
                         <label class="form-label">Change</label>
                         <input type="number" class="form-input" id="changeAmount" step="0.01" readonly>
-          </div>
-        </div>
-      </div>
+                    </div>
+                </div>
+
+            <!-- Terms and Conditions Section (kept subtle under payment) -->
+            <div class="terms-section hidden" style="margin-top: 10px;">
+                <div class="form-group">
+                    <label class="form-label" style="display:flex; align-items:center; gap:10px; margin:0;">
+                        <input type="checkbox" id="agreeTerms" required>
+                        I agree to the <a href="#" onclick="showTermsModal()" class="terms-link">Terms and Conditions</a> of the lodge
+                    </label>
+                </div>
+            </div>
+            </div>
       
             <div class="loading" id="loading">
                 <div class="spinner"></div>
                 <p>Processing...</p>
             </div>
 
-            <div style="text-align: center; margin-top: 20px;">
+            <div style="text-align: center; margin: 20px auto 28px;">
                 <button type="button" class="btn btn-primary hidden" id="proceedBtn">Proceed with Accommodation</button>
                 <button type="button" class="btn btn-success hidden" id="processPaymentBtn">Process Payment</button>
                 <button type="button" class="btn btn-danger hidden" id="deleteStayBtn">Delete Stay</button>
@@ -583,6 +615,34 @@
     </div>
   </div>
 
+  <!-- Assign Cleaner + Casualty Modal (opens after clicking Time Out) -->
+  <div id="assignCleanerModal" class="modal" style="display:none;">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3 class="chart-title">Assign Cleaner</h3>
+        <button id="closeAssignCleaner" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-form" style="padding: 16px;">
+        <div class="form-group">
+          <label class="form-label">Select Cleaner</label>
+          <div id="cleanerList" style="display:grid; grid-template-columns:1fr; gap:8px; max-height:260px; overflow:auto;"></div>
+          <small id="cleanerListHelp" style="color:#6c757d;">Choose one cleaner. List is loaded automatically.</small>
+        </div>
+        <div class="form-group" style="margin-top:8px;">
+          <label class="form-label"><input type="checkbox" id="assignHasPenalty"> Add Penalty (optional)</label>
+          <div id="assignPenaltyFields" class="hidden" style="margin-top:8px; display:grid; gap:8px;">
+            <input type="number" class="form-input" id="assignPenaltyAmount" placeholder="Penalty amount" step="0.01" min="0">
+            <textarea class="form-input" id="assignPenaltyReason" rows="3" placeholder="Reason"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="action-btn btn-outline" id="cancelAssignCleaner">Cancel</button>
+        <button type="button" class="btn-primary inline" id="confirmAssignCleaner">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Receipt Modal -->
   <div id="receiptModal" class="modal" style="display:none;">
     <div class="modal-content" style="max-width: 400px; padding: 0;">
@@ -598,7 +658,90 @@
         </button>
       </div>
     </div>
-  </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div id="termsModal" class="modal" style="display: none;">
+    <div class="modal-card" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header">
+            <h3 class="chart-title">Terms and Conditions</h3>
+            <button id="closeTermsModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="terms-content">
+                <h4>Lodge Terms and Conditions</h4>
+                
+                <h5>1. Check-in and Check-out</h5>
+                <ul>
+                    <li>Check-in time is at 2:00 PM</li>
+                    <li>Check-out time is at 12:00 PM</li>
+                    <li>Early check-in and late check-out may be subject to additional charges</li>
+                    <li>Guests must present valid identification upon check-in</li>
+                </ul>
+
+                <h5>2. Payment Terms</h5>
+                <ul>
+                    <li>Full payment is required upon check-in</li>
+                    <li>We accept cash and major credit cards</li>
+                    <li>All rates are subject to applicable taxes</li>
+                    <li>No refunds for early check-out</li>
+                </ul>
+
+                <h5>3. Room Occupancy</h5>
+                <ul>
+                    <li>Maximum occupancy per room must not be exceeded</li>
+                    <li>Additional guests may incur extra charges</li>
+                    <li>Room transfers are subject to availability and additional fees</li>
+                </ul>
+
+                <h5>4. Guest Responsibilities</h5>
+                <ul>
+                    <li>Guests are responsible for any damages to the room or property</li>
+                    <li>Smoking is prohibited in all rooms and common areas</li>
+                    <li>No pets allowed unless specifically authorized</li>
+                    <li>Quiet hours are from 10:00 PM to 7:00 AM</li>
+                    <li>Guests must respect other guests and lodge property</li>
+                </ul>
+
+                <h5>5. Lodge Policies</h5>
+                <ul>
+                    <li>The lodge reserves the right to refuse service to anyone</li>
+                    <li>Personal belongings are the responsibility of the guest</li>
+                    <li>The lodge is not liable for lost or stolen items</li>
+                    <li>Emergency procedures are posted in each room</li>
+                </ul>
+
+                <h5>6. Cancellation Policy</h5>
+                <ul>
+                    <li>Cancellations must be made 24 hours before check-in</li>
+                    <li>No-shows will be charged the full room rate</li>
+                    <li>Modifications to reservations are subject to availability</li>
+                </ul>
+
+                <h5>7. Liability</h5>
+                <ul>
+                    <li>The lodge's liability is limited to the room rate paid</li>
+                    <li>Guests use lodge facilities at their own risk</li>
+                    <li>The lodge is not responsible for weather-related issues</li>
+                </ul>
+
+                <h5>8. Penalties and Damages</h5>
+                <ul>
+                    <li>Any damages or casualties will be charged to the guest</li>
+                    <li>Penalty amounts will be determined by the lodge management</li>
+                    <li>Guests will be notified of any additional charges</li>
+                </ul>
+
+                <p><strong>By checking the agreement box, you acknowledge that you have read, understood, and agree to abide by these terms and conditions.</strong></p>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button type="button" id="closeTermsBtn" class="action-btn btn-outline">Close</button>
+        </div>
+    </div>
+</div>
 
 <script>
 // Room Dashboard Functionality
@@ -668,10 +811,73 @@ let allRoomBoxes = [];
 let currentPage = 1;
 let roomsPerPage = 12; // Adjust this number based on your preference
 
+// Load cleaners for assignment
+async function loadCleaners() {
+    try {
+        const response = await fetch('/adminPages/cleaners/list');
+        const data = await response.json();
+        
+        const cleanerSelect = document.getElementById('assignedCleaner');
+        cleanerSelect.innerHTML = '<option value="">Select Cleaner</option>';
+        
+        if (data.cleaners && data.cleaners.length > 0) {
+            data.cleaners.forEach(cleaner => {
+                const option = document.createElement('option');
+                option.value = cleaner.id;
+                option.textContent = cleaner.name;
+                cleanerSelect.appendChild(option);
+            });
+        } else {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No cleaners available';
+            option.disabled = true;
+            cleanerSelect.appendChild(option);
+        }
+    } catch (error) {
+        const cleanerSelect = document.getElementById('assignedCleaner');
+        cleanerSelect.innerHTML = '<option value="">Error loading cleaners</option>';
+    }
+}
+
+// Terms and Conditions Modal Functions
+function showTermsModal() {
+    document.getElementById('termsModal').style.display = 'flex';
+}
+
+function closeTermsModal() {
+    document.getElementById('termsModal').style.display = 'none';
+}
+
+// Terms modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const termsModal = document.getElementById('termsModal');
+    const closeTermsModalBtn = document.getElementById('closeTermsModal');
+    const closeTermsBtn = document.getElementById('closeTermsBtn');
+    
+    if (closeTermsModalBtn) {
+        closeTermsModalBtn.addEventListener('click', closeTermsModal);
+    }
+    
+    if (closeTermsBtn) {
+        closeTermsBtn.addEventListener('click', closeTermsModal);
+    }
+    
+    // Close modal when clicking outside
+    if (termsModal) {
+        termsModal.addEventListener('click', function(e) {
+            if (e.target === termsModal) {
+                closeTermsModal();
+            }
+        });
+    }
+});
+
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     initializePagination();
+    loadCleaners();
     
     // Load active stays for timers then start ticking
     fetchActiveStays().then(() => {
@@ -745,7 +951,6 @@ function initializeEventListeners() {
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     alert('Failed to mark room as ready. Please try again.');
                 });
             }
@@ -762,6 +967,44 @@ function initializeEventListeners() {
   var extendBtn = document.getElementById('extendBtn');
   var timeoutBtn = document.getElementById('timeoutBtn');
   if (closeExtendTimeout) closeExtendTimeout.addEventListener('click', function(){ extendTimeoutModal.style.display = 'none'; pendingExtend = null; });
+  // Assign cleaner modal elements
+  var assignCleanerModal = document.getElementById('assignCleanerModal');
+  var cleanerListEl = document.getElementById('cleanerList');
+  var closeAssignCleaner = document.getElementById('closeAssignCleaner');
+  var cancelAssignCleaner = document.getElementById('cancelAssignCleaner');
+  var confirmAssignCleaner = document.getElementById('confirmAssignCleaner');
+  var assignHasPenalty = document.getElementById('assignHasPenalty');
+  var assignPenaltyFields = document.getElementById('assignPenaltyFields');
+  function hideAssign(){ if(assignCleanerModal) assignCleanerModal.style.display = 'none'; }
+  if (closeAssignCleaner) closeAssignCleaner.addEventListener('click', hideAssign);
+  if (cancelAssignCleaner) cancelAssignCleaner.addEventListener('click', hideAssign);
+  if (assignHasPenalty) assignHasPenalty.addEventListener('change', function(){
+    if (this.checked) assignPenaltyFields.classList.remove('hidden'); else assignPenaltyFields.classList.add('hidden');
+  });
+  async function openAssignCleanerModal(){
+    try {
+      const res = await fetch('/adminPages/cleaners/list');
+      const data = await res.json();
+      cleanerListEl.innerHTML = '';
+      (data.cleaners || []).forEach(c => {
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'action-btn';
+        btn.textContent = c.name;
+        btn.style.justifyContent = 'flex-start';
+        btn.dataset.cleanerId = c.id;
+        btn.addEventListener('click', function(){
+          cleanerListEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          cleanerListEl.dataset.selectedCleanerId = String(c.id);
+        });
+        cleanerListEl.appendChild(btn);
+      });
+    } catch(e){
+      cleanerListEl.innerHTML = '<div style="color:#dc3545;">Failed to load cleaners</div>';
+    }
+    assignCleanerModal.style.display = 'flex';
+  }
   if (extendBtn) extendBtn.addEventListener('click', function(){
     if (!pendingExtend) return;
     if (!confirm('Are you sure you want to extend this stay?')) return;
@@ -773,13 +1016,25 @@ function initializeEventListeners() {
   });
   if (timeoutBtn) timeoutBtn.addEventListener('click', function(){
     if (!pendingExtend) return;
-    const stayId = String(pendingExtend.stayId);
     extendTimeoutModal.style.display = 'none';
-    fetch(`/adminPages/stays/end/${stayId}`, {
-      method: 'POST',
-      headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') }
-    }).then(() => setTimeout(() => location.reload(), 400)).catch(()=>{});
-    pendingExtend = null;
+    openAssignCleanerModal();
+    if (confirmAssignCleaner) confirmAssignCleaner.onclick = function(){
+      const stayId = String(pendingExtend.stayId);
+      const cleanerId = cleanerListEl.dataset.selectedCleanerId || '';
+      const hasP = assignHasPenalty && assignHasPenalty.checked;
+      const pa = hasP ? (parseFloat(document.getElementById('assignPenaltyAmount').value) || 0) : 0;
+      const pr = hasP ? (document.getElementById('assignPenaltyReason').value || null) : null;
+      hideAssign();
+      fetch(`/adminPages/stays/end/${stayId}`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
+        },
+        body: JSON.stringify({ assigned_cleaner_id: cleanerId || null, penalty_amount: pa, penalty_reason: pr })
+      }).then(() => setTimeout(() => location.reload(), 400)).catch(()=>{});
+      pendingExtend = null;
+    };
   });
     
     // Proceed button
@@ -974,7 +1229,6 @@ function openAccommodationModal(roomId) {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('Failed to load room details');
         });
 }
@@ -1188,7 +1442,6 @@ function deleteGuestForm(guestIndex) {
     // Find the guest form to remove
     const guestForm = document.querySelector(`[data-guest-index="${guestIndex}"]`);
     if (!guestForm) {
-        console.error('Guest form not found for index:', guestIndex);
         return;
     }
     
@@ -1261,7 +1514,6 @@ function loadRateOptions() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             alert('Failed to load rates');
         });
 }
@@ -1284,9 +1536,7 @@ function displayRateOptions(rates) {
             this.classList.add('selected');
             selectedRate = rate;
             
-            // Debug: Log the selected rate
-            console.log('FrontDesk - Selected Rate:', {
-                id: rate.id,
+            // Selected rate
                 duration: rate.duration,
                 formattedDuration: formatDurationDisplay(rate.duration),
                 price: rate.price,
@@ -1318,11 +1568,19 @@ function calculateTotal() {
     // Transaction total should be the same as rate price (no tax calculation here)
     const total = selectedRate.price * guestCount;
     
-    document.getElementById('totalAmount').textContent = `₱${total.toFixed(2)}`;
+    // Store rate price in data attribute for penalty calculations
+    document.getElementById('totalAmount').dataset.ratePrice = total;
+    
+    // Initialize totals
+    document.getElementById('subtotalAmount').textContent = '₱' + total.toFixed(2);
+    document.getElementById('totalAmount').textContent = '₱' + total.toFixed(2);
     
     // Show payment summary and process button for both new stays and extensions
     document.getElementById('paymentSummary').classList.remove('hidden');
     document.getElementById('processPaymentBtn').classList.remove('hidden');
+    // Reveal payment inputs and terms only at payment step
+    document.querySelector('.payment-inputs').classList.remove('hidden');
+    document.querySelector('.terms-section').classList.remove('hidden');
     
     // Enable the process payment button
     enableProcessPaymentButton();
@@ -1342,6 +1600,8 @@ function calculateChange() {
     
     document.getElementById('changeAmount').value = change >= 0 ? change.toFixed(2) : '0.00';
 }
+
+// Penalties are no longer applied during initial payment; they are handled post-transaction.
 
 function processPayment() {
     const amountPaid = parseFloat(document.getElementById('amountPaid').value) || 0;
@@ -1369,7 +1629,6 @@ function processPayment() {
         const zipcodeInput = form.querySelector(`input[name="guests[${index}][address][zipcode]"]`);
         
         if (!firstNameInput || !lastNameInput) {
-            console.error(`Missing required form elements for guest ${index}`);
             return;
         }
         
@@ -1388,12 +1647,27 @@ function processPayment() {
         guests.push(guestData);
     });
     
+    // Get assigned cleaner
+    // Cleaner assignment occurs on timeout, not during initial payment
+    const assignedCleanerId = document.getElementById('assignedCleaner') ? document.getElementById('assignedCleaner').value : '';
+    
+    // Check terms agreement
+    const agreeTerms = document.getElementById('agreeTerms').checked;
+    if (!agreeTerms) {
+        alert('You must agree to the Terms and Conditions to proceed.');
+        return;
+    }
+    
     const paymentData = {
         room_id: currentRoom.id,
         rate_id: selectedRate.id,
         guests: guests,
         payment_amount: amountPaid,
-        payment_change: Number.isFinite(computedChange) ? parseFloat(computedChange.toFixed(2)) : 0
+        payment_change: Number.isFinite(computedChange) ? parseFloat(computedChange.toFixed(2)) : 0,
+        // Penalty is not part of initial transaction; handled after cleaner inspection
+        penalty_amount: 0,
+        penalty_reason: null,
+        assigned_cleaner_id: assignedCleanerId || null
     };
     
     // Show loading
@@ -1441,7 +1715,6 @@ function processPayment() {
     })
     .catch(error => {
         document.getElementById('loading').style.display = 'none';
-        console.error('Error:', error);
         alert('Failed to process payment');
     });
 }
@@ -1560,7 +1833,6 @@ function deleteStay() {
     })
     .catch(error => {
         document.getElementById('loading').style.display = 'none';
-        console.error('Error:', error);
         alert('Failed to delete stay');
     });
 }
@@ -1670,7 +1942,7 @@ async function fetchActiveStays() {
             }
         });
     } catch (e) {
-        console.error('Failed to fetch active stays', e);
+        // Failed to fetch active stays
     }
 }
 
@@ -1713,9 +1985,7 @@ function formatDurationDisplay(durationStr) {
 }
 
 function showReceipt(receiptData) {
-    // Debug: Log the receipt data being displayed
-    console.log('FrontDesk - Receipt Data:', {
-        duration: receiptData.duration,
+    // Receipt data
         room: receiptData.room,
         accommodation: receiptData.accommodation,
         total: receiptData.total

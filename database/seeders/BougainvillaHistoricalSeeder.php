@@ -43,7 +43,7 @@ class BougainvillaHistoricalSeeder extends Seeder
         $this->seedHistoricalData($startDate);
         $this->seedArchivedData($startDate);
         $this->seedCleanupGuests($startDate);
-        $this->seedCurrentGuests();
+        $this->seedCurrentGuests($startDate);
         
         echo "\n✅ Bougainvilla Lodge Historical Data Seeding Complete!\n";
     }
@@ -59,7 +59,11 @@ class BougainvillaHistoricalSeeder extends Seeder
             'role' => 'Front Desk',
             'description' => 'Front desk staff with limited access'
         ]);
-        echo "   ✓ Admin and Front Desk roles created\n";
+        Role::firstOrCreate(['id' => 3], [
+            'role' => 'Cleaner',
+            'description' => 'Housekeeping staff with cleaning-related access'
+        ]);
+        echo "   ✓ Admin, Front Desk, and Cleaner roles created\n";
     }
 
     private function seedUsers()
@@ -94,7 +98,26 @@ class BougainvillaHistoricalSeeder extends Seeder
                 'status' => 'Active',
             ]);
         }
-        echo "   ✓ Admin and Front Desk staff created\n";
+        // Cleaners
+        $cleanerStaff = [
+            ['Luis Mateo Santos', 'luis@bougainvilla.com', '09301234567', 'Male'],
+            ['Jenny Rose Cruz', 'jenny@bougainvilla.com', '09311234567', 'Female'],
+        ];
+
+        foreach ($cleanerStaff as [$name, $email, $phone, $sex]) {
+            $nameParts = explode(' ', $name);
+            User::firstOrCreate(['email' => $email], [
+                'firstName' => $nameParts[0], 'middleName' => $nameParts[1] ?? '',
+                'lastName' => implode(' ', array_slice($nameParts, 2)),
+                'name' => $name, 'password' => Hash::make('cleaner123'),
+                'password_changed' => false, 'contactNumber' => $phone,
+                'roleID' => 3, 'birthday' => Carbon::now()->subYears(rand(22, 40))->format('Y-m-d'),
+                'age' => rand(22, 40), 'sex' => $sex,
+                'status' => 'Active',
+            ]);
+        }
+
+        echo "   ✓ Admin, Front Desk, and Cleaner staff created\n";
     }
 
     private function seedLevels()
@@ -534,7 +557,7 @@ class BougainvillaHistoricalSeeder extends Seeder
         echo "   ✓ 65 cleanup test guests created (20 ready for soft delete, 25 ready for hard delete, 20 recent)\n";
     }
 
-    private function seedCurrentGuests()
+    private function seedCurrentGuests($startDate)
     {
         echo "👥 Creating Current Guests (Today and Future)...\n";
         

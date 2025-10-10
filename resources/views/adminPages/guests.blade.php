@@ -326,7 +326,28 @@
         });
         tbody.appendChild(tr);
       });
+      alignGuestsTable();
     }
+  }
+
+  // Auto-align table cells: numbers right, text left
+  function isNumericValue(text){
+    if (text == null) return false;
+    var t = String(text).trim().replace(/[\s,]/g, '');
+    if (t === '') return false;
+    t = t.replace(/^[-₱$€¥£]/, '');
+    return !isNaN(t) && isFinite(t);
+  }
+  function alignGuestsTable(){
+    try {
+      var tbody = document.getElementById('guestsTable').getElementsByTagName('tbody')[0];
+      Array.prototype.forEach.call(tbody.rows, function(row){
+        Array.prototype.forEach.call(row.cells, function(cell){
+          var text = (cell.textContent||'').trim();
+          cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+        });
+      });
+    } catch(e) { /* noop */ }
   }
 
   function showGuestModal(guestData) {
@@ -419,9 +440,6 @@
     const res = await fetch('/adminPages/reports/data?type=guests&from='+from+'&to='+to, { headers: { 'Accept':'application/json' }});
     const data = await res.json();
     allRows = (data.rows||[]);
-    console.log('Total guests loaded:', allRows.length);
-    console.log('Page size:', pageSize);
-    console.log('Total pages:', Math.ceil(allRows.length / pageSize));
     currentPage = 1;
     applySearch();
     renderTable();

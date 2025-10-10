@@ -11,34 +11,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\Admin\CleanupController;
 
-Route::get('/', function () {
-    return view('auth.login');
-});
-
-// Debug route for testing accommodation restoration
-Route::get('/debug-accommodations/{rateId}', function($rateId) {
-    $rate = \App\Models\Rate::with(['accommodationsWithTrashed'])->find($rateId);
-    if (!$rate) {
-        return response()->json(['error' => 'Rate not found']);
-    }
-    
-    $accommodations = $rate->accommodationsWithTrashed;
-    $data = [];
-    
-    foreach ($accommodations as $acc) {
-        $data[] = [
-            'id' => $acc->id,
-            'name' => $acc->name,
-            'deleted_at' => $acc->pivot->deleted_at,
-            'is_soft_deleted' => $acc->pivot->deleted_at !== null
-        ];
-    }
-    
-    return response()->json([
-        'rate_id' => $rateId,
-        'accommodations' => $data
-    ]);
-});
+Route::get('/', function () {return view('auth.login');});
 
 //views
 Route::get('/Authentication/login', [AuthController::class, 'loginInterface'])->name('login');
@@ -48,9 +21,6 @@ Route::post('/Authentication/login', [AuthController::class, 'login'])
     ->middleware('rate.limit.login')
     ->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-
-
 
 Route::prefix('adminPages')->middleware('auth')->group(function () {
 
@@ -73,6 +43,11 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::put('/settings/email', [UserController::class, 'updateEmail'])->name('adminPages.settings.email');
     Route::put('/settings/password', [UserController::class, 'updatePassword'])->name('adminPages.settings.password');
     Route::delete('/settings/deactivate', [UserController::class, 'deactivateAccount'])->name('adminPages.settings.deactivate');
+    
+    // Permission Requests
+    Route::get('/permission-requests', [App\Http\Controllers\PermissionRequestController::class, 'index'])->name('adminPages.permission-requests');
+    Route::post('/permission-requests/{id}/approve', [App\Http\Controllers\PermissionRequestController::class, 'approve'])->name('adminPages.permission-requests.approve');
+    Route::post('/permission-requests/{id}/reject', [App\Http\Controllers\PermissionRequestController::class, 'reject'])->name('adminPages.permission-requests.reject');
 
     //Admin Crud
     Route::get('/adminrecords', [UserController::class, 'admin'])->name('adminPages.adminrecords');
@@ -89,6 +64,17 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::delete('/frontdeskrecords/delete/{id}', [UserController::class, 'destroy'])->name('frontdeskrecords.destroy');
     Route::patch('/frontdeskrecords/restore/{id}', [UserController::class, 'restore'])->name('adminrecords.restore');
     Route::get('/frontdeskrecords/archive', [App\Http\Controllers\UserController::class, 'archivedFrontdesk'])->name('frontdeskrecords.archive');
+
+    //Cleaner Crud
+    Route::get('/cleanerrecords', [UserController::class, 'cleaner'])->name('adminPages.cleanerrecords');
+    Route::post('/cleanerrecords', [UserController::class, 'store'])->name('adminPages.cleanerrecords.post');
+    Route::post('/cleanerrecords/update/{id}', [UserController::class, 'update'])->name('cleanerrecords.update');
+    Route::delete('/cleanerrecords/delete/{id}', [UserController::class, 'destroy'])->name('cleanerrecords.destroy');
+    Route::patch('/cleanerrecords/restore/{id}', [UserController::class, 'restore'])->name('cleanerrecords.restore');
+    Route::get('/cleanerrecords/archive', [App\Http\Controllers\UserController::class, 'archivedCleaners'])->name('cleanerrecords.archive');
+    
+    // Cleaner API for transaction assignment
+    Route::get('/cleaners/list', [UserController::class, 'getCleanersList'])->name('adminPages.cleaners.list');
 
     // Level Crud
     Route::get('/levels', [LevelController::class, 'index'])->name('adminPages.levels');

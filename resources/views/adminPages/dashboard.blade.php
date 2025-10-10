@@ -298,6 +298,7 @@
     // Render table with pagination
     renderTable();
     renderPagination();
+    alignDailyTable();
 
     // Ops line chart (checkins, checkouts, guests per day)
     var opsCtx = document.getElementById('opsLine').getContext('2d');
@@ -377,6 +378,7 @@
     pageItems.forEach(function(r){
       tbody.appendChild(r.element);
     });
+    alignDailyTable();
   }
 
   function renderPagination(){
@@ -442,6 +444,7 @@
         currentPage = page;
         renderTable();
         renderPagination();
+        alignDailyTable();
       }
     });
   }
@@ -532,6 +535,27 @@
     currentPage = 1;
     renderTable();
     renderPagination();
+    alignDailyTable();
+  }
+
+  // Auto-align daily table cells: numbers right, text left
+  function isNumericValue(text){
+    if (text == null) return false;
+    var t = String(text).trim().replace(/[,\s]/g, '');
+    if (t === '') return false;
+    t = t.replace(/^[-₱$€¥£]/, '');
+    return !isNaN(t) && isFinite(t);
+  }
+  function alignDailyTable(){
+    try {
+      var tbody = document.getElementById('dailyRows');
+      Array.prototype.forEach.call(tbody.rows, function(row){
+        Array.prototype.forEach.call(row.cells, function(cell, idx){
+          var text = cell.textContent || '';
+          cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+        });
+      });
+    } catch(e) {}
   }
 
   // Add search event listener

@@ -391,6 +391,7 @@
       currentPage = 1;
       renderTable();
       renderPagination();
+      alignAccommodationsTable();
     }
 
     function renderTable(){
@@ -404,6 +405,7 @@
       
       // Re-attach event listeners for edit and delete buttons after rendering
       attachButtonEventListeners();
+      alignAccommodationsTable();
     }
 
     function renderPagination(){
@@ -467,6 +469,7 @@
         currentPage = parseInt(btn.getAttribute('data-page')) || 1;
         renderTable();
         renderPagination();
+        alignAccommodationsTable();
       });
     }
 
@@ -479,6 +482,7 @@
     
     // Attach initial event listeners
     attachButtonEventListeners();
+    alignAccommodationsTable();
 
     var modal = document.getElementById('accommodationModal');
     var openBtn = document.getElementById('openAddAdmin');
@@ -609,6 +613,26 @@
     if (closeAccommodationDetailsBtn) closeAccommodationDetailsBtn.addEventListener('click', closeAccommodationDetailsModal);
     if (closeAccommodationDetailsModalBtn) closeAccommodationDetailsModalBtn.addEventListener('click', closeAccommodationDetailsModal);
 
+    // Auto-align table cells: numbers right, text left
+    function isNumericValue(text){
+      if (text == null) return false;
+      var t = String(text).trim().replace(/[,\s]/g, '');
+      if (t === '') return false;
+      t = t.replace(/^[-₱$€¥£]/, '');
+      return !isNaN(t) && isFinite(t);
+    }
+    function alignAccommodationsTable(){
+      try {
+        var tbody = document.getElementById('accommodationsTable').getElementsByTagName('tbody')[0];
+        Array.prototype.forEach.call(tbody.rows, function(row){
+          Array.prototype.forEach.call(row.cells, function(cell){
+            var text = cell.textContent || '';
+            cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+          });
+        });
+      } catch(e) {}
+    }
+
     // Accommodation row click handler
     function addRowClickHandlers() {
       var accommodationRows = document.querySelectorAll('.accommodation-row');
@@ -703,7 +727,6 @@
           }
         })
         .catch(error => {
-          console.error('Error loading rooms:', error);
           roomsListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(220,53,69,.1), rgba(220,53,69,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;"></i></div><h4 style="color: #dc3545; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">Error</h4><p style="font-style: italic; margin: 0; color: #dc3545; font-size: 10px;">Failed to load</p></div>';
         });
     }
@@ -756,7 +779,6 @@
           }
         })
         .catch(error => {
-          console.error('Error loading rates:', error);
           ratesListElement.innerHTML = '<div style="text-align: center; padding: 20px; color: #dc3545;"><div style="width: 40px; height: 40px; background: linear-gradient(135deg, rgba(220,53,69,.1), rgba(220,53,69,.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px;"><i class="fas fa-exclamation-triangle" style="font-size: 16px; color: #dc3545;"></i></div><h4 style="color: #dc3545; margin: 0 0 4px 0; font-weight: 600; font-size: 12px;">Error</h4><p style="font-style: italic; margin: 0; color: #dc3545; font-size: 10px;">Failed to load</p></div>';
         });
     }

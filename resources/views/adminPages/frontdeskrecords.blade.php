@@ -564,6 +564,31 @@
     var search = document.getElementById('adminSearch');
     var table = document.getElementById('adminsTable').getElementsByTagName('tbody')[0];
 
+    // Auto-align table cells: numbers right, text left
+    function isNumericValue(text){
+      if (text == null) return false;
+      var t = String(text).trim().replace(/[,\s]/g, '');
+      if (t === '') return false;
+      // Allow leading currency symbol and negative sign
+      t = t.replace(/^[-₱$€¥£]/, '');
+      return !isNaN(t) && isFinite(t);
+    }
+    function alignTableCells(){
+      try {
+        var tbody = document.getElementById('adminsTable').getElementsByTagName('tbody')[0];
+        Array.prototype.forEach.call(tbody.rows, function(row){
+          Array.prototype.forEach.call(row.cells, function(cell){
+            var text = cell.textContent || '';
+            if (isNumericValue(text)) {
+              cell.style.textAlign = 'right';
+            } else {
+              cell.style.textAlign = 'left';
+            }
+          });
+        });
+      } catch(e) {}
+    }
+
     function openModal(){ 
       modal.style.display = 'flex'; 
       // Ensure User Information tab is active when modal opens
@@ -600,6 +625,9 @@
         row.style.display = text.indexOf(q) !== -1 ? '' : 'none';
       });
     });
+
+    // Initial alignment
+    alignTableCells();
 
     // Tab functionality
     var tabBtns = document.querySelectorAll('.tab-btn');

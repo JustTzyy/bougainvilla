@@ -86,25 +86,19 @@
 
     <script>
         function fixAccommodationCheckboxes() {
-            console.log('Setting up native checkboxes...');
-            
             var checkboxes = document.querySelectorAll('#updateAccommodations .accommodation-checkbox');
-            console.log('Found', checkboxes.length, 'accommodation checkboxes');
             
             checkboxes.forEach(function(checkbox, index) {
-                console.log('Setup checkbox', index + 1, 'of', checkboxes.length, '- value:', checkbox.value);
                 
                 checkbox.removeEventListener('click', checkbox._clickHandler);
                 checkbox.removeEventListener('change', checkbox._changeHandler);
                 
                 checkbox._clickHandler = function(e) {
-                    console.log('Checkbox clicked:', this.value, 'New state:', this.checked);
                     e.stopPropagation();
                     updateResults();
                 };
                 
                 checkbox._changeHandler = function(e) {
-                    console.log('Checkbox changed:', this.value, 'New state:', this.checked);
                     updateResults();
                 };
                 
@@ -119,7 +113,7 @@
                 checkbox.style.display = 'inline-block';
             });
             
-            console.log('All accommodation checkboxes setup complete!');
+            // All accommodation checkboxes setup complete
         }
 
         function updateResults() {

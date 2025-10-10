@@ -18,6 +18,11 @@
     color: #6c757d;
     font-style: italic;
   }
+  /* Status color utilities */
+  .status-ok { color: #28a745; font-weight: 700; }
+  .status-warn { color: #ffc107; font-weight: 700; }
+  .status-bad { color: #dc3545; font-weight: 700; }
+  .status-info { color: #7c3aed; font-weight: 700; }
 </style>
 
 <div class="dashboard-page">
@@ -393,6 +398,7 @@
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      alignFrontdeskTransactionReportsTable();
     }
 
     function renderPagination(){
@@ -459,6 +465,41 @@
       });
     }
 
+    // Auto-align table cells: numbers right, text left
+    function isNumericValue(text){
+      if (text == null) return false;
+      var t = String(text).trim().replace(/[\s,]/g, '');
+      if (t === '') return false;
+      t = t.replace(/^[-₱$€¥£]/, '');
+      return !isNaN(t) && isFinite(t);
+    }
+    function alignFrontdeskTransactionReportsTable(){
+      try {
+        var tbody = document.getElementById('transactionReportsTable').getElementsByTagName('tbody')[0];
+        Array.prototype.forEach.call(tbody.rows, function(row){
+          Array.prototype.forEach.call(row.cells, function(cell){
+            var text = (cell.textContent||'').trim();
+            cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+          });
+          // Color status text (Status is column index 4)
+          var statusCell = row.cells[4];
+          if (statusCell) {
+            var v = (statusCell.textContent || '').trim().toLowerCase();
+            statusCell.classList.remove('status-ok','status-warn','status-bad','status-info');
+            if (v === 'paid' || v === 'checked-out' || v === 'completed' || v === 'standard') {
+              statusCell.classList.add('status-ok');
+            } else if (v === 'pending' || v === 'processing' || v === 'on hold' || v === 'extend') {
+              statusCell.classList.add('status-warn');
+            } else if (v === 'unpaid' || v === 'cancelled' || v === 'void' || v === 'failed') {
+              statusCell.classList.add('status-bad');
+            } else if (v === 'checked-in' || v === 'in-progress') {
+              statusCell.classList.add('status-info');
+            }
+          }
+        });
+      } catch(e) { /* noop */ }
+    }
+
     // Automatic filter event listeners
     document.getElementById('from').addEventListener('change', function() {
       var from = this.value;
@@ -521,26 +562,21 @@
       guestModal.style.display = 'flex';
 
       // Fetch guest details
-      console.log('Fetching guest details for transaction ID:', transactionId);
       fetch('/frontdesk/transactions/guest-details/' + transactionId)
         .then(response => {
-          console.log('Response status:', response.status);
           if (!response.ok) {
             throw new Error('HTTP ' + response.status + ': ' + response.statusText);
           }
           return response.json();
         })
         .then(data => {
-          console.log('Guest details response:', data);
           if (data.success && data.guests) {
             displayGuestDetails(data.guests, data.transaction);
           } else {
-            console.log('No guest details found or success=false');
             guestDetailsContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #6c757d;"><i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i><p>No guest details found for this transaction.</p></div>';
           }
         })
         .catch(error => {
-          console.error('Error fetching guest details:', error);
           guestDetailsContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc3545;"><i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i><p>Error loading guest details: ' + error.message + '</p></div>';
         });
     }
@@ -551,6 +587,16 @@
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Room:</span><span class="guest-detail-value">' + (transaction.room || 'N/A') + '</span></div>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Accommodation:</span><span class="guest-detail-value">' + (transaction.accommodation || 'N/A') + '</span></div>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Amount:</span><span class="guest-detail-value">₱' + (transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00') + '</span></div>';
+      
+      // Cleaner + Penalty details if available (mirrors Admin)
+      var cleanerName = (transaction.cleaner_name || (transaction.cleaner && transaction.cleaner.name)) || null;
+      var penaltyAmount = (typeof transaction.penalty_amount !== 'undefined' && transaction.penalty_amount !== null) ? parseFloat(transaction.penalty_amount) : null;
+      var penaltyReason = transaction.penalty_reason || null;
+      if (cleanerName || penaltyAmount !== null || penaltyReason) {
+        html += '<div class="guest-detail-item"><span class="guest-detail-label">Assigned Cleaner:</span><span class="guest-detail-value">' + (cleanerName || 'N/A') + '</span></div>';
+        html += '<div class="guest-detail-item"><span class="guest-detail-label">Penalty Amount:</span><span class="guest-detail-value">' + (penaltyAmount !== null ? ('₱' + penaltyAmount.toFixed(2)) : 'None') + '</span></div>';
+        html += '<div class="guest-detail-item"><span class="guest-detail-label">Penalty Reason:</span><span class="guest-detail-value">' + (penaltyReason || 'N/A') + '</span></div>';
+      }
       html += '</div>';
 
       html += '<h4 style="margin: 0 0 16px 0; color: #DAA520;">Guest Information</h4>';

@@ -1,6 +1,6 @@
 @extends('layouts.admindashboard')
 
-@section('title','Admin Records')
+@section('title','Cleaner Records')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
@@ -59,7 +59,7 @@
 @section('content')
 <div class="dashboard-page">
   <div class="page-header">
-    <h1 class="page-title">Admin Records</h1>
+    <h1 class="page-title">Cleaner Records</h1>
   </div>
 
   @if (session('success'))
@@ -95,13 +95,13 @@
   <div class="records-toolbar">
     <div class="search-container admin-search">
       <i class="fas fa-search search-icon"></i>
-      <input id="adminSearch" type="text" placeholder="Search admins" class="search-input">
+      <input id="cleanerSearch" type="text" placeholder="Search cleaners" class="search-input">
     </div>
     <div class="toolbar-actions">
-      <a href="{{ route('adminrecords.archive') }}" class="archive-btn">
+      <a href="{{ route('cleanerrecords.archive') }}" class="archive-btn">
         <i class="fas fa-archive"></i> Archive
       </a>
-      <button id="openAddAdmin"><i class="fas fa-user-plus"></i> Add Admin</button>
+      <button id="openAddCleaner"><i class="fas fa-user-plus"></i> Add Cleaner</button>
     </div>
   </div>
 
@@ -111,7 +111,7 @@
     </div>
 
     <div class="table-wrapper">
-      <table class="table sortable-table" id="adminsTable">
+      <table class="table sortable-table" id="cleanersTable">
         <thead>
           <tr>
             <th>ID</th>
@@ -155,26 +155,26 @@
             @endforeach
           @else
             <tr>
-              <td colspan="5" class="text-center">No admin records found</td>
+              <td colspan="5" class="text-center">No cleaner records found</td>
             </tr>
           @endif
         </tbody>
       </table>
     </div>
-    @if(isset($accommodations) && $accommodations->hasPages())
+    @if(isset($users) && $users->hasPages())
     <nav class="pagination-wrapper" aria-label="Table pagination">
         <ul class="pagination">
             {{-- Previous Page Link --}}
-            @if ($accommodations->onFirstPage())
+            @if ($users->onFirstPage())
                 <li class="page-item disabled"><span>&laquo;</span></li>
             @else
-                <li class="page-item"><a href="{{ $accommodations->previousPageUrl() }}">&laquo;</a></li>
+                <li class="page-item"><a href="{{ $users->previousPageUrl() }}">&laquo;</a></li>
             @endif
 
             {{-- Pagination Elements --}}
             @php
-                $currentPage = $accommodations->currentPage();
-                $lastPage = $accommodations->lastPage();
+                $currentPage = $users->currentPage();
+                $lastPage = $users->lastPage();
                 $maxVisiblePages = 10;
                 $startPage = max(1, $currentPage - floor($maxVisiblePages / 2));
                 $endPage = min($lastPage, $startPage + $maxVisiblePages - 1);
@@ -187,7 +187,7 @@
             
             {{-- First page if not in range --}}
             @if($startPage > 1)
-                <li class="page-item"><a href="{{ $accommodations->url(1) }}">1</a></li>
+                <li class="page-item"><a href="{{ $users->url(1) }}">1</a></li>
                 @if($startPage > 2)
                     <li class="page-item disabled"><span class="page-link disabled">...</span></li>
                 @endif
@@ -198,7 +198,7 @@
                 @if($i == $currentPage)
                     <li class="page-item active"><span>{{ $i }}</span></li>
                 @else
-                    <li class="page-item"><a href="{{ $accommodations->url($i) }}">{{ $i }}</a></li>
+                    <li class="page-item"><a href="{{ $users->url($i) }}">{{ $i }}</a></li>
                 @endif
             @endfor
             
@@ -207,12 +207,12 @@
                 @if($endPage < $lastPage - 1)
                     <li class="page-item disabled"><span class="page-link disabled">...</span></li>
                 @endif
-                <li class="page-item"><a href="{{ $accommodations->url($lastPage) }}">{{ $lastPage }}</a></li>
+                <li class="page-item"><a href="{{ $users->url($lastPage) }}">{{ $lastPage }}</a></li>
             @endif
 
             {{-- Next Page Link --}}
-            @if ($accommodations->hasMorePages())
-                <li class="page-item"><a href="{{ $accommodations->nextPageUrl() }}">&raquo;</a></li>
+            @if ($users->hasMorePages())
+                <li class="page-item"><a href="{{ $users->nextPageUrl() }}">&raquo;</a></li>
             @else
                 <li class="page-item disabled"><span>&raquo;</span></li>
             @endif
@@ -223,11 +223,11 @@
 </div>
 
 <!-- Add/Edit Modal -->
-<div id="adminModal" class="modal">
+<div id="cleanerModal" class="modal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3 class="chart-title" id="modalTitle">Add Admin</h3>
-      <button id="closeAdminModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+      <h3 class="chart-title" id="modalTitle">Add Cleaner</h3>
+      <button id="closeCleanerModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
     </div>
     
     <!-- Tab Navigation -->
@@ -242,9 +242,9 @@
       </button>
     </div>
 
-    <form id="adminForm" action="{{ route('adminPages.adminrecords') }}" class="modal-form"  method="POST">
+    <form id="cleanerForm" action="{{ route('adminPages.cleanerrecords') }}" class="modal-form"  method="POST">
     @csrf
-    <input type="hidden" name="roleID" value="1">
+    <input type="hidden" name="roleID" value="3">
       <!-- User Information Tab -->
       <div class="tab-content active" id="user-tab">
         <div class="form-grid">
@@ -272,7 +272,7 @@
  
           <div class="form-group span-2">
             <label>Email</label>
-            <input type="email" name="email" class="form-input @error('email') error-highlight @enderror" placeholder="admin@example.com" value="{{ old('email') }}" required>
+            <input type="email" name="email" class="form-input @error('email') error-highlight @enderror" placeholder="cleaner@example.com" value="{{ old('email') }}" required>
             @error('email')
               <div class="error-message">{{ $message }}</div>
             @enderror
@@ -347,8 +347,8 @@
       </div>
 
       <div class="modal-actions">
-        <button type="button" id="cancelAdmin" class="action-btn btn-outline">Cancel</button>
-        <button type="submit" class="btn-primary inline">Save Admin</button>
+        <button type="button" id="cancelCleaner" class="action-btn btn-outline">Cancel</button>
+        <button type="submit" class="btn-primary inline">Save Cleaner</button>
       </div>
     </form>
   </div>
@@ -430,11 +430,11 @@
   </div>
 </div>
 
-<!-- Update Admin Modal -->
+<!-- Update Cleaner Modal -->
 <div id="updateModal" class="modal">
   <div class="modal-card">
     <div class="modal-header">
-      <h3 class="chart-title">Update Admin</h3>
+      <h3 class="chart-title">Update Cleaner</h3>
       <button id="closeUpdateModal" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
     </div>
 
@@ -550,19 +550,19 @@
 
       <div class="modal-actions">
         <button type="button" id="cancelUpdate" class="action-btn btn-outline">Cancel</button>
-        <button type="submit" class="btn-primary inline">Update Admin</button>
+        <button type="submit" class="btn-primary inline">Update Cleaner</button>
       </div>
     </form>
   </div>
 </div>
 <script>
   (function(){
-    var modal = document.getElementById('adminModal');
-    var openBtn = document.getElementById('openAddAdmin');
-    var closeBtn = document.getElementById('closeAdminModal');
-    var cancelBtn = document.getElementById('cancelAdmin');
-    var search = document.getElementById('adminSearch');
-    var table = document.getElementById('adminsTable').getElementsByTagName('tbody')[0];
+    var modal = document.getElementById('cleanerModal');
+    var openBtn = document.getElementById('openAddCleaner');
+    var closeBtn = document.getElementById('closeCleanerModal');
+    var cancelBtn = document.getElementById('cancelCleaner');
+    var search = document.getElementById('cleanerSearch');
+    var table = document.getElementById('cleanersTable').getElementsByTagName('tbody')[0];
 
     // Auto-align table cells: numbers right, text left
     function isNumericValue(text){
@@ -575,7 +575,7 @@
     }
     function alignTableCells(){
       try {
-        var tbody = document.getElementById('adminsTable').getElementsByTagName('tbody')[0];
+        var tbody = document.getElementById('cleanersTable').getElementsByTagName('tbody')[0];
         Array.prototype.forEach.call(tbody.rows, function(row){
           Array.prototype.forEach.call(row.cells, function(cell){
             var text = cell.textContent || '';
@@ -598,14 +598,14 @@
       document.getElementById('user-tab').classList.add('active');
     }
     
-    // Add confirmation for Add Admin form
-    var adminForm = document.getElementById('adminForm');
-    if (adminForm) {
-      adminForm.addEventListener('submit', function(e) {
+    // Add confirmation for Add Cleaner form
+    var cleanerForm = document.getElementById('cleanerForm');
+    if (cleanerForm) {
+      cleanerForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
         // Validate form before confirmation
-        if (!validateAdminForm()) {
+        if (!validateCleanerForm()) {
           return;
         }
         
@@ -613,7 +613,7 @@
         var lastName = document.querySelector('input[name="lastName"]').value;
         var email = document.querySelector('input[name="email"]').value;
         
-        if (confirm('Are you sure you want to add ' + firstName + ' ' + lastName + ' (' + email + ') as a new admin?')) {
+        if (confirm('Are you sure you want to add ' + firstName + ' ' + lastName + ' (' + email + ') as a new cleaner?')) {
           this.submit();
         }
       });
@@ -675,9 +675,9 @@
       // Compute on load in case a value exists
       setComputedAge();
       // Ensure value is present before submit
-      var adminForm = document.getElementById('adminForm');
-      if (adminForm) {
-        adminForm.addEventListener('submit', function() {
+      var cleanerForm = document.getElementById('cleanerForm');
+      if (cleanerForm) {
+        cleanerForm.addEventListener('submit', function() {
           setComputedAge();
         });
       }
@@ -696,7 +696,7 @@
       document.getElementById('update-user-tab').classList.add('active');
     }
     
-    // Add confirmation for Update Admin form
+    // Add confirmation for Update Cleaner form
     var updateForm = document.getElementById('updateForm');
     if (updateForm) {
       updateForm.addEventListener('submit', function(e) {
@@ -798,7 +798,7 @@
         // Point form action to update route
         var updateForm = document.getElementById('updateForm');
         var userId = this.getAttribute('data-user-id');
-        updateForm.setAttribute('action', '/adminPages/adminrecords/update/' + userId);
+        updateForm.setAttribute('action', '/adminPages/cleanerrecords/update/' + userId);
 
         openUpdateModal();
       });
@@ -1181,7 +1181,7 @@
     initializeAddressDropdowns();
 
     // Form validation functions
-    function validateAdminForm() {
+    function validateCleanerForm() {
       var isValid = true;
       var missingFields = [];
       var tabsWithErrors = new Set();
@@ -1370,7 +1370,7 @@
           // Create form for DELETE request
           var form = document.createElement('form');
           form.method = 'POST';
-          form.action = '/adminPages/adminrecords/delete/' + userId;
+          form.action = '/adminPages/cleanerrecords/delete/' + userId;
           
           // Add CSRF token
           var csrfToken = document.createElement('input');
@@ -1408,5 +1408,4 @@
   }
 </script>
 @endsection
-
 

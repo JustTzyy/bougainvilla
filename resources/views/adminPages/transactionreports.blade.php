@@ -426,6 +426,7 @@
       pageItems.forEach(function(r){
         tbody.appendChild(r.element);
       });
+      alignTransactionReportsTable();
     }
 
     function renderPagination(){
@@ -490,6 +491,26 @@
         renderTable();
         renderPagination();
       });
+    }
+
+    // Auto-align table cells: numbers right, text left
+    function isNumericValue(text){
+      if (text == null) return false;
+      var t = String(text).trim().replace(/[\s,]/g, '');
+      if (t === '') return false;
+      t = t.replace(/^[-₱$€¥£]/, '');
+      return !isNaN(t) && isFinite(t);
+    }
+    function alignTransactionReportsTable(){
+      try {
+        var tbody = document.getElementById('transactionReportsTable').getElementsByTagName('tbody')[0];
+        Array.prototype.forEach.call(tbody.rows, function(row){
+          Array.prototype.forEach.call(row.cells, function(cell){
+            var text = (cell.textContent||'').trim();
+            cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+          });
+        });
+      } catch(e) { /* noop */ }
     }
 
     // Automatic filter event listeners
@@ -564,7 +585,6 @@
           }
         })
         .catch(error => {
-          console.error('Error fetching guest details:', error);
           guestDetailsContent.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc3545;"><i class="fas fa-exclamation-circle" style="font-size: 48px; margin-bottom: 16px; display: block;"></i><p>Error loading guest details. Please try again.</p></div>';
         });
     }
@@ -575,6 +595,16 @@
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Room:</span><span class="guest-detail-value">' + (transaction.room || 'N/A') + '</span></div>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Accommodation:</span><span class="guest-detail-value">' + (transaction.accommodation || 'N/A') + '</span></div>';
       html += '<div class="guest-detail-item"><span class="guest-detail-label">Amount:</span><span class="guest-detail-value">₱' + (transaction.amount ? parseFloat(transaction.amount).toFixed(2) : '0.00') + '</span></div>';
+      
+      // Cleaner + Penalty details if available
+      var cleanerName = (transaction.cleaner_name || (transaction.cleaner && transaction.cleaner.name)) || null;
+      var penaltyAmount = (typeof transaction.penalty_amount !== 'undefined' && transaction.penalty_amount !== null) ? parseFloat(transaction.penalty_amount) : null;
+      var penaltyReason = transaction.penalty_reason || null;
+      if (cleanerName || penaltyAmount !== null || penaltyReason) {
+        html += '<div class="guest-detail-item"><span class="guest-detail-label">Assigned Cleaner:</span><span class="guest-detail-value">' + (cleanerName || 'N/A') + '</span></div>';
+        html += '<div class="guest-detail-item"><span class="guest-detail-label">Penalty Amount:</span><span class="guest-detail-value">' + (penaltyAmount !== null ? ('₱' + penaltyAmount.toFixed(2)) : 'None') + '</span></div>';
+        html += '<div class="guest-detail-item"><span class="guest-detail-label">Penalty Reason:</span><span class="guest-detail-value">' + (penaltyReason || 'N/A') + '</span></div>';
+      }
       html += '</div>';
 
       html += '<h4 style="margin: 0 0 16px 0; color: #DAA520;">Guest Information</h4>';

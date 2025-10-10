@@ -1,6 +1,6 @@
 @extends('layouts.admindashboard')
 
-@section('title','Archived Admin Records')
+@section('title','Archived Cleaner Records')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/archiveadminrecords.css') }}">
@@ -321,7 +321,7 @@
 @section('content')
 <div class="dashboard-page">
   <div class="page-header">
-    <h1 class="page-title">Archived Front Desk Records</h1>
+    <h1 class="page-title">Archived Cleaner Records</h1>
   </div>
 
   @if (session('success'))
@@ -357,10 +357,10 @@
   <div class="records-toolbar">
     <div class="search-container admin-search">
       <i class="fas fa-search search-icon"></i>
-      <input id="archiveSearch" type="text" placeholder="Search archived admins" class="search-input">
+      <input id="archiveSearch" type="text" placeholder="Search archived cleaners" class="search-input">
     </div>
     <div class="toolbar-actions">
-      <a href="{{ route('adminPages.frontdeskrecords') }}" class="archive-btn">
+      <a href="{{ route('adminPages.cleanerrecords') }}" class="archive-btn">
         <i class="fas fa-arrow-left"></i> Back to Records
       </a>
     </div>
@@ -417,7 +417,7 @@
             @endforeach
           @else
             <tr>
-              <td colspan="5" class="text-center">No archived admin records found</td>
+              <td colspan="5" class="text-center">No archived cleaner records found</td>
             </tr>
           @endif
         </tbody>
@@ -735,7 +735,7 @@
           // Create form for restore request
           var form = document.createElement('form');
           form.method = 'POST';
-          form.action = '/adminPages/adminrecords/restore/' + userId;
+          form.action = '/adminPages/cleanerrecords/restore/' + userId;
           
           // Add CSRF token
           var csrfToken = document.createElement('input');
@@ -762,3 +762,4 @@
   })();
 </script>
 @endsection
+

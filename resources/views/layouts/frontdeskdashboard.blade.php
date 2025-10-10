@@ -64,18 +64,7 @@
                 </div>
             </div>
 
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <i class="fas fa-user-circle" style="font-size:40px; color:#B8860B;"></i>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">{{ Auth::user()->name ?? 'User' }}</div>
-                    <div class="user-role">{{ Auth::user()->role->role ?? 'FrontDesk' }}</div>
-                </div>
-                <div class="bookmark-icon">
-                    <i class="fas fa-bookmark"></i>
-                </div>
-            </div>
+           
 
             <nav class="sidebar-nav">
                 <ul class="nav-list">

@@ -41,18 +41,6 @@
                 </div>
             </div>
 
-            <div class="user-profile">
-                <div class="user-avatar">
-                    <i class="fas fa-user-circle" style="font-size:40px; color:#B8860B;"></i>
-                </div>
-                <div class="user-info">
-                    <div class="user-name">{{ Auth::user()->name ?? 'User' }}</div>
-                    <div class="user-role">{{ Auth::user()->role->role ?? 'Admin' }}</div>
-                </div>
-                <div class="bookmark-icon">
-                    <i class="fas fa-bookmark"></i>
-                </div>
-            </div>
 
             <nav class="sidebar-nav">
                 <ul class="nav-list">
@@ -64,7 +52,7 @@
                     </li>
 
                     <li
-                        class="nav-item has-submenu {{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archiveadminrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
+                         class="nav-item has-submenu {{ request()->routeIs('adminPages.adminrecords') || request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.cleanerrecords') || request()->routeIs('adminPages.archiveadminrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') || request()->routeIs('adminPages.archivecleanerrecords') || request()->routeIs('adminPages.permission-requests') ? 'active' : '' }}">
                         <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
                             <i class="fas fa-user-lock"></i>
                             <span>User Management</span>
@@ -81,6 +69,18 @@
                                 class="{{ request()->routeIs('adminPages.frontdeskrecords') || request()->routeIs('adminPages.archivefrontdeskrecords') ? 'active' : '' }}">
                                 <a href="{{ route('adminPages.frontdeskrecords') }}" class="submenu-link">
                                     <span>FrontDesk</span>
+                                </a>
+                            </li>
+                            <li
+                                class="{{ request()->routeIs('adminPages.cleanerrecords') || request()->routeIs('adminPages.archivecleanerrecords') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.cleanerrecords') }}" class="submenu-link">
+                                    <span>Cleaner</span>
+                                </a>
+                            </li>
+                            <li
+                                class="{{ request()->routeIs('adminPages.permission-requests') ? 'active' : '' }}">
+                                <a href="{{ route('adminPages.permission-requests') }}" class="submenu-link">
+                                    <span>Permission Requests</span>
                                 </a>
                             </li>
                         </ul>
@@ -129,34 +129,7 @@
                         </ul>
                     </li>
 
-                    <li
-                        class="nav-item has-submenu {{ request()->routeIs('adminPages.transactions') || request()->routeIs('adminPages.archivetransactions') || request()->routeIs('adminPages.transactionreports') || request()->routeIs('transactions.*') ? 'active' : '' }}">
-                        <a href="#" class="nav-link" aria-haspopup="true" aria-expanded="false">
-                            <i class="fas fa-credit-card"></i>
-                            <span>Transact Management</span>
-                            <i class="fas fa-chevron-right submenu-arrow"></i>
-                        </a>
-                        <ul class="submenu" aria-label="Transaction Management submenu">
-                            <li
-                                class="{{ request()->routeIs('adminPages.transactions') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.transactions') }}" class="submenu-link">
-                                    <span>Transactions</span>
-                                </a>
-                            </li>
-                            <li
-                                class="{{ request()->routeIs('adminPages.archivetransactions') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.archivetransactions') }}" class="submenu-link">
-                                    <span>Archive Transactions</span>
-                                </a>
-                            </li>
-                            <li
-                                class="{{ request()->routeIs('adminPages.transactionreports') ? 'active' : '' }}">
-                                <a href="{{ route('adminPages.transactionreports') }}" class="submenu-link">
-                                    <span>Transaction Reports</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
+                    <!-- Transactions moved to Front Desk only -->
 
                     {{-- Reports quick links (Dashboard KPIs) --}}
                     <li class="nav-item has-submenu {{ request()->routeIs('reports.*') ? 'active' : '' }}">

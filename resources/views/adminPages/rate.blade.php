@@ -6,6 +6,11 @@
     <link rel="stylesheet" href="{{ asset('css/adminrecords.css') }}">
     <script src="{{ asset('js/ph-complete-address.js') }}"></script>
     <style>
+      /* Status color utilities */
+      .status-ok { color: #28a745; font-weight: 700; }
+      .status-warn { color: #ffc107; font-weight: 700; }
+      .status-bad { color: #dc3545; font-weight: 700; }
+      .status-info { color: #7c3aed; font-weight: 700; }
       /* Enhanced Accommodation Selection Styling */
       .accommodation-field {
         grid-column: span 2;
@@ -842,6 +847,7 @@
               currentPage = 1;
               renderTable();
               renderPagination();
+              alignRatesTable();
             }
 
             function renderTable(){
@@ -855,6 +861,7 @@
               
               // Re-attach event listeners for edit and delete buttons after rendering
               attachButtonEventListeners();
+              alignRatesTable();
             }
 
             function renderPagination(){
@@ -918,6 +925,7 @@
                 currentPage = parseInt(btn.getAttribute('data-page')) || 1;
                 renderTable();
                 renderPagination();
+                alignRatesTable();
               });
             }
 
@@ -930,10 +938,41 @@
             
             // Attach initial event listeners
             attachButtonEventListeners();
+            alignRatesTable();
             
             // Fix accommodation checkbox functionality
             fixAccommodationCheckboxes();
-            console.log('Initial accommodation checkboxes setup completed');
+
+            // Auto-align table cells: numbers right, text left
+            function isNumericValue(text){
+              if (text == null) return false;
+              var t = String(text).trim().replace(/[,\s]/g, '');
+              if (t === '') return false;
+              t = t.replace(/^[-₱$€¥£]/, '');
+              return !isNaN(t) && isFinite(t);
+            }
+            function alignRatesTable(){
+              try {
+                var tbody = document.getElementById('ratesTable').getElementsByTagName('tbody')[0];
+                Array.prototype.forEach.call(tbody.rows, function(row){
+                  Array.prototype.forEach.call(row.cells, function(cell){
+                    var text = cell.textContent || '';
+                    cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+                  });
+                  // Color status text (Status is column index 3)
+                  var statusCell = row.cells[3];
+                  if (statusCell) {
+                    var v = (statusCell.textContent || '').trim().toLowerCase();
+                    statusCell.classList.remove('status-ok','status-warn','status-bad','status-info');
+                    if (v === 'standard') {
+                      statusCell.classList.add('status-ok');
+                    } else if (v === 'extending' || v === 'extending/standard') {
+                      statusCell.classList.add('status-info');
+                    }
+                  }
+                });
+              } catch(e) {}
+            }
 
             var modal = document.getElementById('rateModal');
             var openBtn = document.getElementById('openAddAdmin');
@@ -958,7 +997,7 @@
                         selectedAccommodations.push(cb.value);
                     });
                     
-                    console.log('Selected accommodations for add:', selectedAccommodations);
+                    // Selected accommodations for add
                     
                     // Remove unchecked checkboxes from form data to prevent empty values
                     document.querySelectorAll('.accommodation-selection input[type="checkbox"]:not(:checked)').forEach(function(cb) {
@@ -1089,7 +1128,7 @@
               // Fix checkbox functionality in update modal
               setTimeout(function() {
                 fixAccommodationCheckboxes();
-                console.log('Accommodation checkboxes fixed for update modal');
+                // Accommodation checkboxes fixed for update modal
               }, 100);
             }
             

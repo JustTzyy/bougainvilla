@@ -287,7 +287,7 @@
                         <th>Name</th>
                         <th>Contact</th>
                         <th>Created</th>
-                        <th>Age</th>
+                        <th>Activity Time</th>
                         <th>Actions</th>
                     </tr>
                 </thead>

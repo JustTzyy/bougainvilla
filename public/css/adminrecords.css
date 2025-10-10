@@ -139,7 +139,8 @@ button[data-update]:hover,
 .page-btn.active { background: var(--purple-primary); color: #fff; border-color: var(--purple-primary); }
 
 /* Page header button */
-#openAddAdmin {
+#openAddAdmin,
+#openAddCleaner {
   width: auto;
   padding: 10px 16px;
   display: inline-flex;
@@ -155,15 +156,18 @@ button[data-update]:hover,
   transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
 }
 
-#openAddAdmin:hover {
+#openAddAdmin:hover,
+#openAddCleaner:hover {
   background: var(--purple-hover);
   transform: translateY(-1px);
   box-shadow: 0 10px 18px rgba(237,192,1,.28);
 }
 
-#openAddAdmin:active { transform: translateY(0); box-shadow: 0 6px 14px rgba(237,192,1,.25); }
+#openAddAdmin:active,
+#openAddCleaner:active { transform: translateY(0); box-shadow: 0 6px 14px rgba(237,192,1,.25); }
 
-#openAddAdmin i { font-size: 14px; }
+#openAddAdmin i,
+#openAddCleaner i { font-size: 14px; }
 
 /* Search area */
 .admin-search {  max-width:420px; }
@@ -237,6 +241,7 @@ button[data-update]:hover,
    ============================= */
 /* Card shells - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-card,
+#cleanerModal .modal-card,
 #updateModal .modal-card,
 #levelModal .modal-card,
 #accommodationModal .modal-card,
@@ -251,6 +256,7 @@ button[data-update]:hover,
 
 /* Headers - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-header,
+#cleanerModal .modal-header,
 #updateModal .modal-header,
 #levelModal .modal-header,
 #accommodationModal .modal-header,
@@ -260,12 +266,14 @@ button[data-update]:hover,
 
 /* Tabs (Add + Update) - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-tabs,
+#cleanerModal .modal-tabs,
 #updateModal .modal-tabs,
 #levelModal .modal-tabs,
 #accommodationModal .modal-tabs,
 #rateModal .modal-tabs,
 #roomModal .modal-tabs { display:flex; background:#f8f9fa; border-bottom:1px solid var(--border-color); margin:0; }
 #adminModal .tab-btn,
+#cleanerModal .tab-btn,
 #updateModal .tab-btn,
 #levelModal .tab-btn,
 #accommodationModal .tab-btn,
@@ -277,24 +285,28 @@ button[data-update]:hover,
   border-bottom:3px solid transparent;
 }
 #adminModal .tab-btn:hover,
+#cleanerModal .tab-btn:hover,
 #updateModal .tab-btn:hover,
 #levelModal .tab-btn:hover,
 #accommodationModal .tab-btn:hover,
 #rateModal .tab-btn:hover,
 #roomModal .tab-btn:hover { background:#e9ecef; color:var(--purple-primary); }
 #adminModal .tab-btn.active,
+#cleanerModal .tab-btn.active,
 #updateModal .tab-btn.active,
 #levelModal .tab-btn.active,
 #accommodationModal .tab-btn.active,
 #rateModal .tab-btn.active,
 #roomModal .tab-btn.active { background:#fff; color:var(--purple-primary); border-bottom-color:var(--purple-primary); }
 #adminModal .tab-content,
+#cleanerModal .tab-content,
 #updateModal .tab-content,
 #levelModal .tab-content,
 #accommodationModal .tab-content,
 #rateModal .tab-content,
 #roomModal .tab-content { display:none; padding:20px; }
 #adminModal .tab-content.active,
+#cleanerModal .tab-content.active,
 #updateModal .tab-content.active,
 #levelModal .tab-content.active,
 #accommodationModal .tab-content.active,
@@ -303,24 +315,28 @@ button[data-update]:hover,
 
 /* Forms (Add + Update) - Added #accommodationModal, #rateModal, #roomModal */ 
 #adminModal .form-grid,
+#cleanerModal .form-grid,
 #updateModal .form-grid,
 #levelModal .form-grid,
 #accommodationModal .form-grid,
 #rateModal .form-grid,
 #roomModal .form-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; }
 #adminModal .form-group,
+#cleanerModal .form-group,
 #updateModal .form-group,
 #levelModal .form-group,
 #accommodationModal .form-group,
 #rateModal .form-group,
 #roomModal .form-group { display:flex; flex-direction:column; align-items:flex-start; min-width:0; }
 #adminModal .form-group.span-2,
+#cleanerModal .form-group.span-2,
 #updateModal .form-group.span-2,
 #levelModal .form-group.span-2,
 #accommodationModal .form-group.span-2,
 #rateModal .form-group.span-2,
 #roomModal .form-group.span-2 { grid-column:span 2; }
 #adminModal .form-group label,
+#cleanerModal .form-group label,
 #updateModal .form-group label,
 #levelModal .form-group label,
 #accommodationModal .form-group label,
@@ -329,36 +345,42 @@ button[data-update]:hover,
 
 /* Textfields - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .form-input,
+#cleanerModal .form-input,
 #updateModal .form-input,
 #levelModal .form-input,
 #accommodationModal .form-input,
 #rateModal .form-input,
 #roomModal .form-input { padding:12px 14px; height:44px; line-height:20px; border:1px solid var(--border-color); border-radius:10px; background:#fff; font-size:14px; transition:border-color .15s ease, box-shadow .15s ease, transform .08s ease; width:100%; box-sizing:border-box; }
 #adminModal select.form-input,
+#cleanerModal select.form-input,
 #updateModal select.form-input,
 #levelModal select.form-input,
 #accommodationModal select.form-input,
 #rateModal select.form-input,
 #roomModal select.form-input { appearance:none; -webkit-appearance:none; -moz-appearance:none; background-image: none; }
 #adminModal .form-group + .form-group,
+#cleanerModal .form-group + .form-group,
 #updateModal .form-group + .form-group,
 #levelModal .form-group + .form-group,
 #accommodationModal .form-group + .form-group,
 #rateModal .form-group + .form-group,
 #roomModal .form-group + .form-group { margin-top:0; }
 #adminModal .form-input:hover,
+#cleanerModal .form-input:hover,
 #updateModal .form-input:hover,
 #levelModal .form-input:hover,
 #accommodationModal .form-input:hover,
 #rateModal .form-input:hover,
 #roomModal .form-input:hover { border-color: rgba(237,192,1,.35); }
 #adminModal .form-input:focus,
+#cleanerModal .form-input:focus,
 #updateModal .form-input:focus,
 #levelModal .form-input:focus,
 #accommodationModal .form-input:focus,
 #rateModal .form-input:focus,
 #roomModal .form-input:focus { outline:none; border-color:var(--purple-primary); box-shadow:0 0 0 4px rgba(237,192,1,.12); transform:translateY(-1px); }
 #adminModal .form-input[readonly],
+#cleanerModal .form-input[readonly],
 #updateModal .form-input[readonly],
 #levelModal .form-input[readonly],
 #accommodationModal .form-input[readonly],
@@ -367,6 +389,7 @@ button[data-update]:hover,
 
 /* Primary actions - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .btn-primary.inline,
+#cleanerModal .btn-primary.inline,
 #updateModal .btn-primary.inline,
 #levelModal .btn-primary.inline,
 #accommodationModal .btn-primary.inline,
@@ -378,18 +401,21 @@ button[data-update]:hover,
   transition:transform .08s ease, box-shadow .15s ease, background .15s ease;
 }
 #adminModal .btn-primary.inline:hover,
+#cleanerModal .btn-primary.inline:hover,
 #updateModal .btn-primary.inline:hover,
 #levelModal .btn-primary.inline:hover,
 #accommodationModal .btn-primary.inline:hover,
 #rateModal .btn-primary.inline:hover,
 #roomModal .btn-primary.inline:hover { background:linear-gradient(135deg, var(--purple-hover), #F4D03F); transform:translateY(-2px); box-shadow:0 10px 20px rgba(237,192,1,.38); }
 #adminModal .btn-primary.inline:active,
+#cleanerModal .btn-primary.inline:active,
 #updateModal .btn-primary.inline:active,
 #levelModal .btn-primary.inline:active,
 #accommodationModal .btn-primary.inline:active,
 #rateModal .btn-primary.inline:active,
 #roomModal .btn-primary.inline:active { transform:translateY(0); box-shadow:0 4px 12px rgba(237,192,1,.28); }
-#adminModal .btn-primary.inline::before { content:"\f0c7"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
+#adminModal .btn-primary.inline::before,
+#cleanerModal .btn-primary.inline::before { content:"\f0c7"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
 #updateModal .btn-primary.inline::before { content:"\f0c7"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
 #levelModal .btn-primary.inline::before { content:"\f0c7"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
 #accommodationModal .btn-primary.inline::before { content:"\f0c7"; font-family: "Font Awesome 5 Free"; font-weight: 900; }
@@ -398,6 +424,7 @@ button[data-update]:hover,
 
 /* Match Cancel buttons in Add and Update modals - Added #accommodationModal, #rateModal, #roomModal */
 #adminModal .modal-actions .action-btn.btn-outline,
+#cleanerModal .modal-actions .action-btn.btn-outline,
 #updateModal .modal-actions .action-btn.btn-outline,
 #levelModal .modal-actions .action-btn.btn-outline,
 #accommodationModal .modal-actions .action-btn.btn-outline,
@@ -409,6 +436,7 @@ button[data-update]:hover,
   transition:background .15s ease, color .15s ease, box-shadow .15s ease, transform .08s ease, border-color .15s ease;
 }
 #adminModal .modal-actions .action-btn.btn-outline:hover,
+#cleanerModal .modal-actions .action-btn.btn-outline:hover,
 #updateModal .modal-actions .action-btn.btn-outline:hover,
 #levelModal .modal-actions .action-btn.btn-outline:hover,
 #accommodationModal .modal-actions .action-btn.btn-outline:hover,
@@ -418,6 +446,7 @@ button[data-update]:hover,
   transform:translateY(-1px); box-shadow:0 10px 20px rgba(237,192,1,.28);
 }
 #adminModal .modal-actions .action-btn.btn-outline:active,
+#cleanerModal .modal-actions .action-btn.btn-outline:active,
 #updateModal .modal-actions .action-btn.btn-outline:active,
 #levelModal .modal-actions .action-btn.btn-outline:active,
 #accommodationModal .modal-actions .action-btn.btn-outline:active,
@@ -427,6 +456,7 @@ button[data-update]:hover,
 /* Responsive tweaks for modals - Added #accommodationModal, #rateModal, #roomModal */
 @media (max-width: 900px) {
   #adminModal .modal-card,
+  #cleanerModal .modal-card,
   #updateModal .modal-card,
   #levelModal .modal-card,
   #accommodationModal .modal-card,
@@ -434,6 +464,7 @@ button[data-update]:hover,
   #roomModal .modal-card,
   #userDetailsModal .modal-card { max-width:95vw; }
   #adminModal .tab-content,
+  #cleanerModal .tab-content,
   #updateModal .tab-content,
   #levelModal .tab-content,
   #accommodationModal .tab-content,
@@ -443,12 +474,14 @@ button[data-update]:hover,
 /* Keep two columns down to tablet widths; stack on phones - Added #accommodationModal, #rateModal, #roomModal */
 @media (max-width: 700px) {
   #adminModal .form-grid,
+  #cleanerModal .form-grid,
   #updateModal .form-grid,
   #levelModal .form-grid,
   #accommodationModal .form-grid,
   #rateModal .form-grid,
   #roomModal .form-grid { grid-template-columns:1fr; gap:12px; }
   #adminModal .form-group.span-2,
+  #cleanerModal .form-group.span-2,
   #updateModal .form-group.span-2,
   #levelModal .form-group.span-2,
   #accommodationModal .form-group.span-2,
@@ -457,12 +490,14 @@ button[data-update]:hover,
 }
 @media (max-width: 600px) {
   #adminModal .modal-tabs,
+  #cleanerModal .modal-tabs,
   #updateModal .modal-tabs,
   #levelModal .modal-tabs,
   #accommodationModal .modal-tabs,
   #rateModal .modal-tabs,
   #roomModal .modal-tabs { flex-direction:column; }
   #adminModal .tab-btn,
+  #cleanerModal .tab-btn,
   #updateModal .tab-btn,
   #levelModal .tab-btn,
   #accommodationModal .tab-btn,

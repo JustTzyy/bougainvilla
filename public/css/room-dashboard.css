@@ -708,6 +708,170 @@
     max-width: 600px;
 }
 
+/* Cleaner Section Styles */
+.cleaner-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #e8f5e8;
+    border: 1px solid #c3e6c3;
+    border-radius: 8px;
+}
+
+.cleaner-section .form-label {
+    font-weight: 600;
+    color: #2d5a2d;
+    margin-bottom: 8px;
+}
+
+.cleaner-section .form-input {
+    border: 2px solid #c3e6c3;
+    background: #ffffff;
+}
+
+.cleaner-section .form-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Terms and Conditions Section Styles */
+.terms-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f8ff;
+    border: 1px solid #b3d9ff;
+    border-radius: 8px;
+}
+
+.terms-section .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: #1e40af;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.terms-section input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #3b82f6;
+}
+
+.terms-link {
+    color: #1e40af;
+    text-decoration: underline;
+    font-weight: 600;
+}
+
+.terms-link:hover {
+    color: #1d4ed8;
+    text-decoration: none;
+}
+
+/* Terms Modal Content Styles */
+.terms-content {
+    line-height: 1.6;
+    color: #374151;
+}
+
+.terms-content h4 {
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 10px;
+}
+
+.terms-content h5 {
+    color: #1f2937;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 20px 0 10px 0;
+}
+
+.terms-content ul {
+    margin: 10px 0 15px 20px;
+}
+
+.terms-content li {
+    margin-bottom: 8px;
+    color: #4b5563;
+}
+
+.terms-content p {
+    margin: 15px 0;
+    color: #4b5563;
+}
+
+.terms-content strong {
+    color: #1f2937;
+    font-weight: 600;
+}
+
+/* Penalty Section Styles */
+.penalty-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 8px;
+}
+
+.penalty-section .form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    color: #856404;
+    margin-bottom: 0;
+}
+
+.penalty-section input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #ffc107;
+}
+
+.penalty-fields {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ffeaa7;
+}
+
+.penalty-fields .form-group {
+    margin-bottom: 15px;
+}
+
+.penalty-fields .form-label {
+    color: #333;
+    font-weight: 500;
+}
+
+.penalty-fields .form-input {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 12px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.penalty-fields textarea.form-input {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.penalty-row {
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.penalty-row span:last-child {
+    color: #dc3545;
+}
+
 @media (max-width: 768px) {
     .rooms-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -725,6 +889,15 @@
     .modal-content {
         width: 95%;
         margin: 2% auto;
+    }
+    
+    .penalty-section {
+        padding: 12px;
+    }
+    
+    .penalty-fields {
+        margin-top: 12px;
+        padding-top: 12px;
     }
 }
 
