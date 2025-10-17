@@ -36,7 +36,7 @@
       .summary-card { background:white; border:1px solid #eee; border-radius:12px; padding:14px; cursor:pointer; transition:.2s; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
        .summary-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,26,26,.12); border-color: rgba(26,26,26,.35); }
       .summary-title { font-size:12px; color:#6c757d; text-transform:uppercase; letter-spacing:.3px; margin-bottom:6px; }
-      .summary-value { font-size:20px; font-weight:800; color:#2b2d42; }
+      .summary-value { font-size:20px; font-weight:800; color:#2b2d42; text-align:right; }
       .filters-wrap { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:10px; background:linear-gradient(135deg,#f8f9ff 0%,#ffffff 100%); border:1px solid #eee; border-radius:12px; }
       .filter-label { font-size:12px; font-weight:700; color:#6c757d; }
       .date-input { appearance:none; padding:10px 12px; border:2px solid rgba(184,134,11,.2); border-radius:10px; background:white; transition:.2s; }

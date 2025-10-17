@@ -201,23 +201,23 @@
     <div class="sales-summary" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
       <h3 style="margin: 0 0 15px 0; color: #333; font-size: 18px;">Sales Summary</h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+        <div style="text-align: right; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
           <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Payments</div>
           <div id="printTotalCount" style="font-size: 20px; font-weight: bold; color: #333;">0</div>
         </div>
-        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+        <div style="text-align: right; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
           <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Subtotal</div>
           <div id="printTotalSubtotal" style="font-size: 20px; font-weight: bold; color: #333;">₱0.00</div>
         </div>
-        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+        <div style="text-align: right; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
           <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Tax</div>
           <div id="printTotalTax" style="font-size: 20px; font-weight: bold; color: #333;">₱0.00</div>
         </div>
-        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+        <div style="text-align: right; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
           <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Total Amount</div>
           <div id="printTotalAmount" style="font-size: 20px; font-weight: bold; color: #27ae60;">₱0.00</div>
         </div>
-        <div style="text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
+        <div style="text-align: right; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e9ecef;">
           <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Average per Payment</div>
           <div id="printAverage" style="font-size: 20px; font-weight: bold; color: #333;">₱0.00</div>
         </div>

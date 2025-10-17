@@ -1535,21 +1535,14 @@ function displayRateOptions(rates) {
             document.querySelectorAll('.rate-option').forEach(opt => opt.classList.remove('selected'));
             this.classList.add('selected');
             selectedRate = rate;
-            
-            // Selected rate
-                duration: rate.duration,
-                formattedDuration: formatDurationDisplay(rate.duration),
-                price: rate.price,
-                status: rate.status
-            });
-            
+
             // Calculate totals and show payment UI for both new stays and extensions
             if (extensionMode) {
                 // For extensions, use the previous guest count
                 const gc = roomIdToGuestCount[String(currentRoom.id)] || 1;
                 guestCount = gc; // Update guestCount for consistency
             }
-            
+
             calculateTotal();
         });
         
@@ -1985,12 +1978,6 @@ function formatDurationDisplay(durationStr) {
 }
 
 function showReceipt(receiptData) {
-    // Receipt data
-        room: receiptData.room,
-        accommodation: receiptData.accommodation,
-        total: receiptData.total
-    });
-    
     const receiptContent = document.getElementById('receiptContent');
     const now = new Date();
     const receiptId = receiptData.receipt_id || 'RCP-' + now.getTime();
