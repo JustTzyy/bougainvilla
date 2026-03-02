@@ -268,7 +268,10 @@
 <script>
 (function(){
   function peso(n){
-    try { return '₱' + Number(n).toFixed(2); } catch(e){ return '₱0.00'; }
+    try { 
+      var num = Number(n);
+      return '₱' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } catch(e){ return '₱0.00'; }
   }
   var dailyChart, pieChart;
   
@@ -282,7 +285,7 @@
     document.getElementById('sumSubtotal').textContent = peso(data.totals.subtotal);
     document.getElementById('sumTax').textContent = peso(data.totals.tax);
     document.getElementById('sumAmount').textContent = peso(data.totals.amount);
-    document.getElementById('sumCount').textContent = String(data.totals.count);
+    document.getElementById('sumCount').textContent = Number(data.totals.count).toLocaleString('en-US');
     document.getElementById('sumAvg').textContent = peso(data.totals.avg_amount);
     // Store all daily data for pagination
     allDailyData = data.daily || [];
@@ -457,11 +460,11 @@
     render(data);
     // KPIs
     if(data.kpis){
-      document.getElementById('kpiAvail').textContent = data.kpis.rooms_available;
-      document.getElementById('kpiOcc').textContent = data.kpis.rooms_occupied;
+      document.getElementById('kpiAvail').textContent = Number(data.kpis.rooms_available).toLocaleString('en-US');
+      document.getElementById('kpiOcc').textContent = Number(data.kpis.rooms_occupied).toLocaleString('en-US');
       document.getElementById('kpiOccRate').textContent = (data.kpis.occupancy_rate||0) + '%';
-      document.getElementById('kpiIn').textContent = data.kpis.checkins;
-      document.getElementById('kpiGuests').textContent = data.kpis.guests || 0;
+      document.getElementById('kpiIn').textContent = Number(data.kpis.checkins).toLocaleString('en-US');
+      document.getElementById('kpiGuests').textContent = Number(data.kpis.guests || 0).toLocaleString('en-US');
     }
   }
   // Automatic filter event listeners

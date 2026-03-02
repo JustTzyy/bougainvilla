@@ -187,6 +187,7 @@ Route::prefix('frontdesk')->middleware('auth')->group(function () {
     Route::post('/stays/extend/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'extend'])->name('frontdesk.stays.extend');
     Route::post('/rooms/mark-ready/{roomId}', [App\Http\Controllers\FrontDesk\StayController::class, 'markRoomReady'])->name('frontdesk.rooms.mark-ready');
     Route::post('/stays/delete/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'delete'])->name('frontdesk.stays.delete');
+    Route::post('/stays/penalty-payment/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'processPenaltyPayment'])->name('frontdesk.stays.penalty-payment');
     Route::post('/stays/restore/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'restore'])->name('frontdesk.stays.restore');
     Route::get('/stays/active', [App\Http\Controllers\FrontDesk\StayController::class, 'getActiveStays'])->name('frontdesk.stays.active');
 });

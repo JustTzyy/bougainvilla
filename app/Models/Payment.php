@@ -43,10 +43,13 @@ class Payment extends Model
      */
     public function updateWithTaxCalculation($taxRate = 0.12)
     {
+        // Calculate tax on the total amount (rate + penalty)
         $tax = $this->amount * $taxRate;
+        // Subtotal should be the amount before tax (total - tax)
+        $subtotal = $this->amount - $tax;
         $this->update([
             'tax' => $tax,
-            'subtotal' => $this->amount
+            'subtotal' => $subtotal
         ]);
     }
 }

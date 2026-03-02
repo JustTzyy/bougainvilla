@@ -128,6 +128,12 @@ class ReportController extends Controller
                     $accommodationName = $this->getAccommodationNameWithTrashed($stay->rate);
                 }
                 
+                // Calculate total amount from all payments for this stay
+                $totalAmount = 0;
+                if ($receipt->payment && $receipt->payment->stay) {
+                    $totalAmount = $receipt->payment->stay->payments()->sum('amount');
+                }
+                
                 return (object) [
                     'id' => $receipt->id,
                     'user_name' => $this->getUserFullName($receipt->user),
@@ -136,7 +142,7 @@ class ReportController extends Controller
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
                     'status' => $status,
-                    'amount' => $receipt->payment ? $receipt->payment->amount : 0,
+                    'amount' => $totalAmount,
                     'created_at' => $receipt->created_at
                 ];
             });
@@ -216,6 +222,12 @@ class ReportController extends Controller
                     $accommodationName = $this->getAccommodationNameWithTrashed($receipt->payment->stay->rate);
                 }
 
+                // Calculate total amount from all payments for this stay
+                $totalAmount = 0;
+                if ($receipt->payment && $receipt->payment->stay) {
+                    $totalAmount = $receipt->payment->stay->payments()->sum('amount');
+                }
+                
                 return (object) [
                     'id' => $receipt->id,
                     'user_name' => $this->getUserFullName($receipt->user),
@@ -224,7 +236,7 @@ class ReportController extends Controller
                     'check_in' => $checkIn,
                     'check_out' => $checkOut,
                     'status' => $status,
-                    'amount' => $receipt->payment ? $receipt->payment->amount : 0,
+                    'amount' => $totalAmount,
                     'created_at' => $receipt->created_at
                 ];
             });

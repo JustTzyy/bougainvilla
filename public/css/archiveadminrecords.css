@@ -146,6 +146,11 @@ button[data-update]:hover,
   letter-spacing: .2px;
   box-shadow: 0 6px 14px rgba(237,192,1,.18);
   transition: background .15s ease, color .15s ease, box-shadow .15s ease, transform .08s ease, border-color .15s ease;
+  min-width: 160px;
+  white-space: nowrap;
+  font-size: 14px;
+  height: 44px;
+  width: 160px;
 }
 .records-toolbar .archive-btn i { font-size: 14px; }
 .records-toolbar .archive-btn:hover {

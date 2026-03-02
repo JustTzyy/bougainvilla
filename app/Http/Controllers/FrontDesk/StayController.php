@@ -297,6 +297,18 @@ class StayController extends Controller
                 'penalty_reason' => $request->penalty_reason,
             ]);
 
+            // Create penalty payment if penalty amount is provided
+            if ($request->penalty_amount && $request->penalty_amount > 0) {
+                Payment::create([
+                    'stayID' => $stay->id,
+                    'amount' => $request->penalty_amount,
+                    'tax' => 0, // No tax on penalty amounts
+                    'subtotal' => $request->penalty_amount, // Full amount is subtotal since no tax
+                    'status' => 'pending', // Penalty payment is pending until guest pays
+                    'change' => 0
+                ]);
+            }
+
             // Update room status to Cleaning (needs cleaning after checkout)
             $room->update(['status' => 'Cleaning']);
 
@@ -929,10 +941,12 @@ class StayController extends Controller
                         $cleanerName = $cleaner->name ?? trim(($cleaner->firstName.' '.($cleaner->middleName ? $cleaner->middleName.' ' : '').$cleaner->lastName));
                     }
                 }
+                $totalAmount = $stay->payments->sum('amount');
+                
                 $transaction = [
                     'room' => $stay->room ? $stay->room->room : 'N/A',
                     'accommodation' => $this->getAccommodationNameWithTrashed($stay->rate),
-                    'amount' => $stay->payments->sum('amount'),
+                    'amount' => $totalAmount,
                     'cleaner_name' => $cleanerName,
                     'penalty_amount' => $stay->penalty_amount ?? null,
                     'penalty_reason' => $stay->penalty_reason ?? null
@@ -1052,5 +1066,117 @@ class StayController extends Controller
                 'message' => 'Failed to fetch guest details: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Process penalty payment for a stay
+     */
+    public function processPenaltyPayment(Request $request, $id)
+    {
+        try {
+            $request->validate([
+                'payment_amount' => 'required|numeric|min:0',
+                'payment_change' => 'required|numeric|min:0'
+            ]);
+
+            // Find the stay
+            $stay = Stay::withTrashed()->findOrFail($id);
+            
+            // Find the pending penalty payment
+            $penaltyPayment = Payment::where('stayID', $stay->id)
+                ->where('status', 'pending')
+                ->where('amount', $stay->penalty_amount)
+                ->where('tax', 0) // Penalty payments have no tax
+                ->first();
+
+            if (!$penaltyPayment) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No pending penalty payment found for this stay.'
+                ], 404);
+            }
+
+            $amountPaid = $request->payment_amount;
+            $change = $request->payment_change;
+            $penaltyAmount = $stay->penalty_amount;
+
+            // Validate payment amount
+            if ($amountPaid < $penaltyAmount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Amount paid must be at least the penalty amount.'
+                ], 400);
+            }
+
+            DB::beginTransaction();
+
+            // Update the penalty payment
+            $penaltyPayment->update([
+                'amount' => $penaltyAmount,
+                'status' => 'paid',
+                'change' => $change
+            ]);
+
+            // Create receipt for penalty payment
+            $receipt = Receipt::create([
+                'status' => 'completed',
+                'status_type' => 'Standard',
+                'paymentID' => $penaltyPayment->id,
+                'userID' => auth()->id()
+            ]);
+
+            // No tax calculation for penalty payments
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Penalty payment processed successfully.',
+                'receipt_id' => $receipt->id,
+                'receipt_data' => [
+                    'receipt_id' => $receipt->id,
+                    'room' => $stay->room ? $stay->room->room : 'N/A',
+                    'level' => $stay->room && $stay->room->level ? $stay->room->level->description : '-',
+                    'accommodation' => $this->getAccommodationNameWithTrashed($stay->rate),
+                    'duration' => 'Penalty Payment',
+                    'guest_count' => 1,
+                    'subtotal' => $penaltyAmount, // No tax, so subtotal equals total
+                    'tax' => 0, // No tax on penalty payments
+                    'total' => $penaltyAmount,
+                    'penalty_amount' => $penaltyAmount,
+                    'amount_paid' => $amountPaid,
+                    'change' => $change,
+                    'cashier' => auth()->user()->name ?? 'Staff',
+                    'date_time' => now()->format('M d, Y h:i A'),
+                    'type' => 'Penalty Payment'
+                ]
+            ]);
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            \Log::error('Penalty Payment Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to process penalty payment: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get accommodation name with trashed rates
+     */
+    private function getAccommodationNameWithTrashed($rate)
+    {
+        if (!$rate) {
+            return 'N/A';
+        }
+
+        // If rate is soft deleted, get the accommodation name from the rate
+        if ($rate->trashed()) {
+            return $rate->accommodation ? $rate->accommodation->description : 'Deleted Accommodation';
+        }
+
+        // If rate is not deleted, get accommodation name normally
+        return $rate->accommodation ? $rate->accommodation->description : 'N/A';
     }
 }

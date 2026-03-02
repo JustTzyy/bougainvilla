@@ -141,24 +141,29 @@ button[data-update]:hover,
 /* Page header button */
 #openAddAdmin,
 #openAddCleaner {
-  width: auto;
-  padding: 10px 16px;
+  width: 160px;
+  padding: 10px 14px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: none;
+  border: 1px solid rgba(237,192,1,.35);
   border-radius: 999px;
-  background: var(--purple-primary);
+  background: linear-gradient(135deg, var(--purple-primary), #F4D03F);
   color: #fff;
   font-weight: 600;
   letter-spacing: .2px;
   box-shadow: 0 6px 14px rgba(237,192,1,.25);
-  transition: background .15s ease, transform .08s ease, box-shadow .15s ease;
+  transition: background .15s ease, transform .08s ease, box-shadow .15s ease, border-color .15s ease;
+  min-width: 160px;
+  white-space: nowrap;
+  font-size: 14px;
+  height: 44px;
 }
 
 #openAddAdmin:hover,
 #openAddCleaner:hover {
-  background: var(--purple-hover);
+  background: linear-gradient(135deg, var(--purple-hover), #F4D03F);
+  border-color: var(--purple-primary);
   transform: translateY(-1px);
   box-shadow: 0 10px 18px rgba(237,192,1,.28);
 }
@@ -186,6 +191,7 @@ button[data-update]:hover,
 .records-toolbar .archive-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 10px 14px;
   border-radius: 999px;
@@ -197,6 +203,11 @@ button[data-update]:hover,
   letter-spacing: .2px;
   box-shadow: 0 6px 14px rgba(237,192,1,.18);
   transition: background .15s ease, color .15s ease, box-shadow .15s ease, transform .08s ease, border-color .15s ease;
+  min-width: 160px;
+  white-space: nowrap;
+  font-size: 14px;
+  height: 44px;
+  width: 160px;
 }
 .records-toolbar .archive-btn i { font-size: 14px; }
 .records-toolbar .archive-btn:hover {

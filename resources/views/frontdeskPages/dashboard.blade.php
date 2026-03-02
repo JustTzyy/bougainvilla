@@ -99,7 +99,6 @@
       #pagination .page-item.disabled .page-link {
         background: #f8f9fa;
         color: #6c757d;
-        cursor: not-allowed;
       }
 
       /* Print Styles */
@@ -208,8 +207,8 @@
         <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Rooms Available</div><div class="summary-value" id="kpiAvail">0</div></div>
         <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Rooms Occupied</div><div class="summary-value" id="kpiOcc">0</div></div>
         <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Occupancy Rate</div><div class="summary-value" id="kpiOccRate">0%</div></div>
-        <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactionreports') }}"><div class="summary-title">Check-ins</div><div class="summary-value" id="kpiIn">0</div></div>
-        <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactionreports') }}"><div class="summary-title">Guests</div><div class="summary-value" id="kpiGuests">0</div></div>
+        <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Check-ins</div><div class="summary-value" id="kpiIn">0</div></div>
+        <div class="summary-card clickable-card" data-route="{{ route('frontdesk.transactions') }}"><div class="summary-title">Guests</div><div class="summary-value" id="kpiGuests">0</div></div>
       </div>
     </div>
 
@@ -251,10 +250,7 @@
     </div>
 
     <div class="chart-card no-print" style="margin-top:16px;">
-      <div class="section-header-pad">
-        <h3 class="chart-title">📈 Daily Operational Metrics</h3>
-        <p style="margin: 4px 0 0 0; font-size: 12px; color: #6c757d; text-align: center;">Daily revenue tracking and operational insights</p>
-      </div>
+      <div class="section-header-pad"><h3 class="chart-title">📈 Daily Operational Metrics</h3></div>
       <div class="panel">
         <div style="text-align: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee;">
           <h4 style="margin: 0; font-size: 14px; font-weight: 600; color: #2b2d42;">🏨 Operational Performance Chart</h4>
@@ -271,7 +267,10 @@
 <script>
 (function(){
   function peso(n){
-    try { return '₱' + Number(n).toFixed(2); } catch(e){ return '₱0.00'; }
+    try { 
+      var num = Number(n);
+      return '₱' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } catch(e){ return '₱0.00'; }
   }
   var dailyChart, pieChart;
   
@@ -285,7 +284,7 @@
     document.getElementById('sumSubtotal').textContent = peso(data.totals.subtotal);
     document.getElementById('sumTax').textContent = peso(data.totals.tax);
     document.getElementById('sumAmount').textContent = peso(data.totals.amount);
-    document.getElementById('sumCount').textContent = String(data.totals.count);
+    document.getElementById('sumCount').textContent = Number(data.totals.count).toLocaleString('en-US');
     document.getElementById('sumAvg').textContent = peso(data.totals.avg_amount);
     // Store all daily data for pagination
     allDailyData = data.daily || [];
@@ -297,77 +296,53 @@
                      '<td>'+peso(row.amount)+'</td>';
       return { element: tr, data: row };
     });
-    
-    // Render table with pagination
     renderTable();
     renderPagination();
-
-    // Ops line chart (checkins, checkouts, guests per day)
-    var opsCtx = document.getElementById('opsLine').getContext('2d');
-    var group = {};
-    (data.daily || []).forEach(function(d){ group[d.day] = { amount: Number(d.amount||0), subtotal: Number(d.subtotal||0), tax: Number(d.tax||0) }; });
-    // For ops, we'll synthesize from daily revenue as placeholder, since API doesn't provide daily checkins; KPI totals still accurate by date range.
-    var opsLabels = Object.keys(group);
-    var opsGuests = opsLabels.map(function(){ return null; });
-    var opsCheckins = opsLabels.map(function(){ return null; });
-    var opsCheckouts = opsLabels.map(function(){ return null; });
-    if (window.opsChart) window.opsChart.destroy();
-    window.opsChart = new Chart(opsCtx, {
-      type: 'line',
-      data: { labels: opsLabels, datasets: [
-        { label: 'Revenue', data: opsLabels.map(function(k){ return group[k].amount; }), borderColor:'#8B0000', backgroundColor:'rgba(139,0,0,.15)', tension:.25, fill:true },
-      ]},
-      options: { plugins:{ legend:{ position:'bottom' }}, scales:{ y:{ ticks:{ callback:function(v){ return '₱'+v; }}}}}
-    });
-
+    alignDailyTable();
+    
     // Charts
-    var labels = (data.daily || []).map(function(d){ return d.day; });
-    var totals = (data.daily || []).map(function(d){ return Number(d.amount || 0); });
-    var ctx = document.getElementById('dailyLine').getContext('2d');
-    if (dailyChart) dailyChart.destroy();
-    dailyChart = new Chart(ctx, {
+    var labels = allDailyData.map(function(r){ return r.day; });
+    var amounts = allDailyData.map(function(r){ return Number(r.amount); });
+    var subtotals = allDailyData.map(function(r){ return Number(r.subtotal); });
+    var taxes = allDailyData.map(function(r){ return Number(r.tax); });
+    
+    if(dailyChart) dailyChart.destroy();
+    dailyChart = new Chart(document.getElementById('dailyLine'), {
       type: 'line',
       data: {
         labels: labels,
         datasets: [{
-          label: 'Total Amount',
-          data: totals,
-          borderColor: '#1a1a1a',
-          backgroundColor: 'rgba(184,134,11,0.15)',
-          borderWidth: 2,
-          tension: 0.25,
-          pointRadius: 3,
-          fill: true,
+          label: 'Total Revenue',
+          data: amounts,
+          borderColor: 'rgba(184,134,11,1)',
+          backgroundColor: 'rgba(184,134,11,0.1)',
+          tension: 0.4
         }]
       },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: true },
-          tooltip: { callbacks: { label: function(ctx){ return ' ' + peso(ctx.raw); } } }
-        },
-        scales: {
-          y: { ticks: { callback: function(v){ return '₱' + v; } }, grid: { color: 'rgba(0,0,0,0.06)' } },
-          x: { grid: { display:false } }
-        }
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: { y: { beginAtZero: true } }
       }
     });
-
-    var pctx = document.getElementById('breakdownPie').getContext('2d');
-    if (pieChart) pieChart.destroy();
-    pieChart = new Chart(pctx, {
-      type: 'doughnut',
+    
+    var totalSub = subtotals.reduce(function(a,b){ return a+b; }, 0);
+    var totalTax = taxes.reduce(function(a,b){ return a+b; }, 0);
+    if(pieChart) pieChart.destroy();
+    pieChart = new Chart(document.getElementById('breakdownPie'), {
+      type: 'pie',
       data: {
         labels: ['Subtotal', 'Tax'],
         datasets: [{
-          data: [Number(data.totals.subtotal||0), Number(data.totals.tax||0)],
-          backgroundColor: ['#8B0000', '#1a1a1a'],
-          borderWidth: 0
+          data: [totalSub, totalTax],
+          backgroundColor: ['rgba(184,134,11,0.8)', 'rgba(139,0,0,0.8)']
         }]
       },
       options: {
-        plugins: { legend: { position: 'bottom' } },
-        cutout: '60%'
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } }
       }
     });
   }
@@ -376,26 +351,24 @@
     var tbody = document.getElementById('dailyRows');
     tbody.innerHTML = '';
     var start = (currentPage - 1) * pageSize;
-    var pageItems = filteredRows.slice(start, start + pageSize);
-    pageItems.forEach(function(r){
-      tbody.appendChild(r.element);
-    });
-    alignFrontdeskDailyTable();
+    var end = start + pageSize;
+    var pageRows = filteredRows.slice(start, end);
+    pageRows.forEach(function(row){ tbody.appendChild(row.element); });
+    alignDailyTable();
   }
 
   function renderPagination(){
+    var totalPages = Math.ceil(filteredRows.length / pageSize);
+    if(totalPages <= 1){
+      document.getElementById('pagination').style.display = 'none';
+      return;
+    }
+    document.getElementById('pagination').style.display = 'flex';
     var container = document.getElementById('pagination');
-    var totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
-    if (totalPages <= 1) { container.style.display = 'none'; container.innerHTML=''; return; }
-    container.style.display = '';
-    
-    // Calculate the range of pages to show (max 10 pages)
-    var maxVisiblePages = 10;
+    var maxVisiblePages = 5;
     var startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     var endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    // Adjust startPage if we're near the end
-    if (endPage - startPage + 1 < maxVisiblePages) {
+    if(endPage - startPage < maxVisiblePages - 1){
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
     
@@ -446,28 +419,9 @@
         currentPage = page;
         renderTable();
         renderPagination();
+        alignDailyTable();
       }
     });
-  }
-
-  // Auto-align table cells: numbers right, text left
-  function isNumericValue(text){
-    if (text == null) return false;
-    var t = String(text).trim().replace(/[\s,]/g, '');
-    if (t === '') return false;
-    t = t.replace(/^[-₱$€¥£]/, '');
-    return !isNaN(t) && isFinite(t);
-  }
-  function alignFrontdeskDailyTable(){
-    try {
-      var tbody = document.getElementById('dailyRows');
-      Array.prototype.forEach.call(tbody.rows, function(row){
-        Array.prototype.forEach.call(row.cells, function(cell){
-          var text = (cell.textContent||'').trim();
-          cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
-        });
-      });
-    } catch(e) { /* noop */ }
   }
 
   async function load(){
@@ -478,11 +432,11 @@
     render(data);
     // KPIs
     if(data.kpis){
-      document.getElementById('kpiAvail').textContent = data.kpis.rooms_available;
-      document.getElementById('kpiOcc').textContent = data.kpis.rooms_occupied;
+      document.getElementById('kpiAvail').textContent = Number(data.kpis.rooms_available).toLocaleString('en-US');
+      document.getElementById('kpiOcc').textContent = Number(data.kpis.rooms_occupied).toLocaleString('en-US');
       document.getElementById('kpiOccRate').textContent = (data.kpis.occupancy_rate||0) + '%';
-      document.getElementById('kpiIn').textContent = data.kpis.checkins;
-      document.getElementById('kpiGuests').textContent = data.kpis.guests || 0;
+      document.getElementById('kpiIn').textContent = Number(data.kpis.checkins).toLocaleString('en-US');
+      document.getElementById('kpiGuests').textContent = Number(data.kpis.guests || 0).toLocaleString('en-US');
     }
   }
   // Automatic filter event listeners
@@ -492,7 +446,7 @@
   // Initial load with server-provided defaults
   load();
   
-  // Navigate to Payments report when clicking any summary card
+  // Navigate to Transaction Reports when clicking any summary card
   document.querySelectorAll('.clickable-card').forEach(function(card) {
     card.addEventListener('click', function() {
       window.location.href = this.dataset.route;
@@ -556,6 +510,27 @@
     currentPage = 1;
     renderTable();
     renderPagination();
+    alignDailyTable();
+  }
+
+  // Auto-align daily table cells: numbers right, text left
+  function isNumericValue(text){
+    if (text == null) return false;
+    var t = String(text).trim().replace(/[,\s]/g, '');
+    if (t === '') return false;
+    t = t.replace(/^[-₱$€¥£]/, '');
+    return !isNaN(t) && isFinite(t);
+  }
+  function alignDailyTable(){
+    try {
+      var tbody = document.getElementById('dailyRows');
+      Array.prototype.forEach.call(tbody.rows, function(row){
+        Array.prototype.forEach.call(row.cells, function(cell, idx){
+          var text = cell.textContent || '';
+          cell.style.textAlign = isNumericValue(text) ? 'right' : 'left';
+        });
+      });
+    } catch(e) {}
   }
 
   // Add search event listener

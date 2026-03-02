@@ -137,11 +137,16 @@ class CleanerController extends Controller
                 'penalty_reason' => $request->penalty_reason
             ]);
 
-            // Update payment if it exists
-            $payment = Payment::where('stayID', $stay->id)->first();
-            if ($payment) {
-                $newTotal = $payment->subtotal + $request->penalty_amount;
-                $payment->update(['amount' => $newTotal]);
+            // Create a separate payment for penalty (don't modify existing payment)
+            if ($request->penalty_amount > 0) {
+                Payment::create([
+                    'stayID' => $stay->id,
+                    'amount' => $request->penalty_amount,
+                    'tax' => 0, // No tax on penalty amounts
+                    'subtotal' => $request->penalty_amount, // Full amount is subtotal since no tax
+                    'status' => 'pending', // Penalty payment is pending until guest pays
+                    'change' => 0
+                ]);
             }
 
             // Add history

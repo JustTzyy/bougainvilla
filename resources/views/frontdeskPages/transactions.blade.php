@@ -643,6 +643,37 @@
     </div>
   </div>
 
+  <!-- Penalty Payment Modal (opens after cleaner assignment with penalty) -->
+  <div id="penaltyPaymentModal" class="modal" style="display:none;">
+    <div class="modal-card" style="max-width: 450px;">
+      <div class="modal-header">
+        <h3 class="chart-title">Penalty Payment</h3>
+        <button id="closePenaltyPayment" class="action-btn ml-auto"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-form" style="padding: 16px;">
+        <div class="form-group">
+          <label class="form-label">Penalty Amount</label>
+          <div class="penalty-amount-display" style="background: #f8f9fa; padding: 12px; border-radius: 8px; text-align: center; font-size: 18px; font-weight: bold; color: #dc3545;">
+            ₱<span id="penaltyAmountDisplay">0.00</span>
+          </div>
+          <small style="color:#6c757d;">This amount must be paid before checkout.</small>
+        </div>
+        <div class="form-group" style="margin-top: 16px;">
+          <label class="form-label">Amount Paid</label>
+          <input type="number" class="form-input" id="penaltyAmountPaid" step="0.01" min="0" placeholder="Enter amount paid">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Change</label>
+          <input type="number" class="form-input" id="penaltyChangeAmount" step="0.01" readonly>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="action-btn btn-outline" id="cancelPenaltyPayment">Cancel</button>
+        <button type="button" class="btn-primary inline" id="processPenaltyPayment">Process Payment</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Receipt Modal -->
   <div id="receiptModal" class="modal" style="display:none;">
     <div class="modal-content" style="max-width: 400px; padding: 0;">
@@ -981,6 +1012,29 @@ function initializeEventListeners() {
   if (assignHasPenalty) assignHasPenalty.addEventListener('change', function(){
     if (this.checked) assignPenaltyFields.classList.remove('hidden'); else assignPenaltyFields.classList.add('hidden');
   });
+
+  // Penalty payment modal elements
+  var penaltyPaymentModal = document.getElementById('penaltyPaymentModal');
+  var closePenaltyPayment = document.getElementById('closePenaltyPayment');
+  var cancelPenaltyPayment = document.getElementById('cancelPenaltyPayment');
+  var processPenaltyPaymentBtn = document.getElementById('processPenaltyPayment');
+  var penaltyAmountDisplay = document.getElementById('penaltyAmountDisplay');
+  var penaltyAmountPaid = document.getElementById('penaltyAmountPaid');
+  var penaltyChangeAmount = document.getElementById('penaltyChangeAmount');
+  
+  function hidePenaltyPayment(){ if(penaltyPaymentModal) penaltyPaymentModal.style.display = 'none'; }
+  if (closePenaltyPayment) closePenaltyPayment.addEventListener('click', hidePenaltyPayment);
+  if (cancelPenaltyPayment) cancelPenaltyPayment.addEventListener('click', hidePenaltyPayment);
+  
+  // Calculate change for penalty payment
+  if (penaltyAmountPaid) {
+    penaltyAmountPaid.addEventListener('input', function() {
+      const amountPaid = parseFloat(this.value) || 0;
+      const penaltyAmount = parseFloat(penaltyAmountDisplay.textContent) || 0;
+      const change = amountPaid - penaltyAmount;
+      penaltyChangeAmount.value = change >= 0 ? change.toFixed(2) : '0.00';
+    });
+  }
   async function openAssignCleanerModal(){
     try {
       const res = await fetch('/adminPages/cleaners/list');
@@ -1005,6 +1059,69 @@ function initializeEventListeners() {
     }
     assignCleanerModal.style.display = 'flex';
   }
+  
+  // Function to open penalty payment modal
+  function openPenaltyPaymentModal(stayId, penaltyAmount) {
+    penaltyAmountDisplay.textContent = penaltyAmount.toFixed(2);
+    penaltyAmountPaid.value = penaltyAmount.toFixed(2); // Pre-fill with exact amount
+    penaltyChangeAmount.value = '0.00';
+    penaltyPaymentModal.style.display = 'flex';
+    
+    // Store stay ID for processing
+    penaltyPaymentModal.dataset.stayId = stayId;
+  }
+  
+  // Process penalty payment
+  if (processPenaltyPaymentBtn) {
+    processPenaltyPaymentBtn.addEventListener('click', function() {
+      const stayId = penaltyPaymentModal.dataset.stayId;
+      const amountPaid = parseFloat(penaltyAmountPaid.value) || 0;
+      const penaltyAmount = parseFloat(penaltyAmountDisplay.textContent) || 0;
+      const change = parseFloat(penaltyChangeAmount.value) || 0;
+      
+      if (amountPaid < penaltyAmount) {
+        alert('Amount paid must be at least the penalty amount.');
+        return;
+      }
+      
+      // Show loading state
+      processPenaltyPaymentBtn.disabled = true;
+      processPenaltyPaymentBtn.textContent = 'Processing...';
+      
+      fetch(`/frontdesk/stays/penalty-payment/${stayId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+          payment_amount: amountPaid,
+          payment_change: change
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Show penalty payment receipt
+          showReceipt(data.receipt_data);
+          hidePenaltyPayment();
+          // Reload after a delay to update room status
+          setTimeout(() => location.reload(), 2000);
+        } else {
+          alert('Failed to process penalty payment: ' + data.message);
+        }
+      })
+      .catch(error => {
+        alert('Failed to process penalty payment');
+      })
+      .finally(() => {
+        // Reset button state
+        processPenaltyPaymentBtn.disabled = false;
+        processPenaltyPaymentBtn.textContent = 'Process Payment';
+      });
+    });
+  }
+  
   if (extendBtn) extendBtn.addEventListener('click', function(){
     if (!pendingExtend) return;
     if (!confirm('Are you sure you want to extend this stay?')) return;
@@ -1018,23 +1135,36 @@ function initializeEventListeners() {
     if (!pendingExtend) return;
     extendTimeoutModal.style.display = 'none';
     openAssignCleanerModal();
-    if (confirmAssignCleaner) confirmAssignCleaner.onclick = function(){
-      const stayId = String(pendingExtend.stayId);
-      const cleanerId = cleanerListEl.dataset.selectedCleanerId || '';
-      const hasP = assignHasPenalty && assignHasPenalty.checked;
-      const pa = hasP ? (parseFloat(document.getElementById('assignPenaltyAmount').value) || 0) : 0;
-      const pr = hasP ? (document.getElementById('assignPenaltyReason').value || null) : null;
-      hideAssign();
-      fetch(`/adminPages/stays/end/${stayId}`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
-        },
-        body: JSON.stringify({ assigned_cleaner_id: cleanerId || null, penalty_amount: pa, penalty_reason: pr })
-      }).then(() => setTimeout(() => location.reload(), 400)).catch(()=>{});
-      pendingExtend = null;
-    };
+  if (confirmAssignCleaner) confirmAssignCleaner.onclick = function(){
+    const stayId = String(pendingExtend.stayId);
+    const cleanerId = cleanerListEl.dataset.selectedCleanerId || '';
+    const hasP = assignHasPenalty && assignHasPenalty.checked;
+    const pa = hasP ? (parseFloat(document.getElementById('assignPenaltyAmount').value) || 0) : 0;
+    const pr = hasP ? (document.getElementById('assignPenaltyReason').value || null) : null;
+    
+    hideAssign();
+    
+    fetch(`/frontdesk/stays/end/${stayId}`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') 
+      },
+      body: JSON.stringify({ assigned_cleaner_id: cleanerId || null, penalty_amount: pa, penalty_reason: pr })
+    }).then(response => response.json()).then(data => {
+      if (data.success && hasP && pa > 0) {
+        // If penalty was applied, open penalty payment modal
+        openPenaltyPaymentModal(stayId, pa);
+      } else {
+        // No penalty, just reload
+        setTimeout(() => location.reload(), 400);
+      }
+    }).catch(() => {
+      setTimeout(() => location.reload(), 400);
+    });
+    
+    pendingExtend = null;
+  };
   });
     
     // Proceed button
@@ -1558,15 +1688,21 @@ function calculateTotal() {
         guestCount = 1;
     }
     
-    // Transaction total should be the same as rate price (no tax calculation here)
-    const total = selectedRate.price * guestCount;
+    // Calculate base total (rate price * guest count) - NO penalty included in initial payment
+    const baseTotal = selectedRate.price * guestCount;
     
-    // Store rate price in data attribute for penalty calculations
-    document.getElementById('totalAmount').dataset.ratePrice = total;
+    // Store rate price in data attribute
+    document.getElementById('totalAmount').dataset.ratePrice = baseTotal;
     
-    // Initialize totals
-    document.getElementById('subtotalAmount').textContent = '₱' + total.toFixed(2);
-    document.getElementById('totalAmount').textContent = '₱' + total.toFixed(2);
+    // Initialize totals - only show base amount for initial payment
+    document.getElementById('subtotalAmount').textContent = '₱' + baseTotal.toFixed(2);
+    document.getElementById('totalAmount').textContent = '₱' + baseTotal.toFixed(2);
+    
+    // Remove any existing penalty line from initial payment
+    const penaltyLine = document.getElementById('penaltyLine');
+    if (penaltyLine) {
+        penaltyLine.remove();
+    }
     
     // Show payment summary and process button for both new stays and extensions
     document.getElementById('paymentSummary').classList.remove('hidden');
@@ -1578,8 +1714,8 @@ function calculateTotal() {
     // Enable the process payment button
     enableProcessPaymentButton();
     
-    // Pre-fill amount paid with total for convenience
-    document.getElementById('amountPaid').value = total.toFixed(2);
+    // Pre-fill amount paid with base total only
+    document.getElementById('amountPaid').value = baseTotal.toFixed(2);
     document.getElementById('changeAmount').value = '0.00';
     
     // Update progress to step 4
@@ -1657,7 +1793,7 @@ function processPayment() {
         guests: guests,
         payment_amount: amountPaid,
         payment_change: Number.isFinite(computedChange) ? parseFloat(computedChange.toFixed(2)) : 0,
-        // Penalty is not part of initial transaction; handled after cleaner inspection
+        // No penalty in initial payment - penalties are handled separately after checkout
         penalty_amount: 0,
         penalty_reason: null,
         assigned_cleaner_id: assignedCleanerId || null
@@ -1695,6 +1831,7 @@ function processPayment() {
                 subtotal: subtotal,
                 tax: tax,
                 total: ratePrice,
+                penalty_amount: 0, // No penalty in initial payment
                 amount_paid: amountPaid,
                 change: computedChange,
                 cashier: '{{ Auth::user()->name ?? "Staff" }}',
@@ -2000,7 +2137,7 @@ function showReceipt(receiptData) {
             </div>
             <div class="receipt-row">
                 <span>Date & Time:</span>
-                <span>${receiptData.date_time || now.toLocaleString()}</span>
+                <span>${receiptData.date_time || new Date().toLocaleString()}</span>
             </div>
             <div class="receipt-row">
                 <span>Cashier:</span>
@@ -2033,10 +2170,18 @@ function showReceipt(receiptData) {
                 <span>Subtotal:</span>
                 <span>₱${parseFloat(receiptData.subtotal || 0).toFixed(2)}</span>
             </div>
+            ${receiptData.penalty_amount > 0 ? `
+            <div class="receipt-row">
+                <span>Penalty:</span>
+                <span>₱${parseFloat(receiptData.penalty_amount || 0).toFixed(2)}</span>
+            </div>
+            ` : ''}
+            ${receiptData.type !== 'Penalty Payment' ? `
             <div class="receipt-row">
                 <span>Tax (12%):</span>
                 <span>₱${parseFloat(receiptData.tax || 0).toFixed(2)}</span>
             </div>
+            ` : ''}
             <div class="receipt-row total">
                 <span>Total Amount:</span>
                 <span>₱${parseFloat(receiptData.total || 0).toFixed(2)}</span>

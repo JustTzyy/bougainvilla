@@ -855,10 +855,12 @@ class StayController extends Controller
                         $cleanerName = $cleaner->name ?? trim(($cleaner->firstName.' '.($cleaner->middleName ? $cleaner->middleName.' ' : '').$cleaner->lastName));
                     }
                 }
+                $totalAmount = $stay->payments->sum('amount');
+                
                 $transaction = [
                     'room' => $stay->room ? $stay->room->room : 'N/A',
                     'accommodation' => $this->getAccommodationNameWithTrashed($stay->rate),
-                    'amount' => $stay->payments->sum('amount'),
+                    'amount' => $totalAmount,
                     'cleaner_name' => $cleanerName,
                     'penalty_amount' => $stay->penalty_amount,
                     'penalty_reason' => $stay->penalty_reason
