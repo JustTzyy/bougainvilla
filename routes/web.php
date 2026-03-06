@@ -108,7 +108,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::get('/rooms', [RoomController::class, 'index'])->name('adminPages.rooms');
     Route::post('/rooms', [RoomController::class, 'store'])->name('adminPages.rooms.post');
     Route::post('/rooms/update/{id}', [RoomController::class, 'update'])->name('rooms.update');
-    Route::post('/rooms/archive/{id}', [RoomController::class, 'archive'])->name('rooms.archive');
+    Route::post('/rooms/archive/{id}', [RoomController::class, 'archive'])->name('rooms.archive.post');
     Route::delete('/rooms/delete/{id}', [RoomController::class, 'destroy'])->name('rooms.destroy');
     Route::patch('/rooms/restore/{id}', [RoomController::class, 'restore'])->name('rooms.restore');
     Route::get('/rooms/archive', [RoomController::class, 'archived'])->name('rooms.archive');
