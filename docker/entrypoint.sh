@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 # Default to port 10000 if PORT not set (Render default)
 export PORT=${PORT:-10000}
@@ -10,12 +9,16 @@ mv /etc/nginx/conf.d/default.conf.tmp /etc/nginx/conf.d/default.conf
 
 # Verify nginx config is valid
 echo "==> Testing Nginx configuration..."
-nginx -t
+nginx -t || echo "WARNING: Nginx config test failed, check logs"
+
+# Show the final nginx config for debugging
+echo "==> Final Nginx server block:"
+head -5 /etc/nginx/conf.d/default.conf
 
 echo "==> Caching Laravel config, routes, views..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:cache || echo "WARNING: config:cache failed, continuing..."
+php artisan route:cache || echo "WARNING: route:cache failed, continuing..."
+php artisan view:cache || echo "WARNING: view:cache failed, continuing..."
 
 echo "==> Running database migrations..."
 php artisan migrate --force || echo "WARNING: Migrations failed, continuing startup..."

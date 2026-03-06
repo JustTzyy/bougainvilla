@@ -56,6 +56,9 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Copy PHP production config
 COPY docker/php.ini /usr/local/etc/php/conf.d/99-production.ini
 
+# Copy PHP-FPM custom config (must preserve env vars for Laravel)
+COPY docker/php-fpm-custom.conf /usr/local/etc/php-fpm.d/zzz-custom.conf
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
