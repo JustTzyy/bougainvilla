@@ -32,6 +32,9 @@ php artisan view:cache || echo "WARNING: view:cache failed, continuing..."
 echo "==> Running database migrations..."
 php artisan migrate --force || echo "WARNING: Migrations failed, continuing startup..."
 
+echo "==> Running database seeders..."
+php artisan db:seed --force || echo "WARNING: Seeding failed, continuing startup..."
+
 echo "==> Creating storage symlink..."
 php artisan storage:link 2>/dev/null || true
 
