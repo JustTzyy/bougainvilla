@@ -1,0 +1,16 @@
+node_modules
+vendor
+.env
+.git
+.github
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+tests
+phpunit.xml
+.env.testing
+.editorconfig
+README.md
+CLAUDE.md
+GUEST_CLEANUP_README.md

@@ -14,7 +14,8 @@ class Receipt extends Model
         'status',
         'status_type',
         'paymentID',
-        'userID'
+        'userID',
+        'file_path',
     ];
 
     // Constants for status_type

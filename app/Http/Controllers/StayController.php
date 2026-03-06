@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\Address;
 use App\Models\History;
+use App\Services\ReceiptService;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -21,6 +22,8 @@ use Carbon\Carbon;
 class StayController extends Controller
 {
     use SafeDataAccessTrait;
+
+    public function __construct(private ReceiptService $receiptService) {}
     public function index(Request $request)
     {
         try {
@@ -243,6 +246,8 @@ class StayController extends Controller
 
             DB::commit();
 
+            $this->receiptService->uploadToS3($receipt);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Stay processed successfully!',
@@ -409,6 +414,8 @@ class StayController extends Controller
             ]);
 
             DB::commit();
+
+            $this->receiptService->uploadToS3($receipt);
 
             return response()->json([
                 'success' => true,

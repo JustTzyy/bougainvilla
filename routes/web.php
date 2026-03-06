@@ -147,6 +147,9 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     // Guest details route
     Route::get('/transactions/guest-details/{id}', [StayController::class, 'getGuestDetails'])->name('transactions.guest-details');
 
+    // S3 report backup (called by print button)
+    Route::post('/reports/backup', [App\Http\Controllers\Admin\ReportBackupController::class, 'backup'])->name('reports.backup');
+
 });
 
 // FrontDesk Routes

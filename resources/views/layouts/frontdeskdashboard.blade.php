@@ -270,6 +270,36 @@
             });
         });
     </script>
+
+    @php
+        $reportTypeMap = [
+            'frontdesk.dashboard'           => 'dashboard',
+            'frontdesk.transactionreports'  => 'transactionreports',
+            'frontdesk.auditlogs'           => 'auditlogs',
+        ];
+        $s3ReportType = $reportTypeMap[\Illuminate\Support\Facades\Route::currentRouteName() ?? ''] ?? null;
+    @endphp
+
+    @if($s3ReportType)
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('printBtn');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            const from = document.getElementById('from')?.value ?? '';
+            const to   = document.getElementById('to')?.value   ?? '';
+            fetch('{{ route('reports.backup') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ type: '{{ $s3ReportType }}', from, to })
+            }).catch(() => {});
+        });
+    });
+    </script>
+    @endif
 </body>
 
 </html>

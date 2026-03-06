@@ -1,0 +1,134 @@
+# render.yaml — Render Blueprint (Infrastructure as Code)
+# https://docs.render.com/blueprint-spec
+#
+# Usage: Connect your GitHub repo to Render and it will auto-detect this file.
+# Or manually configure services matching this spec in the Dashboard.
+
+services:
+  # ─── Main Web Service (Laravel + Nginx) ────────────────────
+  - type: web
+    name: bougainvilla
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    repo: https://github.com/JustTzyy/bougainvilla  # <-- Update this
+    branch: main
+    plan: starter  # starter ($7/mo) or standard ($25/mo)
+    healthCheckPath: /up
+    envVars:
+      - key: APP_NAME
+        value: Bougainvilla
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: false  # Set manually: php artisan key:generate --show
+      - key: APP_URL
+        value: https://bougainvilla.onrender.com  # <-- Update after deploy
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false  # Set manually: your Aurora cluster endpoint
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: bougainvilla
+      - key: DB_USERNAME
+        sync: false  # Set manually
+      - key: DB_PASSWORD
+        sync: false  # Set manually
+      - key: MYSQL_ATTR_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: FILESYSTEM_DISK
+        value: local
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: LOG_LEVEL
+        value: warning
+
+  # ─── Queue Worker (Background Service) ─────────────────────
+  - type: worker
+    name: bougainvilla-queue
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    repo: https://github.com/JustTzyy/bougainvilla  # <-- Update this
+    branch: main
+    plan: starter
+    dockerCommand: php /var/www/html/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    envVars:
+      - fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: APP_KEY
+      - key: APP_ENV
+        value: production
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: DB_HOST
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: bougainvilla
+      - key: DB_USERNAME
+        fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: DB_USERNAME
+      - key: DB_PASSWORD
+        fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: DB_PASSWORD
+      - key: MYSQL_ATTR_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt
+
+  # ─── Cron Job (Scheduled Tasks) ────────────────────────────
+  - type: cron
+    name: bougainvilla-scheduler
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    repo: https://github.com/JustTzyy/bougainvilla # <-- Update this
+    branch: main
+    plan: starter
+    schedule: "* * * * *"  # Every minute
+    dockerCommand: php /var/www/html/artisan schedule:run
+    envVars:
+      - fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: APP_KEY
+      - key: APP_ENV
+        value: production
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: DB_HOST
+      - key: DB_PORT
+        value: "3306"
+      - key: DB_DATABASE
+        value: bougainvilla
+      - key: DB_USERNAME
+        fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: DB_USERNAME
+      - key: DB_PASSWORD
+        fromService:
+          name: bougainvilla
+          type: web
+          envVarKey: DB_PASSWORD
+      - key: MYSQL_ATTR_SSL_CA
+        value: /etc/ssl/certs/ca-certificates.crt
