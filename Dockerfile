@@ -46,8 +46,9 @@ RUN npm run build
 # Remove node_modules after build to reduce image size
 RUN rm -rf node_modules
 
-# Copy Nginx config
-COPY docker/nginx.conf /etc/nginx/sites-available/default
+# Copy Nginx config (use conf.d for Docker compatibility)
+COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 # Copy Supervisor config
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
