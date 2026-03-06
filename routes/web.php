@@ -62,7 +62,7 @@ Route::prefix('adminPages')->middleware('auth')->group(function () {
     Route::post('/frontdeskrecords', [UserController::class, 'store'])->name('adminPages.frontdeskrecords.post');
     Route::post('/frontdeskrecords/update/{id}', [UserController::class, 'update'])->name('frontdeskrecords.update');
     Route::delete('/frontdeskrecords/delete/{id}', [UserController::class, 'destroy'])->name('frontdeskrecords.destroy');
-    Route::patch('/frontdeskrecords/restore/{id}', [UserController::class, 'restore'])->name('adminrecords.restore');
+    Route::patch('/frontdeskrecords/restore/{id}', [UserController::class, 'restore'])->name('frontdeskrecords.restore');
     Route::get('/frontdeskrecords/archive', [App\Http\Controllers\UserController::class, 'archivedFrontdesk'])->name('frontdeskrecords.archive');
 
     //Cleaner Crud

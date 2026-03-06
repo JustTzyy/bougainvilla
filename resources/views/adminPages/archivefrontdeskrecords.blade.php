@@ -735,7 +735,7 @@
           // Create form for restore request
           var form = document.createElement('form');
           form.method = 'POST';
-          form.action = '/adminPages/adminrecords/restore/' + userId;
+          form.action = '/adminPages/frontdeskrecords/restore/' + userId;
           
           // Add CSRF token
           var csrfToken = document.createElement('input');
