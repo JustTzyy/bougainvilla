@@ -63,6 +63,9 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 80
+# Install envsubst for Nginx port substitution
+RUN apt-get update && apt-get install -y gettext-base && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+EXPOSE 10000
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
