@@ -68,12 +68,11 @@ This document describes the deployment architecture and step-by-step process for
 
 ## Architecture Overview
 
-* **Application:** Laravel 12 (PHP 8.2+) — deployed on Render via Docker
-* **Web Server:** Nginx (reverse proxy to PHP-FPM inside the container)
-* **Process Manager:** Supervisor (keeps Nginx + PHP-FPM running)
+* **Application:** Laravel 12 — deployed on Render via Docker
+* **Web Server:** Nginx + PHP-FPM (inside the container)
+* **Process Manager:** Supervisor (keeps Nginx and PHP-FPM running)
 * **Database:** Amazon Aurora MySQL (AWS ap-southeast-2)
 * **File Storage:** Amazon S3
-* **IAM Security:** IAM user with scoped S3 access policy
 
 ---
 
@@ -81,13 +80,12 @@ This document describes the deployment architecture and step-by-step process for
 
 ```
 User (Browser)
-  ↓ HTTPS
+  ↓
 Render.com (Docker Container)
   ↓
 Nginx → PHP-FPM (Laravel App)
   ↓                    ↓
 Aurora MySQL          Amazon S3
-(Database)         (File Storage)
 ```
 
 ---
@@ -107,15 +105,11 @@ git push origin main
 1. Go to [https://render.com](https://render.com)
 2. Click **New** → **Web Service**
 3. Connect your GitHub repository
-4. Configure:
-
-   * **Environment:** Docker
-   * **Branch:** `main`
-   * **Region:** Choose closest to your users
+4. Set **Environment** to **Docker** and branch to `main`
 
 ## Step 3: Set Environment Variables
 
-In Render dashboard → **Environment** tab:
+In the Render dashboard → **Environment** tab, add your app, database, and AWS credentials:
 
 ```
 APP_NAME=Bougainvilla
@@ -123,16 +117,19 @@ APP_ENV=production
 APP_KEY=base64:...
 APP_DEBUG=false
 APP_URL=https://your-app.onrender.com
+
 DB_CONNECTION=mysql
 DB_HOST=your-aurora-endpoint.rds.amazonaws.com
 DB_PORT=3306
 DB_DATABASE=bougainvilla
 DB_USERNAME=admin
 DB_PASSWORD=your-password
+
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
 AWS_DEFAULT_REGION=ap-southeast-2
 AWS_BUCKET=bougainvilla
+
 SESSION_DRIVER=database
 CACHE_STORE=database
 LOG_CHANNEL=stderr
@@ -151,7 +148,6 @@ Render will automatically:
 * Compile frontend assets with Vite
 * Start Nginx + PHP-FPM via Supervisor
 * Run database migrations and seeders
-* Provide a public HTTPS URL
 
 ---
 
@@ -161,38 +157,25 @@ Render will automatically:
 
 1. Go to **AWS RDS Console** → **Create database**
 2. Choose **Amazon Aurora** with **MySQL compatibility**
-3. Configure:
+3. Set region to `ap-southeast-2` and enable **Publicly accessible**
 
-   * Region: `ap-southeast-2`
-   * Master username / password of your choice
-   * Enable **Publicly accessible**
+## Step 2: Configure VPC and Security Group
 
-## Step 2: Configure VPC Subnet Route Tables
+1. In **VPC Console** → **Subnets**, ensure each subnet in the DB's availability zone has a route table with:
 
-Each subnet in the DB subnet group must have an Internet Gateway route:
+   * `0.0.0.0/0` → your Internet Gateway
 
-1. Go to **VPC Console** → **Subnets**
-2. For each subnet in your DB's AZ, open its **Route Table**
-3. Ensure these routes exist:
+2. In the Aurora **Security Group**, add an inbound rule:
 
-   * `172.31.0.0/16` → `local`
-   * `0.0.0.0/0` → `igw-xxxxxxxx` (your Internet Gateway)
+   * **Type:** MySQL/Aurora, **Port:** 3306, **Source:** `0.0.0.0/0`
 
-## Step 3: Configure Security Group
-
-Add an inbound rule to the Aurora security group:
-
-* **Type:** MySQL/Aurora
-* **Port:** 3306
-* **Source:** `0.0.0.0/0`
-
-## Step 4: Verify Connectivity
+## Step 3: Verify Connectivity
 
 ```powershell
 Test-NetConnection -ComputerName your-aurora-endpoint.rds.amazonaws.com -Port 3306
 ```
 
-Confirm `TcpTestSucceeded: True`.
+Confirm `TcpTestSucceeded: True` before proceeding.
 
 ---
 
@@ -200,55 +183,20 @@ Confirm `TcpTestSucceeded: True`.
 
 ## Step 1: Create S3 Bucket
 
-* Go to **AWS S3** → **Create bucket**
-* Bucket name: `bougainvilla`
-* Region: `ap-southeast-2`
+1. Go to **AWS S3** → **Create bucket**
+2. Set bucket name and region to `ap-southeast-2`
 
-## Step 2: Create IAM User for S3 Access
+## Step 2: Create IAM User
 
 1. Go to **IAM** → **Users** → **Create user**
-2. Attach an inline policy:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::bougainvilla",
-        "arn:aws:s3:::bougainvilla/*"
-      ]
-    }
-  ]
-}
-```
-
-3. Create **Access Keys** and add them to Render environment variables
+2. Attach a policy granting `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, and `s3:ListBucket` on your bucket
+3. Create **Access Keys** and add them to your Render environment variables
 
 ---
 
 # 4. Post-Deployment Verification
 
 * Visit your Render URL — the login page should load with full styling
-* Check Render **Logs** tab for: `==> Setup complete! Waiting on Supervisor...`
+* Check Render **Logs** for: `==> Setup complete! Waiting on Supervisor...`
 * Login with seeded credentials to confirm database connectivity
 * Upload a receipt or generate a report to confirm S3 is working
-
----
-
-# 5. Troubleshooting
-
-| Problem | Solution |
-|---------|----------|
-| **502 Bad Gateway** | Supervisor must start before artisan commands; check `clear_env = no` in PHP-FPM config |
-| **SSL certificate verify failed** | Set `PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false` in `config/database.php` without `array_filter()` |
-| **Database connection timeout** | Check public accessibility, security group port 3306, and subnet IGW routes |
-| **Assets not loading (no CSS/JS)** | Set `APP_URL` to your Render URL; add `URL::forceScheme('https')` and `trustProxies(at: '*')` |
-| **ENV vars not visible to Laravel** | Add `clear_env = no` to `docker/php-fpm-custom.conf` |
