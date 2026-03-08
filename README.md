@@ -109,33 +109,26 @@ git push origin main
 
 ## Step 3: Set Environment Variables
 
-In the Render dashboard → **Environment** tab, add your app, database, and AWS credentials:
+In the Render dashboard → **Environment** tab, add your credentials:
 
-```
-APP_NAME=Bougainvilla
-APP_ENV=production
-APP_KEY=base64:...
-APP_DEBUG=false
-APP_URL=https://your-app.onrender.com
-
-DB_CONNECTION=mysql
-DB_HOST=your-aurora-endpoint.rds.amazonaws.com
-DB_PORT=3306
-DB_DATABASE=bougainvilla
-DB_USERNAME=admin
-DB_PASSWORD=your-password
-
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_DEFAULT_REGION=ap-southeast-2
-AWS_BUCKET=bougainvilla
-
-SESSION_DRIVER=database
-CACHE_STORE=database
-LOG_CHANNEL=stderr
-```
-
-> Generate APP_KEY locally: `php artisan key:generate --show`
+* `APP_NAME` — your app name
+* `APP_ENV` — `production`
+* `APP_KEY` — generate with `php artisan key:generate --show`
+* `APP_DEBUG` — `false`
+* `APP_URL` — your Render URL (e.g. `https://your-app.onrender.com`)
+* `DB_CONNECTION` — `mysql`
+* `DB_HOST` — your Aurora endpoint
+* `DB_PORT` — `3306`
+* `DB_DATABASE` — your database name
+* `DB_USERNAME` — your database username
+* `DB_PASSWORD` — your database password
+* `AWS_ACCESS_KEY_ID` — your IAM access key
+* `AWS_SECRET_ACCESS_KEY` — your IAM secret key
+* `AWS_DEFAULT_REGION` — `ap-southeast-2`
+* `AWS_BUCKET` — your S3 bucket name
+* `SESSION_DRIVER` — `database`
+* `CACHE_STORE` — `database`
+* `LOG_CHANNEL` — `stderr`
 
 ## Step 4: Deploy
 
@@ -159,17 +152,19 @@ Render will automatically:
 2. Choose **Amazon Aurora** with **MySQL compatibility**
 3. Set region to `ap-southeast-2` and enable **Publicly accessible**
 
-## Step 2: Configure VPC and Security Group
+## Step 2: Configure VPC Subnet Route Tables
 
-1. In **VPC Console** → **Subnets**, ensure each subnet in the DB's availability zone has a route table with:
+1. Go to **VPC Console** → **Subnets**
+2. Find the subnets used by your DB's availability zone
+3. For each subnet, open its route table and ensure there is a route for `0.0.0.0/0` pointing to your Internet Gateway
 
-   * `0.0.0.0/0` → your Internet Gateway
+## Step 3: Configure Security Group
 
-2. In the Aurora **Security Group**, add an inbound rule:
+1. Go to **EC2 Console** → **Security Groups**
+2. Find the security group attached to your Aurora instance
+3. Add an inbound rule: **Type** MySQL/Aurora, **Port** 3306, **Source** `0.0.0.0/0`
 
-   * **Type:** MySQL/Aurora, **Port:** 3306, **Source:** `0.0.0.0/0`
-
-## Step 3: Verify Connectivity
+## Step 4: Verify Connectivity
 
 ```powershell
 Test-NetConnection -ComputerName your-aurora-endpoint.rds.amazonaws.com -Port 3306
@@ -184,7 +179,7 @@ Confirm `TcpTestSucceeded: True` before proceeding.
 ## Step 1: Create S3 Bucket
 
 1. Go to **AWS S3** → **Create bucket**
-2. Set bucket name and region to `ap-southeast-2`
+2. Set the bucket name and region to `ap-southeast-2`
 
 ## Step 2: Create IAM User
 
