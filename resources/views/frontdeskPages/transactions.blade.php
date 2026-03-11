@@ -2024,12 +2024,14 @@ function updateRoomTimers() {
 
 async function fetchActiveStays() {
     try {
+        console.log('fetchActiveStays: requesting /frontdesk/stays/active');
         const res = await fetch('/frontdesk/stays/active');
         if (!res.ok) {
-            console.error('fetchActiveStays: HTTP error', res.status);
+            console.error('fetchActiveStays: HTTP error', res.status, await res.text());
             return;
         }
         const data = await res.json();
+        console.log('fetchActiveStays: response', JSON.stringify(data).substring(0, 500));
         if (!data.success) {
             console.error('fetchActiveStays: API error', data.message);
             return;
@@ -2055,6 +2057,7 @@ async function fetchActiveStays() {
                 if (typeof stay.guest_count === 'number') roomIdToGuestCount[String(stay.room.id)] = stay.guest_count;
             }
         });
+        console.log('fetchActiveStays: mapped rooms', JSON.stringify(roomIdToCheckout));
     } catch (e) {
         console.error('fetchActiveStays: exception', e);
     }
