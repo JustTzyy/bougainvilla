@@ -842,34 +842,7 @@ let allRoomBoxes = [];
 let currentPage = 1;
 let roomsPerPage = 12; // Adjust this number based on your preference
 
-// Load cleaners for assignment
-async function loadCleaners() {
-    try {
-        const response = await fetch('/adminPages/cleaners/list');
-        const data = await response.json();
-        
-        const cleanerSelect = document.getElementById('assignedCleaner');
-        cleanerSelect.innerHTML = '<option value="">Select Cleaner</option>';
-        
-        if (data.cleaners && data.cleaners.length > 0) {
-            data.cleaners.forEach(cleaner => {
-                const option = document.createElement('option');
-                option.value = cleaner.id;
-                option.textContent = cleaner.name;
-                cleanerSelect.appendChild(option);
-            });
-        } else {
-            const option = document.createElement('option');
-            option.value = '';
-            option.textContent = 'No cleaners available';
-            option.disabled = true;
-            cleanerSelect.appendChild(option);
-        }
-    } catch (error) {
-        const cleanerSelect = document.getElementById('assignedCleaner');
-        cleanerSelect.innerHTML = '<option value="">Error loading cleaners</option>';
-    }
-}
+// Cleaner loading is handled by openAssignCleanerModal() in the timeout flow
 
 // Terms and Conditions Modal Functions
 function showTermsModal() {
@@ -908,7 +881,6 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     initializePagination();
-    loadCleaners();
     
     // Load active stays for timers then start ticking
     fetchActiveStays().then(() => {
