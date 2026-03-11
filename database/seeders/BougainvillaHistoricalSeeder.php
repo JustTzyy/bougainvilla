@@ -11,6 +11,7 @@ use App\Models\Room;
 use App\Models\Accommodation;
 use App\Models\Rate;
 use App\Models\RateAccommodation;
+use App\Models\RoomAccommodation;
 use App\Models\Guest;
 use App\Models\Address;
 use App\Models\Stay;
@@ -184,18 +185,28 @@ class BougainvillaHistoricalSeeder extends Seeder
     {
         echo "🚪 Creating Rooms...\n";
         $roomCount = 0;
+        $accommodations = Accommodation::all();
         foreach (Level::all() as $level) {
             $roomsPerLevel = 8;
             for ($i = 1; $i <= $roomsPerLevel; $i++) {
                 $roomNumber = $level->id . sprintf('%02d', $i);
-                Room::firstOrCreate(['room' => $roomNumber], [
+                $room = Room::firstOrCreate(['room' => $roomNumber], [
                     'status' => 'Available', 'type' => 'Standard',
                     'level_id' => $level->id,
                 ]);
+
+                // Assign all accommodations to each room
+                foreach ($accommodations as $accommodation) {
+                    RoomAccommodation::firstOrCreate([
+                        'room_id' => $room->id,
+                        'accommodation_id' => $accommodation->id,
+                    ]);
+                }
+
                 $roomCount++;
             }
         }
-        echo "   ✓ {$roomCount} rooms created\n";
+        echo "   ✓ {$roomCount} rooms created and linked to accommodations\n";
     }
 
     private function seedHistoricalData($startDate)

@@ -1373,6 +1373,11 @@ function displayAccommodationInfo(room) {
     const optionsContainer = document.getElementById('accommodationOptions');
     optionsContainer.innerHTML = '';
 
+    if (!room.accommodations || room.accommodations.length === 0) {
+        optionsContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6c757d;">No accommodations assigned to this room. Please contact an admin to configure room accommodations.</div>';
+        return;
+    }
+
     room.accommodations.forEach(acc => {
         const option = document.createElement('div');
         option.className = 'accommodation-option';
@@ -2020,8 +2025,15 @@ function updateRoomTimers() {
 async function fetchActiveStays() {
     try {
         const res = await fetch('/frontdesk/stays/active');
+        if (!res.ok) {
+            console.error('fetchActiveStays: HTTP error', res.status);
+            return;
+        }
         const data = await res.json();
-        if (!data.success) return;
+        if (!data.success) {
+            console.error('fetchActiveStays: API error', data.message);
+            return;
+        }
         // Map checkout time by room id
         roomIdToCheckout = {};
         roomIdToStayId = {};
@@ -2044,7 +2056,7 @@ async function fetchActiveStays() {
             }
         });
     } catch (e) {
-        // Failed to fetch active stays
+        console.error('fetchActiveStays: exception', e);
     }
 }
 
