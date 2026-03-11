@@ -193,6 +193,8 @@ Route::prefix('frontdesk')->middleware('auth')->group(function () {
     Route::post('/stays/penalty-payment/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'processPenaltyPayment'])->name('frontdesk.stays.penalty-payment');
     Route::post('/stays/restore/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'restore'])->name('frontdesk.stays.restore');
     Route::get('/stays/active', [App\Http\Controllers\FrontDesk\StayController::class, 'getActiveStays'])->name('frontdesk.stays.active');
+    Route::get('/rooms/details/{id}', [App\Http\Controllers\FrontDesk\StayController::class, 'getRoomDetails'])->name('frontdesk.rooms.details');
+    Route::get('/cleaners/list', [App\Http\Controllers\UserController::class, 'getCleanersList'])->name('frontdesk.cleaners.list');
 });
 
 

@@ -1009,7 +1009,7 @@ function initializeEventListeners() {
   }
   async function openAssignCleanerModal(){
     try {
-      const res = await fetch('/adminPages/cleaners/list');
+      const res = await fetch('/frontdesk/cleaners/list');
       const data = await res.json();
       cleanerListEl.innerHTML = '';
       (data.cleaners || []).forEach(c => {
@@ -1289,7 +1289,7 @@ function updatePaginationControls(totalPages, totalRooms) {
 }
 
 function openAccommodationModal(roomId) {
-    fetch(`/adminPages/rooms/details/${roomId}`)
+    fetch(`/frontdesk/rooms/details/${roomId}`)
         .then(response => response.json())
         .then(data => {
             // Support both payloads: { success: true, room: {...} } and direct room object
@@ -1598,7 +1598,7 @@ function loadRateOptions() {
     const accommodationId = selectedAccommodation ? selectedAccommodation.id : null;
     if (!accommodationId) return;
     
-    fetch(`/adminPages/stays/rates/${accommodationId}`)
+    fetch(`/frontdesk/stays/rates/${accommodationId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1774,7 +1774,7 @@ function processPayment() {
     // Show loading
     document.getElementById('loading').style.display = 'block';
     
-    fetch('/adminPages/stays/process', {
+    fetch('/frontdesk/stays/process', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -1915,7 +1915,7 @@ function deleteStay() {
     // Show loading
     document.getElementById('loading').style.display = 'block';
     
-    fetch(`/adminPages/stays/delete/${stayId}`, {
+    fetch(`/frontdesk/stays/delete/${stayId}`, {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -2019,7 +2019,7 @@ function updateRoomTimers() {
 
 async function fetchActiveStays() {
     try {
-        const res = await fetch('/adminPages/stays/active');
+        const res = await fetch('/frontdesk/stays/active');
         const data = await res.json();
         if (!data.success) return;
         // Map checkout time by room id
